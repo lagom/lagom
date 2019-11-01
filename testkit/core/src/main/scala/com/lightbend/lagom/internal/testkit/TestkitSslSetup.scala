@@ -8,7 +8,6 @@ import javax.net.ssl.SSLContext
 import com.lightbend.lagom.devmode.ssl.KeyStoreMetadata
 
 private[lagom] object TestkitSslSetup {
-
   sealed trait TestkitSslSetup {
     def sslPort: Option[Int]
 

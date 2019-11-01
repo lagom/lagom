@@ -12,7 +12,6 @@ import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.
 private[lagom] class ClusterStartupTaskSerializer(val system: ExtendedActorSystem)
     extends SerializerWithStringManifest
     with BaseSerializer {
-
   val ExecuteManifest = "E"
 
   override def manifest(obj: AnyRef) = obj match {

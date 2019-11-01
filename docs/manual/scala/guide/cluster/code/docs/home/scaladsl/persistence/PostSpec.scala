@@ -19,7 +19,6 @@ import org.scalatest.Matchers
 import org.scalatest.WordSpecLike
 
 class PostSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with TypeCheckedTripleEquals {
-
   val system = ActorSystem("PostSpec", JsonSerializerRegistry.actorSystemSetupFor(BlogPostSerializerRegistry))
 
   override def afterAll(): Unit = {
@@ -57,7 +56,6 @@ class PostSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with Ty
       outcome.replies should ===(List(Done, Done))
       outcome.issues should be(Nil)
     }
-
   }
 }
 //#unit-test

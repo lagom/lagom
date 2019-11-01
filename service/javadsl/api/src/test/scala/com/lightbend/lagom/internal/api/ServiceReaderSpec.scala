@@ -30,7 +30,6 @@ import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 class ServiceReaderSpec extends WordSpec with Matchers with Inside {
-
   "The service reader" should {
     "read a simple Java service descriptor" in {
       val descriptor = serviceDescriptor[MockService]
@@ -105,7 +104,6 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
 
             method.create(blogService, params).asInstanceOf[ArgsCapturingServiceCall].args
         }
-
       }
 
       val blogCall = descriptor.calls().get(0)
@@ -171,7 +169,6 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
       val uuid     = UUID.randomUUID()
       deserializeParams(uuidCall, Seq(Seq(uuid.toString))) should ===(Seq(uuid))
       serializeArgs(uuidCall, Seq(uuid)) should ===(Seq(Seq(uuid.toString)))
-
     }
 
     "fail to read a Java service descriptor from a public interface because a message type uses type variables" in {
@@ -191,7 +188,6 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
       // because <Message> is the unbound type used in Service#topic(). See com.lightbend.lagom.javadsl.api.Service
       exception.getMessage should include("<TopicMessageType>")
     }
-
   }
 
   def serviceDescriptor[S <: Service](implicit ct: ClassTag[S]) = {
@@ -237,5 +233,4 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
 
     override def deserialize(message: RawExceptionMessage): Throwable = ???
   }
-
 }

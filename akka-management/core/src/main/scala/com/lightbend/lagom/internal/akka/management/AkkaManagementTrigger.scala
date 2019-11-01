@@ -29,7 +29,6 @@ private[lagom] class AkkaManagementTrigger(
     system: ActorSystem,
     coordinatedShutdown: CoordinatedShutdown
 )(implicit executionContext: ExecutionContext) {
-
   private val enabledSetting       = "lagom.akka.management.enabled"
   private val enabledRenderedValue = config.getValue(enabledSetting).render()
   private val enabled              = config.getBoolean(enabledSetting)
@@ -40,7 +39,6 @@ private[lagom] class AkkaManagementTrigger(
    * Starts Akka HTTP Management honoring the `lagom.akka.management.enabled` setting
    */
   private[lagom] def start() = {
-
     if (enabled) {
       doStart()
     } else {
@@ -49,14 +47,12 @@ private[lagom] class AkkaManagementTrigger(
       )
       Future.successful(Done)
     }
-
   }
 
   /**
    * Starts Akka HTTP Management ignoring the `lagom.akka.management.enabled` setting.
    */
   private[lagom] def forcedStart(requester: String): Future[Done] = {
-
     if (!enabled) {
       logger.warn(
         s"'lagom.akka.management.enabled' property is set to '$enabledRenderedValue', " +
@@ -68,7 +64,6 @@ private[lagom] class AkkaManagementTrigger(
   }
 
   private def doStart(): Future[Done] = {
-
     val akkaManagement = AkkaManagement(system.asInstanceOf[ExtendedActorSystem])
     akkaManagement.start().map { _ =>
       // add a task to stop

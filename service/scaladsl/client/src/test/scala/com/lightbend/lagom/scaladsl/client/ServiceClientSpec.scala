@@ -18,7 +18,6 @@ import scala.collection.immutable
 import scala.concurrent.Future
 
 class ServiceClientSpec extends WordSpec with Matchers with Inside {
-
   "The service client macro" should {
     "allow implementing a service client" in {
       val mockServiceClient = TestServiceClient.implement[MockService]
@@ -89,7 +88,6 @@ class ServiceClientSpec extends WordSpec with Matchers with Inside {
       }
     }
   }
-
 }
 
 trait MockService extends Service {

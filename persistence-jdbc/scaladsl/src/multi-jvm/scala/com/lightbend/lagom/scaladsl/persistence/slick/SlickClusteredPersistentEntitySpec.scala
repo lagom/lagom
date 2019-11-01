@@ -42,7 +42,6 @@ class SlickClusteredPersistentEntitySpecMultiJvmNode3 extends SlickClusteredPers
 
 class SlickClusteredPersistentEntitySpec
     extends AbstractClusteredPersistentEntitySpec(SlickClusteredPersistentEntityConfig) {
-
   import SlickClusteredPersistentEntityConfig._
 
   var h2: Server = _

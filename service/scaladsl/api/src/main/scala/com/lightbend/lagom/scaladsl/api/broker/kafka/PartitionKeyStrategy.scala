@@ -8,7 +8,6 @@ package com.lightbend.lagom.scaladsl.api.broker.kafka
  * Defines an algorithm for producing a key from a Message.
  */
 trait PartitionKeyStrategy[-Message] {
-
   /**
    * Computes a key from a message. The key is used to decide on what topic's partition a message should be published
    * to.
@@ -20,7 +19,6 @@ trait PartitionKeyStrategy[-Message] {
 }
 
 object PartitionKeyStrategy {
-
   /**
    * Create a partition key strategy.
    */

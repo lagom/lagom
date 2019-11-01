@@ -5,7 +5,6 @@
 package docs.scaladsl.advanced.akka
 
 package workerservice {
-
   import com.lightbend.lagom.scaladsl.api.Service
   import com.lightbend.lagom.scaladsl.api.ServiceCall
   import docs.scaladsl.advanced.akka.dataobjects.Job
@@ -21,7 +20,6 @@ package workerservice {
 }
 
 package dataobjects {
-
   //#dataobjects
   import play.api.libs.json.Format
   import play.api.libs.json.Json
@@ -35,11 +33,9 @@ package dataobjects {
     implicit val format: Format[JobAccepted] = Json.format
   }
   //#dataobjects
-
 }
 
 package workerserviceimpl {
-
   import dataobjects.Job
   import dataobjects.JobAccepted
   import worker.Worker
@@ -92,7 +88,6 @@ package workerserviceimpl {
 }
 
 package worker {
-
   import dataobjects.Job
   import dataobjects.JobAccepted
 

@@ -16,7 +16,6 @@ import scala.concurrent.duration.FiniteDuration
  */
 class OffsetTableConfiguration(config: Config, readSideConfig: ReadSideConfig)
     extends AbstractSlickOffsetStoreConfiguration(config) {
-
   override def minBackoff: FiniteDuration           = readSideConfig.minBackoff
   override def maxBackoff: FiniteDuration           = readSideConfig.maxBackoff
   override def randomBackoffFactor: Double          = readSideConfig.randomBackoffFactor

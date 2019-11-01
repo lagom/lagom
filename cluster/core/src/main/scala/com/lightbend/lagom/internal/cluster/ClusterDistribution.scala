@@ -50,7 +50,6 @@ object ClusterDistributionSettings {
 }
 
 object ClusterDistribution extends ExtensionId[ClusterDistribution] with ExtensionIdProvider {
-
   override def createExtension(system: ExtendedActorSystem): ClusterDistribution =
     new ClusterDistribution(system)
 
@@ -80,7 +79,6 @@ object ClusterDistribution extends ExtensionId[ClusterDistribution] with Extensi
  * message, typically they can do nothing in response to it.
  */
 class ClusterDistribution(system: ExtendedActorSystem) extends Extension {
-
   import ClusterDistribution._
 
   /**
@@ -98,7 +96,6 @@ class ClusterDistribution(system: ExtendedActorSystem) extends Extension {
       entityIds: Set[EntityId],
       settings: ClusterDistributionSettings
   ): ActorRef = {
-
     val extractEntityId: ShardRegion.ExtractEntityId = {
       case msg @ EnsureActive(entityId) => (entityId, msg)
     }
@@ -124,7 +121,6 @@ class ClusterDistribution(system: ExtendedActorSystem) extends Extension {
 
     shardRegion
   }
-
 }
 
 private[cluster] object EnsureActiveActor {
@@ -139,7 +135,6 @@ private[cluster] class EnsureActiveActor(
     shardRegion: ActorRef,
     ensureActiveInterval: FiniteDuration
 ) extends Actor {
-
   import EnsureActiveActor._
   import ClusterDistribution._
   import context.dispatcher

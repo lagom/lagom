@@ -87,7 +87,6 @@ case object JacksonPlaceholderExceptionSerializer extends PlaceholderExceptionSe
 
 class DelegatingStreamedMessageSerializer[MessageEntity](delegate: StrictMessageSerializer[MessageEntity])
     extends StreamedMessageSerializer[MessageEntity] {
-
   private class DelegatingStreamedSerializer(delegate: NegotiatedSerializer[MessageEntity, ByteString])
       extends NegotiatedSerializer[Source[MessageEntity, _], Source[ByteString, _]] {
     override def protocol(): MessageProtocol = delegate.protocol()

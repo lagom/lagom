@@ -18,7 +18,6 @@ import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence._
 
 object CassandraReadSideSpec {
-
   val defaultConfig      = ConfigFactory.parseString("akka.loglevel = INFO")
   val noAutoCreateConfig = ConfigFactory.parseString("lagom.persistence.read-side.cassandra.tables-autocreate = false")
 }

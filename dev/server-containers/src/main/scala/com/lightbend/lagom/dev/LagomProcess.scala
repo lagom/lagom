@@ -13,7 +13,6 @@ import scala.collection.JavaConverters._
  * Lagom process abstraction
  */
 object LagomProcess {
-
   /**
    * Run a Java process.
    *
@@ -36,5 +35,4 @@ object LagomProcess {
       .command(command.asJava)
       .start()
   }
-
 }

@@ -92,7 +92,6 @@ sealed trait Descriptor {
 }
 
 object Descriptor {
-
   def apply(name: String): Descriptor = {
     DescriptorImpl(name)
   }
@@ -101,7 +100,6 @@ object Descriptor {
    * Describes a service call.
    */
   sealed trait Call[Request, Response] {
-
     /**
      * The id of the call.
      *
@@ -193,7 +191,6 @@ object Descriptor {
    * A named call identifier.
    */
   sealed trait NamedCallId extends CallId {
-
     /**
      * The name of the call.
      */
@@ -201,7 +198,6 @@ object Descriptor {
   }
 
   object NamedCallId {
-
     /**
      * Create a named call identifier with the given name.
      */
@@ -212,7 +208,6 @@ object Descriptor {
    * A path based call identifier.
    */
   sealed trait PathCallId extends CallId {
-
     /**
      * The pattern for path.
      */
@@ -220,7 +215,6 @@ object Descriptor {
   }
 
   object PathCallId {
-
     /**
      * Create a path based call identifier with the given path pattern.
      */
@@ -231,7 +225,6 @@ object Descriptor {
    * A REST/HTTP call identifier.
    */
   sealed trait RestCallId extends CallId {
-
     /**
      * The HTTP method for the call.
      *
@@ -247,7 +240,6 @@ object Descriptor {
   }
 
   object RestCallId {
-
     /**
      * Create a REST call identifier with the given method and path pattern.
      */
@@ -266,7 +258,6 @@ object Descriptor {
    * Describes a message broker topic.
    */
   sealed trait TopicCall[Message] {
-
     /**
      * The identifier for the topic.
      */
@@ -310,7 +301,6 @@ object Descriptor {
    * Properties of a topic call.
    */
   sealed trait Properties[Message] {
-
     /**
      * Get the given property.
      */
@@ -330,7 +320,6 @@ object Descriptor {
    * A property.
    */
   sealed trait Property[-Message, T] {
-
     /**
      * The class of the value.
      */

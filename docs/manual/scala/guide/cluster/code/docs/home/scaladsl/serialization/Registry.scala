@@ -23,13 +23,11 @@ import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 abstract class MyApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
     with ClusterComponents {
-
   override lazy val jsonSerializerRegistry = MyRegistry
 }
 //#application-cake
 
 object CreateActorSystem {
-
   //#create-actor-system
   import akka.actor.ActorSystem
   import akka.actor.setup.ActorSystemSetup
@@ -42,5 +40,4 @@ object CreateActorSystem {
     )
   )
   //#create-actor-system
-
 }

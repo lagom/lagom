@@ -19,7 +19,6 @@ final class EventStreamElement[+Event](
     val event: Event,
     val offset: Offset
 ) {
-
   override def equals(other: Any): Boolean = other match {
     case that: EventStreamElement[_] =>
       entityId == that.entityId &&
@@ -34,5 +33,4 @@ final class EventStreamElement[+Event](
   }
 
   override def toString = s"EventStreamElement($entityId, $event, $offset)"
-
 }

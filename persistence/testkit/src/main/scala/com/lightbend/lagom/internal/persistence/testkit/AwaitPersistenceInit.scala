@@ -33,7 +33,6 @@ private[lagom] object AwaitPersistenceInit {
       }
     }
   }
-
 }
 
 private[lagom] class AwaitPersistenceInit extends PersistentActor {

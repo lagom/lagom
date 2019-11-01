@@ -24,12 +24,10 @@ import akka.stream.testkit.TestSubscriber.Probe
 abstract class PublishApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
     with AhcWSComponents {
-
   override lazy val lagomServer = serverFor[service.PublishService](new service.PublishServiceImpl())
 }
 
 package service {
-
   import com.lightbend.lagom.scaladsl.api.Service
   import com.lightbend.lagom.scaladsl.broker.TopicProducer
 
@@ -62,11 +60,9 @@ package service {
         Source((1 to 10)).map(i => (PubMessage(s"msg $i"), offset))
       }
   }
-
 }
 
 class PublishServiceSpec extends AsyncWordSpec with Matchers {
-
   import service._
 
   //#topic-test-publishing-into-a-topic
@@ -83,7 +79,6 @@ class PublishServiceSpec extends AsyncWordSpec with Matchers {
         .runWith(TestSink.probe[PubMessage])
         .request(1)
         .expectNext should ===(PubMessage("msg 1"))
-
     }
   }
   //#topic-test-publishing-into-a-topic

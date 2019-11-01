@@ -66,7 +66,6 @@ import scala.util.control.NonFatal
  * and stop it in a method annotated with `@AfterClass`.
  */
 object ServiceTest {
-
   // These are all specified as strings so that we can say they are disabled without having a dependency on them.
   private val JdbcPersistenceModule = "com.lightbend.lagom.javadsl.persistence.jdbc.JdbcPersistenceModule"
   private val CassandraPersistenceModule =
@@ -195,7 +194,6 @@ object ServiceTest {
      * The builder configuration function
      */
     def configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]
-
   }
 
   private case class SetupImpl(
@@ -205,7 +203,6 @@ object ServiceTest {
       ssl: Boolean,
       configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]
   ) extends Setup {
-
     def this() = this(
       cassandra = false,
       jdbc = false,
@@ -248,7 +245,6 @@ object ServiceTest {
     ): Setup = {
       copy(configureBuilder = configureBuilder)
     }
-
   }
 
   /**
@@ -266,7 +262,6 @@ object ServiceTest {
       server: Server,
       @ApiMayChange val clientSslContext: Optional[SSLContext] = Optional.empty()
   ) {
-
     @ApiMayChange val portSsl: Optional[Integer] = Optional.ofNullable(server.httpsPort.map(Integer.valueOf).orNull)
 
     /**
@@ -360,23 +355,17 @@ object ServiceTest {
         initialBuilder
           .configure(cassandraConfig(testName, cassandraPort))
           .disableModules(JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
-
       } else if (setup.jdbc) {
-
         initialBuilder
           .configure(JdbcConfig)
           .disableModules(CassandraPersistenceModule, KafkaClientModule, KafkaBrokerModule)
-
       } else if (setup.cluster) {
-
         initialBuilder
           .configure(ClusterConfig)
           .disable(classOf[PersistenceModule])
           .bindings(play.api.inject.bind[OffsetStore].to[InMemoryOffsetStore])
           .disableModules(CassandraPersistenceModule, JdbcPersistenceModule, KafkaClientModule, KafkaBrokerModule)
-
       } else {
-
         initialBuilder
           .configure(BasicConfig)
           .disable(classOf[PersistenceModule], classOf[PubSubModule], classOf[JoinClusterModule])
@@ -487,5 +476,4 @@ object ServiceTest {
    */
   def bind[T](clazz: Class[T]): BindingKey[T] =
     play.inject.Bindings.bind(clazz)
-
 }

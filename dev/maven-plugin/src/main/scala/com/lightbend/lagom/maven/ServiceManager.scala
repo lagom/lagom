@@ -42,7 +42,6 @@ class ServiceManager @Inject() (
     facade: MavenFacade,
     scalaClassLoaderManager: ScalaClassLoaderManager
 ) {
-
   private var runningServices                         = Map.empty[MavenProject, DevServer]
   private var runningExternalProjects                 = Map.empty[Dependency, DevServer]
   private var portMap: Option[Map[ProjectName, Port]] = None
@@ -206,7 +205,6 @@ class ServiceManager @Inject() (
       case NonFatal(e) =>
         CompileFailure(new PlayException("Compile failure", "compilation failed", e))
     }
-
   }
 
   def stopService(project: MavenProject) = synchronized {
@@ -271,7 +269,6 @@ class ServiceManager @Inject() (
       project: MavenProject,
       additionalDependencies: Seq[Dependency]
   ): ProjectDependencies = {
-
     val dependencies = facade.resolveProject(project, additionalDependencies)
 
     val runtimeDependencies = dependencies.filter(d => RuntimeScopes(d.getScope))
@@ -290,7 +287,6 @@ class ServiceManager @Inject() (
   }
 
   private val RuntimeScopes = Set("runtime", "compile", "system")
-
 }
 
 object ServiceManager {

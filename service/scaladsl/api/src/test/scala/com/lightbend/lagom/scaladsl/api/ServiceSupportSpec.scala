@@ -13,9 +13,7 @@ import org.scalatest.OptionValues
 import org.scalatest.WordSpec
 
 class ServiceSupportSpec extends WordSpec with Matchers with OptionValues {
-
   "ServiceSupport macro" when {
-
     "using String path params support service" should {
       val holder = new StringMockService {
         override def foo(bar: String): ServiceCall[String, String] = null
@@ -79,7 +77,6 @@ class ServiceSupportSpec extends WordSpec with Matchers with OptionValues {
 }
 
 trait StringMockService extends Service {
-
   def foo(bar: String): ServiceCall[String, String]
 
   override def descriptor = named("mock").withCalls(
@@ -88,7 +85,6 @@ trait StringMockService extends Service {
 }
 
 trait DoubleMockService extends Service {
-
   def foo(bar: Double): ServiceCall[String, String]
 
   override def descriptor = named("mock").withCalls(
@@ -97,7 +93,6 @@ trait DoubleMockService extends Service {
 }
 
 trait VectorStringMockService extends Service {
-
   def foo(bar: Vector[String]): ServiceCall[String, String]
 
   override def descriptor = named("mock").withCalls(
@@ -106,7 +101,6 @@ trait VectorStringMockService extends Service {
 }
 
 trait ListDoubleMockService extends Service {
-
   def foo(bar: List[Double]): ServiceCall[String, String]
 
   override def descriptor = named("mock").withCalls(

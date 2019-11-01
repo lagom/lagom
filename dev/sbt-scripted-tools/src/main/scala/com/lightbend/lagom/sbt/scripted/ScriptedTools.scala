@@ -231,7 +231,6 @@ object ScriptedTools extends AutoPlugin {
         options.foldLeft(ValidateRequest())((validateRequest, applyOption) => applyOption(validateRequest))
       }
       .filter(_.uri.isDefined, _ => "No URI supplied")
-
   }
 
   private case class ValidateFile(
@@ -282,7 +281,5 @@ object ScriptedTools extends AutoPlugin {
         options.foldLeft(ValidateFile())((v, applyOption) => applyOption(v))
       }
       .filter(_.file.isDefined, _ => "No file supplied")
-
   }
-
 }

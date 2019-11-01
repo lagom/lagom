@@ -34,7 +34,6 @@ class ScaladslServiceRouter(
     extends ServiceRouter(httpConfiguration, parsers)
     with LagomServiceRouter
     with ScaladslServiceApiBridge {
-
   private class ScaladslServiceRoute(override val call: Call[Any, Any]) extends ServiceRoute {
     override val path: Path = ScaladslPath.fromCallId(call.callId)
     override val method: Method = call.callId match {
@@ -80,7 +79,6 @@ class ScaladslServiceRouter(
       requestSerializer: MessageSerializer[Request, ByteString],
       responseSerializer: MessageSerializer[Response, ByteString]
   ): EssentialAction = {
-
     serviceCall match {
       // If it's a Play service call, then rather than creating the action directly, we let it create the action, and
       // pass it a callback that allows it to convert a service call into an action.
@@ -117,5 +115,4 @@ class ScaladslServiceRouter(
         serviceCall.handleRequestHeader(_ => requestHeader).handleResponseHeader(_ -> _).invoke(request)
     }
   }
-
 }

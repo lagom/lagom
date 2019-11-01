@@ -9,7 +9,6 @@ package com.lightbend.lagom.javadsl.pubsub
  * that is retrieved via this registry.
  */
 trait PubSubRegistry {
-
   /**
    * Get a [[PubSubRef]] for a given topic.
    */

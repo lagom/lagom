@@ -17,7 +17,6 @@ import scala.util.Success
 
 private[lagom] abstract class AbstractLoggingServiceRegistryClient(implicit ec: ExecutionContext)
     extends ServiceRegistryClient {
-
   protected val log: Logger = LoggerFactory.getLogger(getClass)
 
   override def locateAll(serviceName: String, portName: Option[String]): Future[immutable.Seq[URI]] = {
@@ -42,5 +41,4 @@ private[lagom] abstract class AbstractLoggingServiceRegistryClient(implicit ec: 
   }
 
   protected def internalLocateAll(serviceName: String, portName: Option[String]): Future[immutable.Seq[URI]]
-
 }

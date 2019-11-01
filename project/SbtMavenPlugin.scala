@@ -24,7 +24,6 @@ import scala.xml.XML
  *   duplicated. This saves on duplication by defining all parameters in one place that can then be referenced.
  */
 object SbtMavenPlugin extends AutoPlugin {
-
   override def trigger  = noTrigger
   override def requires = JvmPlugin
 
@@ -164,7 +163,6 @@ object SbtMavenPlugin extends AutoPlugin {
       crossVersion: ModuleID => ModuleID,
       log: Logger
   ) = {
-
     // Add project meta data
     val withProjectInfo = Seq(
       "name"        -> moduleInfo.nameFormal,
@@ -218,7 +216,6 @@ object SbtMavenPlugin extends AutoPlugin {
             }
           }
         }
-
       }
     }
   }

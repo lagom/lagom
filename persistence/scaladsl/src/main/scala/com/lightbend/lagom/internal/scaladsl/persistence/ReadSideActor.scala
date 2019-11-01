@@ -27,7 +27,6 @@ import com.lightbend.lagom.scaladsl.persistence._
 import scala.concurrent.Future
 
 private[lagom] object ReadSideActor {
-
   def props[Event <: AggregateEvent[Event]](
       tagName: String,
       config: ReadSideConfig,
@@ -49,7 +48,6 @@ private[lagom] object ReadSideActor {
 
   case object Prepare
   case object Start
-
 }
 
 /**
@@ -65,7 +63,6 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 )(implicit mat: Materializer)
     extends Actor
     with ActorLogging {
-
   import ReadSideActor._
   import akka.pattern.pipe
   import context.dispatcher
@@ -108,7 +105,6 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
               val usersFlow         = handler.handle()
               eventStreamSource.via(usersFlow)
             }
-
         }
 
       val (killSwitch, streamDone) = backOffSource
@@ -127,7 +123,5 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
       // Crash if the globalPrepareTask or the event stream fail
       // This actor will be restarted by WorkerCoordinator
       throw cause
-
   }
-
 }

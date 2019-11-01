@@ -5,7 +5,6 @@
 package docs.scaladsl.gettingstarted
 
 package helloservice {
-
   //#helloservice
   import akka.Done
   import akka.NotUsed
@@ -13,7 +12,6 @@ package helloservice {
   import play.api.libs.json._
 
   trait HelloService extends Service {
-
     def hello(id: String): ServiceCall[NotUsed, String]
 
     def useGreeting(id: String): ServiceCall[GreetingMessage, Done]
@@ -49,7 +47,6 @@ package helloservice {
   import com.lightbend.lagom.scaladsl.api.transport.BadRequest
 
   class HelloServiceImpl(clusterSharding: ClusterSharding)(implicit ec: ExecutionContext) extends HelloService {
-
     implicit val timeout = Timeout(5.seconds)
 
     override def hello(id: String): ServiceCall[NotUsed, String] = ServiceCall { _ =>
@@ -71,7 +68,6 @@ package helloservice {
 
     private def entityRef(id: String): EntityRef[HelloWorldCommand] =
       clusterSharding.entityRefFor(HelloWorldState.typeKey, id)
-
   }
   //#helloserviceimpl
 
@@ -95,5 +91,4 @@ package helloservice {
     import akka.cluster.sharding.typed.scaladsl.EntityTypeKey
     val typeKey = EntityTypeKey[HelloWorldCommand]("HelloWorldAggregate")
   }
-
 }

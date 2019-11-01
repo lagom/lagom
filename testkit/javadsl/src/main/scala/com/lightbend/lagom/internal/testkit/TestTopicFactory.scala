@@ -30,7 +30,6 @@ import scala.collection.JavaConverters._
  * Topic factory that connects consumers directly to the implementing producers.
  */
 class TestTopicFactory @Inject() (resolvedServices: ResolvedServices, materializer: Materializer) extends TopicFactory {
-
   private val topics: Map[TopicId, Any] = resolvedServices.services.flatMap { service =>
     service.descriptor.topicCalls().asScala.map { topicCall =>
       topicCall.topicId -> service.service
@@ -57,7 +56,6 @@ class TestTopicFactory @Inject() (resolvedServices: ResolvedServices, materializ
       topicCall: TopicCall[Payload],
       topicProducer: TaggedOffsetTopicProducer[Payload, Event]
   ) extends Topic[Payload] {
-
     override def topicId = topicCall.topicId
 
     override def subscribe(): Subscriber[Payload] = new TestSubscriber[Payload](identity)
@@ -70,7 +68,6 @@ class TestTopicFactory @Inject() (resolvedServices: ResolvedServices, materializ
         new TestSubscriber(msg => Message.create(transform(msg)))
 
       override def atMostOnceSource(): Source[SubscriberPayload, _] = {
-
         val serializer   = topicCall.messageSerializer().serializerForRequest()
         val deserializer = topicCall.messageSerializer().deserializer(serializer.protocol())
 

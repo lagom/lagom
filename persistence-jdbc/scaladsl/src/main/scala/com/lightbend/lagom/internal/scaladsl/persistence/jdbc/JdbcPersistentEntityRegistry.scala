@@ -20,12 +20,10 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
  */
 private[lagom] final class JdbcPersistentEntityRegistry(system: ActorSystem, slickProvider: SlickProvider)
     extends AbstractPersistentEntityRegistry(system, JdbcReadJournal.Identifier) {
-
   private lazy val ensureTablesCreated = slickProvider.ensureTablesCreated()
 
   override def register(entityFactory: => PersistentEntity): Unit = {
     ensureTablesCreated
     super.register(entityFactory)
   }
-
 }

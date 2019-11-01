@@ -29,7 +29,6 @@ import scala.concurrent.Future
 import com.lightbend.lagom.internal.cluster.STMultiNodeSpec
 
 abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
-
   val node1 = role("node1")
   val node2 = role("node2")
   val node3 = role("node3")
@@ -95,7 +94,6 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
   nodeConfig(node3) {
     ConfigFactory.parseString("""akka.cluster.roles = ["read-side"]""")
   }
-
 }
 
 object AbstractClusteredPersistentEntitySpec {
@@ -116,14 +114,12 @@ object AbstractClusteredPersistentEntitySpec {
     )
     ActorSystem(getCallerName(classOf[MultiNodeSpec]), setup)
   }
-
 }
 
 abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPersistentEntityConfig)
     extends MultiNodeSpec(config, AbstractClusteredPersistentEntitySpec.createActorSystem(TestEntitySerializerRegistry))
     with STMultiNodeSpec
     with ImplicitSender {
-
   import config._
   // implicit EC needed for pipeTo
   import system.dispatcher
@@ -189,7 +185,6 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
   }
 
   "A PersistentEntity in a Cluster" must {
-
     "send commands to target entity" in within(75.seconds) {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
@@ -230,7 +225,6 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       // NOTE: in nodes node2 and node3 {{expectAppendCount}} is a noop
       expectAppendCount("entity-1", 3)
       expectAppendCount("entity-2", 6)
-
     }
 
     "run entities on specific node roles" in {

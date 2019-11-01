@@ -84,7 +84,6 @@ class NettyServiceGatewayFactory @Inject() (
  * Netty implementation of the service gateway.
  */
 class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig, registry: ActorRef) {
-
   private implicit val timeout = Timeout(5.seconds)
   private val log              = LoggerFactory.getLogger(classOf[NettyServiceGateway])
   private val eventLoop        = new NioEventLoopGroup
@@ -204,7 +203,6 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
                   HttpUtil.setContentLength(response, 0)
                   ctx.writeAndFlush(response)
               }
-
           } else {
             log.debug("Enqueuing pipelined request")
             // Put the request in the pipeline, it's a pipelined request. Putting it in the pipeline will ensure the
@@ -503,7 +501,6 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
   }
 
   private class NettyHeadersWrapper(nettyHeaders: HttpHeaders) extends Headers(null) {
-
     override def headers: Seq[(String, String)] = {
       // Lazily initialize the header sequence using the Netty headers. It's OK
       // if we do this operation concurrently because the operation is idempotent.
@@ -520,5 +517,4 @@ class NettyServiceGateway(coordinatedShutdown: CoordinatedShutdown, config: Serv
     }
     override def getAll(key: String): Seq[String] = nettyHeaders.getAll(key).asScala.toSeq
   }
-
 }

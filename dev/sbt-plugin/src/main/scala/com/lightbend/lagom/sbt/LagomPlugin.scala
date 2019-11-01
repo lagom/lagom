@@ -74,7 +74,6 @@ object LagomJava extends AutoPlugin {
     else
       Seq.empty
   }
-
 }
 
 /**

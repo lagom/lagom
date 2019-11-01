@@ -15,7 +15,6 @@ import com.lightbend.lagom.scaladsl.persistence.jdbc.JdbcSession
 //#imports
 
 trait JdbcReadSideQuery {
-
   trait BlogService extends Service {
     def getPostSummaries(): ServiceCall[NotUsed, immutable.IndexedSeq[PostSummary]]
 
@@ -40,6 +39,5 @@ trait JdbcReadSideQuery {
       }
     }
     //#service-impl
-
   }
 }

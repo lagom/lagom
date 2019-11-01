@@ -15,7 +15,6 @@ import org.eclipse.aether.artifact.Artifact
  */
 @Singleton
 class ScalaClassLoaderManager @Inject() (logger: MavenLoggerProxy) {
-
   /**
    * The list of Scala libraries. None of these libraries may have a dependency outside of this list, otherwise there
    * will be classloading issues.
@@ -78,5 +77,4 @@ class ScalaClassLoaderManager @Inject() (logger: MavenLoggerProxy) {
         classLoader
     }
   }
-
 }

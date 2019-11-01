@@ -60,7 +60,6 @@ class AnotherServiceImpl(helloService: HelloService) extends AnotherService {
         }
       )
     //#subscribe-to-topic-with-metadata
-
   }
 
   def skipMessages = {

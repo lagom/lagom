@@ -14,7 +14,6 @@ import play.api.db.HikariCPComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 
 class JdbcBlogApplicationLoader extends LagomApplicationLoader {
-
   override def load(context: LagomApplicationContext): LagomApplication =
     new BlogApplication(context) {
       override def serviceLocator: ServiceLocator = NoServiceLocator

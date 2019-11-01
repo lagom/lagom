@@ -41,7 +41,6 @@ final class CassandraSession(
     settings: CassandraSessionSettings,
     executionContext: ExecutionContext
 ) {
-
   @Inject
   def this(system: ActorSystem) =
     this(
@@ -222,5 +221,4 @@ final class CassandraSession(
   @varargs
   def selectOne(stmt: String, bindValues: AnyRef*): CompletionStage[Optional[Row]] =
     delegate.selectOne(stmt, bindValues: _*)
-
 }

@@ -12,7 +12,6 @@ import org.scalatest.Matchers
 import scala.concurrent.Future
 
 class AbstractLoggingServiceRegistryClientSpec extends AsyncWordSpec with Matchers {
-
   private val client = new AbstractLoggingServiceRegistryClient {
     override def internalLocateAll(serviceName: String, portName: Option[String]): Future[List[URI]] =
       serviceName match {
@@ -46,6 +45,5 @@ class AbstractLoggingServiceRegistryClientSpec extends AsyncWordSpec with Matche
         .locateAll("successful-service", None)
         .map(_ shouldEqual List(URI.create("http://localhost:8080")))
     }
-
   }
 }

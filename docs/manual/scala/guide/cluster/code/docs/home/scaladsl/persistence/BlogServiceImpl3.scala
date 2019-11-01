@@ -25,7 +25,6 @@ trait BlogServiceImpl3 {
   //#register-event-processor
   class BlogServiceImpl(persistentEntityRegistry: PersistentEntityRegistry, readSide: ReadSide, myDatabase: MyDatabase)
       extends BlogService {
-
     readSide.register[BlogEvent](new BlogEventProcessor(myDatabase))
     //#register-event-processor
 

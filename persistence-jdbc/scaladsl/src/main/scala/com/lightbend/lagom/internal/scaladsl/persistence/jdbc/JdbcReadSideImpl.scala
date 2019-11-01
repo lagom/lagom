@@ -30,7 +30,6 @@ import scala.reflect.ClassTag
 private[lagom] class JdbcReadSideImpl(slick: SlickProvider, offsetStore: SlickOffsetStore)(
     implicit val ec: ExecutionContext
 ) extends JdbcReadSide {
-
   private val log = LoggerFactory.getLogger(this.getClass)
 
   override def builder[Event <: AggregateEvent[Event]](readSideId: String): ReadSideHandlerBuilder[Event] =
@@ -71,7 +70,6 @@ private[lagom] class JdbcReadSideImpl(slick: SlickProvider, offsetStore: SlickOf
       prepareCallback: (Connection, AggregateEventTag[Event]) => Any,
       eventHandlers: Map[Class[_ <: Event], (Connection, EventStreamElement[_ <: Event]) => Any]
   ) extends ReadSideHandler[Event] {
-
     import slick.profile.api._
 
     @volatile
@@ -122,8 +120,6 @@ private[lagom] class JdbcReadSideImpl(slick: SlickProvider, offsetStore: SlickOf
             .map(_ => Done)
 
           slick.db.run(dbAction.transactionally)
-
         }
-
   }
 }

@@ -44,5 +44,4 @@ trait ReadSidePersistenceComponents extends WriteSidePersistenceComponents with 
       executionContext,
       materializer
     )
-
 }

@@ -25,7 +25,6 @@ import scala.util.control.NonFatal
  * Handles the serialization and deserialization of exceptions.
  */
 trait ExceptionSerializer {
-
   /**
    * Serialize the given exception to an exception message.
    *
@@ -62,7 +61,6 @@ trait ExceptionSerializer {
  * TransportException can also be deserialized by extending this class and overriding [[fromCodeAndMessage()]].
  */
 class DefaultExceptionSerializer(environment: Environment) extends ExceptionSerializer {
-
   override def serialize(exception: Throwable, accept: Seq[MessageProtocol]): RawExceptionMessage = {
     val (errorCode, message) = exception match {
       case te: TransportException =>
@@ -133,7 +131,6 @@ class DefaultExceptionSerializer(environment: Environment) extends ExceptionSeri
 }
 
 object DefaultExceptionSerializer {
-
   /**
    * Unresolved exception serializer, allows it to be injected later.
    */
@@ -159,7 +156,6 @@ object DefaultExceptionSerializer {
  * aware of this when producing exception messages.
  */
 sealed trait RawExceptionMessage {
-
   /**
    * The error code.
    *
@@ -192,7 +188,6 @@ sealed trait RawExceptionMessage {
 }
 
 object RawExceptionMessage {
-
   def apply(errorCode: TransportErrorCode, protocol: MessageProtocol, message: ByteString): RawExceptionMessage =
     RawExceptionMessageImpl(errorCode, protocol, message)
 

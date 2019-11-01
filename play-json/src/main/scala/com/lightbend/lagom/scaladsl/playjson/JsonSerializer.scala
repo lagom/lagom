@@ -10,7 +10,6 @@ import scala.collection.immutable.Seq
 import scala.reflect.ClassTag
 
 object JsonSerializer {
-
   /**
    * Creates a format that will serialize and deserialize a singleton to an empty js object
    */

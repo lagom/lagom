@@ -28,7 +28,6 @@ import scala.concurrent.ExecutionContext
  */
 @ApiMayChange
 class ProjectionRegistryModule extends Module {
-
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
     bind[ProjectionRegistry].toProvider[ProjectionRegistryProvider], // for internal use
     bind[Projections].to(classOf[ProjectionsImpl])                   // for end users
@@ -51,7 +50,6 @@ private[lagom] class ProjectionRegistryProvider @Inject() (actorSystem: ActorSys
 private class ProjectionsImpl @Inject() (registry: ProjectionRegistry)(
     implicit executionContext: ExecutionContext
 ) extends Projections {
-
   import FutureConverters._
 
   override def getStatus(): CompletionStage[State] =
@@ -68,5 +66,4 @@ private class ProjectionsImpl @Inject() (registry: ProjectionRegistry)(
 
   override def startWorker(projectionName: String, tagName: String): Unit =
     registry.startWorker(WorkerCoordinates(projectionName, tagName))
-
 }

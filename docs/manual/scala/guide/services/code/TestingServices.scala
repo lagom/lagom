@@ -5,7 +5,6 @@
 package docs.scaladsl.services
 
 package helloservicespec {
-
   import docs.scaladsl.services.helloservice.HelloService
   import docs.scaladsl.services.lagomapplication.HelloApplication
 
@@ -16,7 +15,6 @@ package helloservicespec {
   import org.scalatest.Matchers
 
   class HelloServiceSpec extends AsyncWordSpec with Matchers {
-
     "The HelloService" should {
       "say hello" in ServiceTest.withServer(ServiceTest.defaultSetup) { ctx =>
         new HelloApplication(ctx) with LocalServiceLocator
@@ -30,11 +28,9 @@ package helloservicespec {
     }
   }
   //#hello-service-spec
-
 }
 
 package helloservicespecshared {
-
   import docs.scaladsl.services.helloservice.HelloService
   import docs.scaladsl.services.lagomapplication.HelloApplication
 
@@ -46,7 +42,6 @@ package helloservicespecshared {
   import org.scalatest.BeforeAndAfterAll
 
   class HelloServiceSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll {
-
     lazy val server = ServiceTest.startServer(ServiceTest.defaultSetup) { ctx =>
       new HelloApplication(ctx) with LocalServiceLocator
     }
@@ -68,7 +63,6 @@ package helloservicespecshared {
 }
 
 package stubservices {
-
   import akka.NotUsed
   import com.lightbend.lagom.scaladsl.api.Service
   import com.lightbend.lagom.scaladsl.api.ServiceCall
@@ -92,11 +86,9 @@ package stubservices {
   }
 
   class StubServices {
-
     //#stub-services
     lazy val server = ServiceTest.startServer(ServiceTest.defaultSetup) { ctx =>
       new HelloApplication(ctx) with LocalServiceLocator {
-
         override lazy val greetingService = new GreetingService {
           override def greeting = ServiceCall { _ =>
             Future.successful("Hello")
@@ -109,13 +101,11 @@ package stubservices {
 }
 
 package enablecassandra {
-
   import docs.scaladsl.services.lagomapplication.HelloApplication
   import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
   import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 
   class HelloServiceSpec {
-
     //#enable-cassandra
     lazy val server = ServiceTest.startServer(
       ServiceTest.defaultSetup.withCassandra()
@@ -127,13 +117,11 @@ package enablecassandra {
 }
 
 package enablejdbc {
-
   import docs.scaladsl.services.lagomapplication.HelloApplication
   import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
   import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 
   class HelloServiceSpec {
-
     //#enable-jdbc
     lazy val server = ServiceTest.startServer(
       ServiceTest.defaultSetup.withJdbc()
@@ -145,13 +133,11 @@ package enablejdbc {
 }
 
 package enablecluster {
-
   import docs.scaladsl.services.lagomapplication.HelloApplication
   import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
   import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 
   class HelloServiceSpec {
-
     //#enable-cluster
     lazy val server = ServiceTest.startServer(
       ServiceTest.defaultSetup.withCluster()
@@ -163,7 +149,6 @@ package enablecluster {
 }
 
 package streamedservices {
-
   import akka.NotUsed
   import akka.stream.scaladsl.Source
   import akka.stream.testkit.scaladsl.TestSink
@@ -198,7 +183,6 @@ package streamedservices {
   }
 
   class EchoServiceSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll {
-
     lazy val server = ServiceTest.startServer(ServiceTest.defaultSetup) { ctx =>
       new LagomApplication(ctx) with LocalServiceLocator with AhcWSComponents {
         override lazy val lagomServer = serverFor[EchoService](new EchoServiceImpl)
@@ -230,5 +214,4 @@ package streamedservices {
     protected override def beforeAll() = server
     protected override def afterAll()  = server.stop()
   }
-
 }

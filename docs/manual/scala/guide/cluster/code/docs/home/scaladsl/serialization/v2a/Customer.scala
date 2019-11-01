@@ -25,7 +25,6 @@ object Customer {
 }
 
 class CustomerMigration extends JsonSerializerRegistry {
-
   override def serializers = Seq.empty
 
   // format: off

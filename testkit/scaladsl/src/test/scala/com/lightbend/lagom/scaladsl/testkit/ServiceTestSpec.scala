@@ -72,11 +72,9 @@ class ServiceTestSpec extends WordSpec with Matchers {
 }
 
 trait TestService extends Service {
-
   import Service._
 
   final override def descriptor: Descriptor = named("test")
-
 }
 
 class TestServiceImpl(persistentEntityRegistry: PersistentEntityRegistry) extends TestService
@@ -89,7 +87,6 @@ class TestApplication(context: LagomApplicationContext)
   override lazy val jsonSerializerRegistry: JsonSerializerRegistry = EmptyJsonSerializerRegistry
 
   override lazy val lagomServer: LagomServer = serverFor[TestService](new TestServiceImpl(persistentEntityRegistry))
-
 }
 
 class CassandraTestApplication(context: LagomApplicationContext)

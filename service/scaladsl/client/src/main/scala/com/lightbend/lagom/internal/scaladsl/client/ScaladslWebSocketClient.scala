@@ -21,7 +21,6 @@ private[lagom] class ScaladslWebSocketClient(
 )(implicit ec: ExecutionContext)
     extends WebSocketClient(environment, config, eventLoop, lifecycle)
     with ScaladslServiceApiBridge {
-
   // Constructor that manages its own event loop
   def this(environment: Environment, config: WebSocketClientConfig, applicationLifecycle: ApplicationLifecycle)(
       implicit ec: ExecutionContext

@@ -32,13 +32,11 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
     dispatcher: String
 )(implicit ec: ExecutionContext)
     extends ReadSideHandler[Event] {
-
   private val log = LoggerFactory.getLogger(this.getClass)
 
   protected def invoke(handler: Handler, event: EventStreamElement[Event]): Future[immutable.Seq[BoundStatement]]
 
   override def handle(): Flow[EventStreamElement[Event], Done, NotUsed] = {
-
     def executeStatements(statements: Seq[BoundStatement]): Future[Done] = {
       val batch = new BatchStatement
       // statements is never empty, there is at least the store offset statement
@@ -63,7 +61,6 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
           )
 
         invoke(handler, elem).flatMap(executeStatements)
-
       }
       .withAttributes(ActorAttributes.dispatcher(dispatcher))
   }
@@ -73,7 +70,6 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
  * Internal API
  */
 private[cassandra] object CassandraAutoReadSideHandler {
-
   type Handler[Event] = (EventStreamElement[_ <: Event]) => Future[immutable.Seq[BoundStatement]]
 
   def emptyHandler[Event]: Handler[Event] =
@@ -97,7 +93,6 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
       handlers,
       dispatcher
     ) {
-
   import CassandraAutoReadSideHandler.Handler
 
   @volatile

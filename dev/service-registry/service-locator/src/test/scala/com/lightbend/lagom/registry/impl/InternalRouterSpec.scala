@@ -18,11 +18,9 @@ import org.scalatest.FunSuite
 import org.scalatest.Matchers
 
 class InternalRouterSpec extends FlatSpec with Matchers {
-
   behavior.of("InternalRouter")
 
   it should "find the appropriate URI given the portName" in {
-
     val httpUri    = new URI("http://localhost.com/pathABC")
     val httpsUri   = new URI("https://localhost.com:123/pathABC")
     val simpleName = "my-service"
@@ -38,5 +36,4 @@ class InternalRouterSpec extends FlatSpec with Matchers {
     router.routeFor(Route("GET", "/pathABC", Some("http"))) should be(Found(httpUri))
     router.routeFor(Route("GET", "/pathABC", Some("https"))) should be(Found(httpsUri))
   }
-
 }

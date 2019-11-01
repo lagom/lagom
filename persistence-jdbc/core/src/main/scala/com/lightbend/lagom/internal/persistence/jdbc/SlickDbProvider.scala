@@ -91,11 +91,9 @@ private[lagom] trait AsyncExecutorConfig {
 }
 
 private[lagom] object AsyncExecutorConfig {
-
   def apply(config: Config): AsyncExecutorConfig = new AsyncExecutorConfigImpl(config)
 
   private final class AsyncExecutorConfigImpl(config: Config) extends AsyncExecutorConfig {
-
     val numThreads: Int         = config.getInt("numThreads")
     val minConnections: Int     = config.getInt("minConnections")
     val maxConnections: Int     = config.getInt("maxConnections")

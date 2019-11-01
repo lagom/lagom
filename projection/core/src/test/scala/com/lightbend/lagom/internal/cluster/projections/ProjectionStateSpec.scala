@@ -19,7 +19,6 @@ import org.scalatest.WordSpec
  *
  */
 class ProjectionStateSpec extends WordSpec with Matchers {
-
   private val prj001   = "prj001"
   private val prj002   = "prj002"
   val p1w1             = prj001 + "-workers-1"
@@ -56,7 +55,6 @@ class ProjectionStateSpec extends WordSpec with Matchers {
     state.projections.flatMap(_.workers).find(_.key == workerKey)
 
   "ProjectionStateSpec" should {
-
     "be build from a replicatedData" in {
       val state = State.fromReplicatedData(nameIndex, requestedStatus, observedStatus, Started, Stopped)
       state.projections.size should equal(2)
@@ -97,6 +95,5 @@ class ProjectionStateSpec extends WordSpec with Matchers {
         Worker(newWorkerName, newCoordinates.asKey, defaultRequested, defaultObserved)
       )
     }
-
   }
 }

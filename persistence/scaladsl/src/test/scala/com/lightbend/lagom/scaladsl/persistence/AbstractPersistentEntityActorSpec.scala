@@ -16,7 +16,6 @@ import scala.concurrent.duration._
 
 object AbstractPersistentEntityActorSpec {
   class TestPassivationParent extends Actor {
-
     val child = context.actorOf(
       PersistentEntityActor.props("test", Some("1"), () => new TestEntity(context.system), None, 1.second, "", "")
     )
@@ -160,7 +159,5 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
       watch(entity)
       expectTerminated(entity)
     }
-
   }
-
 }

@@ -25,7 +25,6 @@ import scala.util.control.NoStackTrace
  *
  */
 class ExceptionsSpec extends WordSpec with Matchers {
-
   val protocolTextPlain = MessageProtocol(Some("text/plain"), Some("utf-8"))
   val protocolJson      = MessageProtocol(Some("application/json"), Some("utf-8"))
   val protocolHtml      = MessageProtocol(Some("text/html"), Some("utf-8"))
@@ -45,7 +44,6 @@ class ExceptionsSpec extends WordSpec with Matchers {
   val envModes = Seq(Mode.Dev, Mode.Test, Mode.Prod)
 
   "Lagom-provided TransportExceptions" should {
-
     supportedTransportExceptions.foreach { transportException =>
       s"be buildable from code and message (${transportException.getClass.getName})" in {
         val reconstructed =
@@ -116,7 +114,6 @@ class CustomExceptionSerializer(environment: Environment) extends ExceptionSeria
     } else {
       rawMessage
     }
-
   }
 
   override def deserialize(rawMessage: RawExceptionMessage): Throwable = {

@@ -13,7 +13,6 @@ import akka.actor.ActorRef
 import scala.reflect.ClassTag
 
 object PersistentEntity {
-
   /**
    * Commands to a `PersistentEntity` must implement this interface
    * to define the reply type.
@@ -101,7 +100,6 @@ object PersistentEntity {
  * @tparam State the type of the state
  */
 abstract class PersistentEntity {
-
   type Command
   type Event
   type State
@@ -158,7 +156,6 @@ abstract class PersistentEntity {
       val eventHandler: EventHandler,
       val commandHandlers: Map[Class[_], CommandHandler]
   ) extends (State => Actions) {
-
     /**
      * Extends `State => Actions` so that it can be used directly in
      * [[PersistentEntity#behavior]] when there is only one set of actions
@@ -224,7 +221,6 @@ abstract class PersistentEntity {
         commandsInBoth.map(c => c -> commandHandlers(c).orElse(b.commandHandlers(c)))
       new Actions(eventHandler.orElse(b.eventHandler), newCommandHandlers)
     }
-
   }
 
   /**
@@ -234,7 +230,6 @@ abstract class PersistentEntity {
    * @tparam R the reply type of the command
    */
   abstract class ReadOnlyCommandContext[R] {
-
     /**
      * Send reply to a command. The type `R` must be the reply type defined by
      * the command.
@@ -261,7 +256,6 @@ abstract class PersistentEntity {
    * @tparam R the reply type of the command
    */
   abstract class CommandContext[R] extends ReadOnlyCommandContext[R] {
-
     /**
      * A command handler may return this `Persist` directive to define
      * that one event is to be persisted. External side effects can be
@@ -286,7 +280,6 @@ abstract class PersistentEntity {
      * that no events are to be persisted.
      */
     def done[B <: Event]: Persist = PersistNone
-
   }
 
   /**
@@ -310,5 +303,4 @@ abstract class PersistentEntity {
    * INTERNAL API
    */
   private[lagom] case object PersistNone extends Persist
-
 }

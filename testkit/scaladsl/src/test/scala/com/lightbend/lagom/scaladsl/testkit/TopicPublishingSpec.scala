@@ -26,7 +26,6 @@ abstract class AlphaApplication(context: LagomApplicationContext)
     with CassandraPersistenceComponents
     with TestTopicComponents
     with AhcWSComponents {
-
   override lazy val lagomServer = serverFor[AlphaService](new AlphaServiceImpl())
 
   override lazy val jsonSerializerRegistry = EmptyJsonSerializerRegistry
@@ -41,7 +40,6 @@ class AlphaServiceImpl extends AlphaService {
 }
 
 class TopicPublishingSpec extends AsyncWordSpec with Matchers {
-
   "The AlphaService" should {
     "publish events on alpha topic" in ServiceTest.withServer(ServiceTest.defaultSetup.withCluster()) { ctx =>
       new AlphaApplication(ctx) with LocalServiceLocator
@@ -56,8 +54,6 @@ class TopicPublishingSpec extends AsyncWordSpec with Matchers {
         .runWith(TestSink.probe[AlphaEvent])
         .request(1)
         .expectNext should ===(AlphaEvent(2))
-
     }
   }
-
 }

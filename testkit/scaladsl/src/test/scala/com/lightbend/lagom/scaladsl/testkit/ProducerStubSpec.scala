@@ -16,7 +16,6 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Matchers
 
 class ProducerStubSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll with Eventually {
-
   var producerStub: ProducerStub[AlphaEvent] = _
 
   private val stubbedApplication: LagomApplicationContext => DownstreamApplication = { ctx =>
@@ -47,10 +46,8 @@ class ProducerStubSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAl
       }
     }
   }
-
 }
 
 class AlphaServiceStub(stub: ProducerStub[AlphaEvent]) extends AlphaService {
   override def messages: Topic[AlphaEvent] = stub.topic
-
 }

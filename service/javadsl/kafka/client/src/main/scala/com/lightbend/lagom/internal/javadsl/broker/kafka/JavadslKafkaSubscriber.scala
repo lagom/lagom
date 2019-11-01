@@ -53,7 +53,6 @@ private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](
     transform: ConsumerRecord[String, Payload] => SubscriberPayload
 )(implicit mat: Materializer, ec: ExecutionContext)
     extends Subscriber[SubscriberPayload] {
-
   private val log = LoggerFactory.getLogger(classOf[JavadslKafkaSubscriber[_, _]])
 
   import JavadslKafkaSubscriber._
@@ -156,7 +155,6 @@ private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](
     serviceLocator.locateAll(name).toScala.map(_.asScala.toIndexedSeq)
 
   override def atLeastOnce(flow: Flow[SubscriberPayload, Done, _]): CompletionStage[Done] = {
-
     val streamCompleted = Promise[Done]
     val consumerProps =
       KafkaSubscriberActor.props(
@@ -189,7 +187,6 @@ private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](
 
     streamCompleted.future.toJava
   }
-
 }
 
 private[lagom] object JavadslKafkaSubscriber {
@@ -209,5 +206,4 @@ private[lagom] object JavadslKafkaSubscriber {
 
     def default(info: ServiceInfo): GroupId = GroupId(info.serviceName())
   }
-
 }

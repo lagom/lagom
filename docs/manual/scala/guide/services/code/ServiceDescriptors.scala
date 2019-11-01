@@ -5,7 +5,6 @@
 package docs.scaladsl.services
 
 package helloservice {
-
   //#hello-service
   import com.lightbend.lagom.scaladsl.api._
 
@@ -23,7 +22,6 @@ package helloservice {
 }
 
 package servicecall {
-
   import scala.concurrent.Future
 
   //#service-call
@@ -34,7 +32,6 @@ package servicecall {
 }
 
 package callidname {
-
   import com.lightbend.lagom.scaladsl.api._
 
   trait HelloService extends Service {
@@ -109,7 +106,6 @@ package callquerystringparameters {
 }
 
 package callrest {
-
   import akka.NotUsed
   import com.lightbend.lagom.scaladsl.api._
 
@@ -171,11 +167,9 @@ package hellostream {
     }
     //#hello-stream
   }
-
 }
 
 package jsonmessages {
-
   //#user-class
   case class User(
       id: Long,
@@ -190,5 +184,4 @@ package jsonmessages {
     implicit val format: Format[User] = Json.format[User]
   }
   //#user-format
-
 }

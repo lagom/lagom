@@ -36,7 +36,6 @@ import scala.concurrent.duration._
 @ApiMayChange
 @InternalApi
 private[lagom] class ProjectionRegistry(system: ActorSystem) {
-
   private val projectionRegistryRef: ActorRef = system.actorOf(ProjectionRegistryActor.props, "projection-registry")
   private lazy val clusterShardingSettings    = ClusterShardingSettings(system)
   private lazy val clusterDistribution        = ClusterDistribution(system)
@@ -54,7 +53,6 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
       projectionWorkerPropsFactory: WorkerCoordinates => Props,
       runInRole: Option[String] = None
   ): Unit = {
-
     projectionRegistryRef ! ProjectionRegistryActor.RegisterProjection(projectionName, shardNames)
 
     clusterShardingSettings.withRole(runInRole)
@@ -70,7 +68,6 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
       shardNames,
       ClusterDistributionSettings(system).copy(clusterShardingSettings = clusterShardingSettings)
     )
-
   }
 
   implicit val exCtx: ExecutionContext = system.dispatcher
@@ -96,5 +93,4 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
   private[lagom] def getState(): Future[State] = {
     (projectionRegistryRef ? GetState).mapTo[State]
   }
-
 }

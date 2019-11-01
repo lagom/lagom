@@ -22,7 +22,6 @@ import scala.compat.java8.FutureConverters.toJava
 private[lagom] class TopicStub[T](val topicId: Topic.TopicId, topicBuffer: ActorRef)(
     implicit materializer: Materializer
 ) extends Topic[T] {
-
   // TODO: use ServiceInfo's name as a default value.
   def subscribe = new SubscriberStub("default", topicBuffer, _.getPayload)
 
@@ -33,7 +32,6 @@ private[lagom] class TopicStub[T](val topicId: Topic.TopicId, topicBuffer: Actor
   )(implicit materializer: Materializer)
       extends InternalSubscriberStub[T, Message](groupId, topicBuffer)(materializer)
       with Subscriber[SubscriberPayload] {
-
     override def withGroupId(groupId: String): Subscriber[SubscriberPayload] =
       new SubscriberStub(groupId, topicBuffer, transform)
 

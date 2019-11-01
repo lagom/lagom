@@ -30,7 +30,6 @@ import scala.collection.immutable.Seq
  * javadsl version, but this is used to talk to it from Scala apps, and so they must be kept in sync.
  */
 trait ServiceRegistry extends Service {
-
   def register(name: String): ServiceCall[ServiceRegistryService, NotUsed]
   def unregister(name: String): ServiceCall[NotUsed, NotUsed]
   def lookup(name: String, portName: Option[String]): ServiceCall[NotUsed, URI]
@@ -52,9 +51,7 @@ trait ServiceRegistry extends Service {
 }
 
 object ServiceRegistry {
-
   implicit val uriMessageSerializer: MessageSerializer[URI, ByteString] = new StrictMessageSerializer[URI] {
-
     private val serializer = new NegotiatedSerializer[URI, ByteString] {
       override def serialize(message: URI): ByteString = ByteString.fromString(message.toString, "utf-8")
       override val protocol: MessageProtocol           = MessageProtocol.empty.withContentType("text/plain").withCharset("utf-8")

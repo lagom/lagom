@@ -42,13 +42,11 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
     dispatcher: String
 )(implicit ec: ExecutionContext)
     extends ReadSideHandler[Event] {
-
   private val log = LoggerFactory.getLogger(this.getClass)
 
   protected def invoke(handler: Handler, event: Event, offset: Offset): CompletionStage[JList[BoundStatement]]
 
   override def handle(): Flow[Pair[Event, Offset], Done, _] = {
-
     def executeStatements(statements: JList[BoundStatement]): Future[Done] = {
       if (statements.isEmpty) {
         Future.successful(Done.getInstance())
@@ -77,7 +75,6 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
           )
 
         invoke(handler, event, offset).toScala.flatMap(executeStatements)
-
       }
       .withAttributes(ActorAttributes.dispatcher(dispatcher))
       .asJava
@@ -88,7 +85,6 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
  * Internal API
  */
 private[cassandra] object CassandraAutoReadSideHandler {
-
   type Handler[Event] = (_ <: Event, Offset) => CompletionStage[JList[BoundStatement]]
 
   def emptyHandler[Event, E <: Event]: Handler[Event] =
@@ -112,7 +108,6 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
       handlers,
       dispatcher
     ) {
-
   import CassandraAutoReadSideHandler.Handler
 
   @volatile
@@ -154,7 +149,6 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
       OffsetAdapter.offsetToDslOffset(dao.loadedOffset)
     }).toJava
   }
-
 }
 
 /**
@@ -170,7 +164,6 @@ private[cassandra] final class LegacyCassandraReadSideHandler[Event <: Aggregate
       cassandraProcessor.defineEventHandlers(new cassandraProcessor.EventHandlersBuilder).handlers,
       dispatcher
     ) {
-
   protected override def invoke(
       handler: BiFunction[_ <: Event, UUID, CompletionStage[JList[BoundStatement]]],
       event: Event,

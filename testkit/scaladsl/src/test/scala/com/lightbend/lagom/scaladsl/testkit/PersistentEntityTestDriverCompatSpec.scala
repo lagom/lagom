@@ -13,7 +13,6 @@ import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceSp
 import scala.concurrent.duration._
 
 class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec(TestEntitySerializerRegistry) {
-
   "PersistentEntityActor and PersistentEntityTestDriver" must {
     "produce same events and state" in {
       val probe1 = TestProbe()
@@ -55,7 +54,5 @@ class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec(Test
 
       outcome.issues should be(Nil)
     }
-
   }
-
 }

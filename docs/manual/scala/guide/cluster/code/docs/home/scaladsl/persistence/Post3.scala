@@ -7,7 +7,6 @@ package docs.home.scaladsl.persistence
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
 
 final class Post3 extends PersistentEntity {
-
   override type Command = BlogCommand
   override type Event   = BlogEvent
   override type State   = BlogState

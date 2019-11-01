@@ -19,21 +19,18 @@ trait AdditionalRouter {
 }
 
 final case class ClassBased[R <: Router](classType: Class[R], prefix: Option[String]) extends AdditionalRouter {
-
   def this(classType: Class[R]) = this(classType, None)
 
   def withPrefix(path: String): ClassBased[R] = copy(prefix = AdditionalRouter.appendPrefix(prefix, path))
 }
 
 final case class InstanceBased(router: Router, prefix: Option[String]) extends AdditionalRouter {
-
   def this(classType: Router) = this(classType, None)
 
   def withPrefix(path: String): InstanceBased = copy(prefix = AdditionalRouter.appendPrefix(prefix, path))
 }
 
 object AdditionalRouter {
-
   /**
    * Simulate Play's withPrefix behavior by prepending new prefix to an existing path.
    */
@@ -46,7 +43,6 @@ object AdditionalRouter {
       injector: Injector,
       additionalRouters: util.List[AdditionalRouter]
   ): util.List[Router] = {
-
     // modifies the Router in case a prefix is defined
     // otherwise returns the router as is
     def applyPrefix(router: Router, prefix: Option[String]): Router =

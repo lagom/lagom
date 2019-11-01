@@ -20,7 +20,6 @@ import play.api.Mode
 import scala.concurrent.ExecutionContext
 
 private[lagom] class AkkaManagementModule extends Module {
-
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
     // The trigger must be eager because it's often not required by anyone as a dependency to
     // be injected and yet it must be started anyway
@@ -36,7 +35,6 @@ private[lagom] class AkkaManagementProvider @Inject() (
     environment: Environment,
     executionContext: ExecutionContext
 ) extends Provider[AkkaManagementTrigger] {
-
   override def get(): AkkaManagementTrigger = {
     val instance = new AkkaManagementTrigger(config, actorSystem, coordinatedShutdown)(executionContext)
     if (environment.mode == Mode.Prod) {
@@ -44,5 +42,4 @@ private[lagom] class AkkaManagementProvider @Inject() (
     }
     instance
   }
-
 }

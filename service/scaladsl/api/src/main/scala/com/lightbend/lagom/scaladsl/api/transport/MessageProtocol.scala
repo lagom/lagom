@@ -72,7 +72,6 @@ sealed trait MessageProtocol {
    * @return The message protocol as a content type header.
    */
   def toContentTypeHeader: Option[String] = contentType.map(ct => charset.fold(ct)(cs => s"$ct; charset=$cs"))
-
 }
 
 object MessageProtocol {

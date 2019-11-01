@@ -123,7 +123,6 @@ private[lagom] class ScaladslKafkaSubscriber[Payload, SubscriberPayload](
           .single(())
           .mapAsync(1)(_ => serviceLocator.locateAll(name))
           .flatMapConcat {
-
             case Nil =>
               throw new NoKafkaBrokersException(name)
 
@@ -144,11 +143,9 @@ private[lagom] class ScaladslKafkaSubscriber[Payload, SubscriberPayload](
           .atMostOnceSource(consumerSettings, subscription)
           .map(transform)
     }
-
   }
 
   override def atLeastOnce(flow: Flow[SubscriberPayload, Done, _]): Future[Done] = {
-
     val streamCompleted = Promise[Done]
     val consumerProps =
       KafkaSubscriberActor.props[Payload, SubscriberPayload](
@@ -181,7 +178,6 @@ private[lagom] class ScaladslKafkaSubscriber[Payload, SubscriberPayload](
 
     streamCompleted.future
   }
-
 }
 
 private[lagom] object ScaladslKafkaSubscriber {
@@ -201,5 +197,4 @@ private[lagom] object ScaladslKafkaSubscriber {
 
     def default(info: ServiceInfo): GroupId = GroupId(info.serviceName)
   }
-
 }

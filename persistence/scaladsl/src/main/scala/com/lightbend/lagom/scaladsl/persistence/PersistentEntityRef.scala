@@ -23,7 +23,6 @@ final class PersistentEntityRef[Command](
     system: ActorSystem,
     askTimeout: FiniteDuration
 ) extends NoSerializationVerificationNeeded {
-
   private implicit val timeout = Timeout(askTimeout)
 
   /**

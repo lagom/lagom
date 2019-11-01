@@ -32,7 +32,6 @@ private[lagom] object ProjectionMessageSerializer {
 private[lagom] class ProjectionMessageSerializer(val system: ExtendedActorSystem)
     extends SerializerWithStringManifest
     with BaseSerializer {
-
   import ProjectionMessageSerializer._
 
   private val fromBinaryMap = collection.immutable.HashMap[String, Array[Byte] => AnyRef](
@@ -160,5 +159,4 @@ private[lagom] class ProjectionMessageSerializer(val system: ExtendedActorSystem
   private def workerCoordinatesFromProto(workerCoordinates: pm.WorkerCoordinates): WorkerCoordinates = {
     WorkerCoordinates(workerCoordinates.getProjectionName, workerCoordinates.getTagName)
   }
-
 }

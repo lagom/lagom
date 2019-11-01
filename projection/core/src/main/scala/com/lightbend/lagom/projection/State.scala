@@ -106,7 +106,6 @@ object Projection {
  */
 @ApiMayChange
 final class State(val projections: Seq[Projection]) extends ProjectionSerializable {
-
   /** Java API  */
   def getProjections: java.util.List[Projection] = projections.asJava
 
@@ -122,7 +121,6 @@ final class State(val projections: Seq[Projection]) extends ProjectionSerializab
 }
 
 object State {
-
   @InternalApi
   private[lagom] def fromReplicatedData(
       nameIndex: Map[ProjectionName, Set[WorkerCoordinates]],
@@ -131,7 +129,6 @@ object State {
       defaultRequested: Status,
       defaultObserved: Status
   ): State = {
-
     val projections = nameIndex.map {
       case (projectionName, coordinatesSet) =>
         val workersSet = coordinatesSet.map { coordinates =>
@@ -146,5 +143,4 @@ object State {
     }.toSeq
     new State(projections)
   }
-
 }

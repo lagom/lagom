@@ -36,7 +36,6 @@ object Name {
 }
 
 object TestRegistry1 extends JsonSerializerRegistry {
-
   implicit val innerFormat = Json.format[Inner]
 
   override def serializers: Seq[JsonSerializer[_]] =
@@ -44,7 +43,6 @@ object TestRegistry1 extends JsonSerializerRegistry {
       JsonSerializer[Event1],
       JsonSerializer(Json.format[Event2])
     )
-
 }
 
 object TestRegistry2 extends JsonSerializerRegistry {
@@ -115,7 +113,6 @@ object TestRegistry3 extends JsonSerializerRegistry {
 }
 
 object TestRegistryWithCompression extends JsonSerializerRegistry {
-
   implicit val innerFormat = Json.format[Inner]
 
   override def serializers: Seq[JsonSerializer[_]] =
@@ -123,7 +120,6 @@ object TestRegistryWithCompression extends JsonSerializerRegistry {
       JsonSerializer.compressed[Event1],
       JsonSerializer.compressed(Json.format[Event2])
     )
-
 }
 
 object TestRegistryWithJson extends JsonSerializerRegistry {
@@ -135,12 +131,10 @@ object TestRegistryWithJson extends JsonSerializerRegistry {
 case class Box(surprise: Option[String])
 
 class PlayJsonSerializerSpec extends WordSpec with Matchers {
-
   // this is a magic number copied from src/main/reference.conf.
   val COMPRESSION_THRESHOLD = 32 * 1024
 
   "The PlayJsonSerializer" should {
-
     "pick up serializers from configured registry" in withActorSystem(TestRegistry1) { system =>
       val serializeExt = SerializationExtension(system)
       List(Event1("test", 1), Event2("test2", Inner(on = true))).foreach { event =>
@@ -169,7 +163,6 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
       val deserialized = serializer.fromBinary(bytes, manifest)
       deserialized should be(migratedEvent)
-
     }
 
     "format manifest of migrated type to include the version defined in migration registry" in withActorSystem(
@@ -183,7 +176,6 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       val manifest = serializer.manifest(migratedEvent)
 
       manifest shouldEqual expectedVersionedManifest(classOf[MigratedEvent], TestRegistry3.currentMigrationVersion)
-
     }
 
     "throw runtime exception when deserialization target type version is ahead of that defined in migration registry" in withActorSystem(
@@ -200,7 +192,6 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       assertThrows[IllegalStateException] {
         serializer.fromBinary(Array[Byte](), illegalManifest)
       }
-
     }
 
     "apply sequential migrations using json-transformations" in withActorSystem(TestRegistry2) { system =>
@@ -223,7 +214,6 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       val manifest                             = expectedVersionedManifest(classOf[MigratedEvent], oldVersionBeforeThanCurrentMigration)
       val deserialized                         = serializer.fromBinary(oldJsonBytes, manifest)
       deserialized should be(expectedEvent)
-
     }
 
     "apply migrations written imperatively" in withActorSystem(TestRegistry3) { system =>
@@ -246,7 +236,6 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       val manifest                             = expectedVersionedManifest(classOf[MigratedEvent], oldVersionBeforeThanCurrentMigration)
       val deserialized                         = serializer.fromBinary(oldJsonBytes, manifest)
       deserialized should be(expectedEvent)
-
     }
 
     "apply rename migration" in withActorSystem(TestRegistry2) { system =>
@@ -259,7 +248,6 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       val deserialized = serializer.fromBinary(bytes, "event1.old.ClassName")
 
       deserialized should be(event)
-
     }
 
     "apply rename migration and then use new name to apply migration transformations" in withActorSystem(TestRegistry2) {
@@ -323,11 +311,9 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
     def expectedVersionedManifest[T](clazz: Class[T], migrationVersion: Int) = {
       s"${clazz.getName}#$migrationVersion"
     }
-
   }
 
   "The provided serializers" should {
-
     object Singleton
 
     "serialize and deserialize singletons" in {
@@ -349,7 +335,6 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       val res = serializer.fromBinary(bytes, manifest)
       assert(res == event)
     }
-
   }
 
   private var counter = 0
@@ -363,5 +348,4 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
       if (system ne null) TestKit.shutdownActorSystem(actorSystem = system, verifySystemShutdown = true)
     }
   }
-
 }

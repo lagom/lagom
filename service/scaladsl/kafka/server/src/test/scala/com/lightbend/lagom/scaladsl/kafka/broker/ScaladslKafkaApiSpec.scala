@@ -56,7 +56,6 @@ class ScaladslKafkaApiSpec
     with BeforeAndAfterAll
     with ScalaFutures
     with OptionValues {
-
   private val log = LoggerFactory.getLogger(getClass)
   private val miniLogger = new MiniLogger {
     def debug(message: => String): Unit = log.debug(message)
@@ -135,7 +134,6 @@ class ScaladslKafkaApiSpec
   }
 
   "The Kafka message broker api" should {
-
     import scala.language.reflectiveCalls
     val testService = application.testService
 
@@ -347,13 +345,10 @@ class ScaladslKafkaApiSpec
       messages(2).payload shouldBe "A3"
       messages(2).get(KafkaMetadataKeys.Offset).value shouldBe (offset + 2)
     }
-
   }
-
 }
 
 object ScaladslKafkaApiSpec {
-
   private val test1EventJournal = new EventJournal[String]
   private val test2EventJournal = new EventJournal[String]
   private val test3EventJournal = new EventJournal[String]
@@ -448,5 +443,4 @@ object ScaladslKafkaApiSpec {
       }
     }
   }
-
 }

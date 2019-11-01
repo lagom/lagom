@@ -24,7 +24,5 @@ private[lagom] class JoinCluster @Inject() (
     environment: Environment,
     akkaManagementTrigger: AkkaManagementTrigger
 ) {
-
   JoinClusterImpl.join(system, environment, akkaManagementTrigger)
-
 }

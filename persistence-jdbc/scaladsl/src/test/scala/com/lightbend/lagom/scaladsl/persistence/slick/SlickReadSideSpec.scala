@@ -12,7 +12,6 @@ import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
 
 class SlickReadSideSpec extends SlickPersistenceSpec(TestEntitySerializerRegistry) with AbstractReadSideSpec {
-
   import system.dispatcher
 
   protected override lazy val persistentEntityRegistry = new JdbcPersistentEntityRegistry(system, slick)

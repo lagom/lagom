@@ -14,7 +14,6 @@ import org.scalatest.WordSpec
 import scala.compat.java8.OptionConverters._
 
 class ConfigurationServiceLocatorSpec extends WordSpec with Matchers {
-
   val serviceLocator = new ConfigurationServiceLocator(
     ConfigFactory.parseString(
       """
@@ -38,5 +37,4 @@ class ConfigurationServiceLocatorSpec extends WordSpec with Matchers {
       locate("none") shouldBe None
     }
   }
-
 }

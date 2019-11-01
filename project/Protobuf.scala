@@ -188,5 +188,4 @@ object Protobuf {
       }
     }
   }
-
 }

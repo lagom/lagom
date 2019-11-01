@@ -37,7 +37,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAfterAll {
-
   implicit val actorSystem = ActorSystem()
   import actorSystem.dispatcher
   implicit val mat        = ActorMaterializer()
@@ -91,7 +90,6 @@ class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAf
   def gatewayWsUri = "ws://localhost:" + gateway.address.getPort
 
   "The Akka HTTP service gateway" should {
-
     "serve simple requests" in {
       val answer = Await.result(
         for {
@@ -143,7 +141,6 @@ class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAf
       headers should contain(s"X-Forwarded-Host: localhost")
       //      answer should contain(s"X-Forwarded-Host: localhost:$port")
     }
-
   }
 
   protected override def afterAll(): Unit = {

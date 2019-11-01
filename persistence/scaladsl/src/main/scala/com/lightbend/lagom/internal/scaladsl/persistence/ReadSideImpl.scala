@@ -25,14 +25,12 @@ private[lagom] class ReadSideImpl(
     name: Option[String]
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ReadSide {
-
   override def register[Event <: AggregateEvent[Event]](processorFactory: => ReadSideProcessor[Event]): Unit =
     registerFactory(() => processorFactory)
 
   private[lagom] def registerFactory[Event <: AggregateEvent[Event]](
       processorFactory: () => ReadSideProcessor[Event]
   ) = {
-
     val readSideProcessor = processorFactory()
     val readSideName      = name.fold("")(_ + "-") + readSideProcessor.readSideName
     val tags              = readSideProcessor.aggregateTags
@@ -75,6 +73,5 @@ private[lagom] class ReadSideImpl(
       readSidePropsFactory,
       config.role
     )
-
   }
 }

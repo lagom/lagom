@@ -25,7 +25,6 @@ import scala.collection.JavaConverters._
  * Start a service.
  */
 class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession) extends AbstractMojo {
-
   @BeanProperty
   var lagomService: Boolean = _
 
@@ -73,7 +72,6 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
   var watchDirs: JList[String] = Collections.emptyList()
 
   override def execute(): Unit = {
-
     if (servicePort != -1) {
       // this property is also marked as deprecated in
       // the plugin.xml descriptor, but somehow mvn is not printing anything. Therefore, we add a warning ourselves.
@@ -154,7 +152,6 @@ class StartMojo @Inject() (serviceManager: ServiceManager, session: MavenSession
  * Stop a service.
  */
 class StopMojo @Inject() (serviceManager: ServiceManager, session: MavenSession) extends AbstractMojo {
-
   @BeanProperty
   var lagomService: Boolean = _
 
@@ -173,7 +170,6 @@ class StopMojo @Inject() (serviceManager: ServiceManager, session: MavenSession)
 }
 
 class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: MavenSession) extends AbstractMojo {
-
   @BeanProperty
   var externalProjects: JList[ExternalProject] = Collections.emptyList()
 
@@ -202,7 +198,6 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
   var cassandraPort: Int = _
 
   override def execute(): Unit = {
-
     val serviceLocatorUrl = (serviceLocatorEnabled, this.serviceLocatorUrl) match {
       case (false, _)         => None
       case (true, null)       => Some(s"http://localhost:$serviceLocatorPort")
@@ -263,11 +258,9 @@ class StartExternalProjects @Inject() (serviceManager: ServiceManager, session: 
       )
     }
   }
-
 }
 
 class StopExternalProjects @Inject() (serviceManager: ServiceManager, session: MavenSession) extends AbstractMojo {
-
   @BeanProperty
   var externalProjects: JList[ExternalProject] = Collections.emptyList()
 
@@ -306,11 +299,9 @@ class ExternalProject {
  */
 class StartAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession)
     extends AbstractMojo {
-
   private val consoleHelper: ConsoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
 
   override def execute(): Unit = {
-
     val services = facade.locateServices
 
     executeGoal("startKafka")
@@ -332,7 +323,6 @@ class StartAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, ses
  * Stops all services.
  */
 class StopAllMojo @Inject() (facade: MavenFacade, session: MavenSession) extends AbstractMojo {
-
   @BeanProperty
   var externalProjects: JList[Dependency] = Collections.emptyList()
 
@@ -386,12 +376,10 @@ class RunMojo @Inject() (mavenFacade: MavenFacade, logger: MavenLoggerProxy, ses
  * Run a service, blocking until the user hits enter before stopping it again.
  */
 class RunAllMojo @Inject() (facade: MavenFacade, logger: MavenLoggerProxy, session: MavenSession) extends AbstractMojo {
-
   // This Mojo shares a lot of code (duplicate) with RunMojo
   val consoleHelper = new ConsoleHelper(new Colors("lagom.noformat"))
 
   override def execute(): Unit = {
-
     val services = facade.locateServices
 
     executeGoal("startAll")

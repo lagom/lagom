@@ -14,7 +14,6 @@ import play.api.libs.json._
 import scala.collection.immutable.Seq
 
 class MessageSerializerSpec extends WordSpec with Matchers {
-
   case class Dummy(prop: Option[String])
 
   "ByteString-to-PlayJson (via JsValueMessageSerializer)" should {
