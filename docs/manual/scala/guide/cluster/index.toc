@@ -1,4 +1,4 @@
-DomainModelling:Domain Modelling with Akka Persistence Typed;next=MigratingToAkkaPersistenceTyped,ChoosingADatabase,ReadSide
+UsingAkkaPersistenceTyped:Domain Modelling with Akka Persistence Typed;next=MigratingToAkkaPersistenceTyped,ChoosingADatabase,ReadSide
 MigratingToAkkaPersistenceTyped: Migrating to Akka Persistence Typed
 PersistentEntity:Persistent Entity (classic);next=ChoosingADatabase
 ChoosingADatabase:Choosing a Database;next=PersistentEntityCassandra,PersistentEntityRDBMS

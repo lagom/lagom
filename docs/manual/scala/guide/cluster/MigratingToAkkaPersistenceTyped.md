@@ -19,7 +19,7 @@ So, instead of using a build and adding multiple command and event handlers, a s
 
 @[akka-persistence-command-handler](../../../../../dev/sbt-plugin/src/sbt-test/sbt-plugin/akka-persistence-typed-migration-scala/shopping-cart-akka-persistence-typed/src/main/scala/com/example/shoppingcart/impl/ShoppingCartEntity.scala)
 
-This migration guide will not go into more details related to writing command and event handlers. Refer to the [Akka Persistence Typed docs](https://doc.akka.io/docs/akka/2.6/typed/index-persistence.html) or the section on [[domain modelling|DomainModelling]] for more information.
+This migration guide will not go into more details related to writing command and event handlers. Refer to the [Akka Persistence Typed docs](https://doc.akka.io/docs/akka/2.6/typed/index-persistence.html) or the section on [[domain modelling with Akka Persistence Typed|UsingAkkaPersistenceTyped]] for more information.
 
 ### Commands
 
