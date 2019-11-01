@@ -36,7 +36,6 @@ import play.api.db.DBModule
 import play.api.db.HikariCPModule
 
 trait ServiceSupport extends WordSpecLike with Matchers {
-
   def withServer[T](
       applicationBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder()
   )(block: Application => T): T = {
@@ -115,5 +114,4 @@ trait ServiceSupport extends WordSpecLike with Matchers {
         function(header, request).map(r => akka.japi.Pair(r._1, r._2)).toJava
     }
   }
-
 }

@@ -19,7 +19,6 @@ import sbt.File
 import sbt.ScopeFilter.ProjectFilter
 
 object Scaladoc extends AutoPlugin {
-
   object CliOptions {
     val scaladocAutoAPI = CliOption("lagom.scaladoc.autoapi", true)
   }
@@ -41,14 +40,12 @@ object Scaladoc extends AutoPlugin {
     val opts      = List("-implicits", "-doc-source-url", urlString, "-sourcepath", base.getAbsolutePath)
     opts
   }
-
 }
 
 /**
  * Unidoc settings for root project. Adds unidoc command.
  */
 object UnidocRoot extends AutoPlugin {
-
   override def trigger = noTrigger
 
   override def requires = ScalaUnidocPlugin && JavaUnidocPlugin
@@ -202,7 +199,6 @@ object UnidocRoot extends AutoPlugin {
  * Unidoc settings for every multi-project. Adds genjavadoc specific settings.
  */
 object Unidoc extends AutoPlugin {
-
   lazy val GenjavadocCompilerPlugin = config("genjavadocplugin") hide
 
   override def requires                                  = plugins.JvmPlugin
@@ -233,5 +229,4 @@ object Unidoc extends AutoPlugin {
     },
     dependencyClasspath in Genjavadoc := (dependencyClasspath in Compile).value
   )
-
 }

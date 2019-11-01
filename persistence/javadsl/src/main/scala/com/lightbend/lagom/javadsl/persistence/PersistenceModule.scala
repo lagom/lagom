@@ -16,11 +16,9 @@ import play.api.inject.Module
  * Guice module for the Persistence API.
  */
 class PersistenceModule extends Module {
-
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
     bind[ReadSideImpl].toSelf,
     bind[ReadSide].to(bind[ReadSideImpl]),
     bind[ReadSideConfig].toProvider[ReadSideConfigProvider]
   )
-
 }

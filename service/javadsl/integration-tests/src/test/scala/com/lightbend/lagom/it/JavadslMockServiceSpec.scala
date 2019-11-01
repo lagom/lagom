@@ -30,7 +30,6 @@ import java.util.concurrent.ExecutionException
 import akka.util.ByteString
 
 class JavadslMockServiceSpec extends ServiceSupport {
-
   def withMockServiceClient(
       block: Application => MockService => Unit
   )(implicit httpBackend: HttpBackend): Unit =
@@ -226,8 +225,6 @@ class JavadslMockServiceSpec extends ServiceSupport {
         }
         MockServiceImpl.invoked.get() should ===(false)
       }
-
     }
   }
-
 }

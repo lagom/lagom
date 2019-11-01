@@ -16,7 +16,6 @@ abstract class CallResolver(
     messageSerializers: Map[Type, MessageSerializer[_, _]],
     serializerFactory: SerializerFactory
 ) extends SerializerFactory {
-
   def resolveMessageSerializer[T, W](
       messageSerializer: MessageSerializer[T, W],
       typeInfo: Type,
@@ -97,7 +96,6 @@ class ServiceCallResolver(
     messageSerializers: Map[Type, MessageSerializer[_, _]],
     serializerFactory: SerializerFactory
 ) extends CallResolver(messageSerializers, serializerFactory) {
-
   def resolvePathParamSerializer[Param](pathParamSerializer: PathParamSerializer[Param], typeInfo: Type) =
     pathParamSerializer match {
       case unresolved: UnresolvedPathParamSerializer[Param] => unresolved.resolve(this, typeInfo)

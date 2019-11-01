@@ -34,7 +34,6 @@ class ScaladslRegisterTopicProducers(
     serviceLocator: ServiceLocator,
     projectionRegistryImpl: ProjectionRegistry
 )(implicit ec: ExecutionContext, mat: Materializer) {
-
   private val log         = LoggerFactory.getLogger(classOf[ScaladslRegisterTopicProducers])
   private val kafkaConfig = KafkaConfig(actorSystem.settings.config)
 
@@ -105,5 +104,4 @@ class ScaladslRegisterTopicProducers(
         }
     }
   }
-
 }

@@ -41,7 +41,6 @@ class AbstractPersistentEntityRegistry(
     injector: Injector,
     queryPluginId: String,
 ) extends PersistentEntityRegistry {
-
   protected val name: Optional[String]   = Optional.empty()
   protected val journalPluginId: String  = ""
   protected val snapshotPluginId: String = ""
@@ -87,7 +86,6 @@ class AbstractPersistentEntityRegistry(
   private def prependName(entityTypeName: String) = name.asScala.fold("")(_ + "-") + entityTypeName
 
   override def register[C, E, S](entityClass: Class[_ <: PersistentEntity[C, E, S]]): Unit = {
-
     val entityFactory: () => PersistentEntity[C, E, S] =
       () => injector.instanceOf(entityClass)
 
@@ -175,5 +173,4 @@ class AbstractPersistentEntityRegistry(
    *         retrieve only unseen events
    */
   protected def mapStartingOffset(storedOffset: Offset): AkkaOffset = OffsetAdapter.dslOffsetToOffset(storedOffset)
-
 }

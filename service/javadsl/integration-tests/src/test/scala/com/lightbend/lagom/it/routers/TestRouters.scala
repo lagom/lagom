@@ -35,7 +35,6 @@ object PongRouter {
  * A Router to be wired by Guice that always respond with 'hello'
  */
 class HelloRouter @Inject() (echo: Greeter) extends Router {
-
   val underlying: play.api.routing.Router = FixedResponseRouter(echo.say())
 
   override def routes: Routes = underlying.routes
@@ -64,7 +63,6 @@ class Greeter {
  * @return
  */
 object FixedResponseRouter {
-
   def apply(msg: String) =
     new SimpleRouterImpl({
       case _ =>

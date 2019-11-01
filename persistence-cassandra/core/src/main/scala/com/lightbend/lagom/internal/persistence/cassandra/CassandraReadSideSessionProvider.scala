@@ -21,13 +21,11 @@ import scala.concurrent.Future
  * Internal API
  */
 private[lagom] object CassandraReadSideSessionProvider {
-
   def apply(
       system: ActorSystem,
       settings: CassandraSessionSettings,
       executionContext: ExecutionContext
   ): AkkaScaladslCassandraSession = {
-
     import akka.persistence.cassandra.ListenableFutureConverter
     import akka.util.Helpers.Requiring
 

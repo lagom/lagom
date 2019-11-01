@@ -68,7 +68,6 @@ private[lagom] object TopicProducerActor {
     )
 
   case object Start
-
 }
 
 /**
@@ -89,7 +88,6 @@ private[lagom] class TopicProducerActor[Message](
 )(implicit mat: Materializer, ec: ExecutionContext)
     extends Actor
     with ActorLogging {
-
   /** Switch used to terminate the on-going stream when this actor is stopped.*/
   private var shutdown: Option[KillSwitch] = None
 

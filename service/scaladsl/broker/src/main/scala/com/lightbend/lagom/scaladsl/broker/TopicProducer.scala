@@ -21,7 +21,6 @@ import scala.collection.immutable
  * automatically have these streams published while the service is running, sharded across the services nodes.
  */
 object TopicProducer {
-
   /**
    * Publish a single stream.
    *
@@ -73,5 +72,4 @@ object TopicProducer {
       eventStream: (AggregateEventTag[Event], Offset) => Source[(Message, Offset), Any]
   ): Topic[Message] =
     new TaggedOffsetTopicProducer[Message, Event](shards.allTags.toList, eventStream)
-
 }

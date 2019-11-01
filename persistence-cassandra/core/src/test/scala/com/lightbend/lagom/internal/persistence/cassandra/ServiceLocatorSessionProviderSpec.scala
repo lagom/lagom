@@ -21,7 +21,6 @@ import scala.concurrent.Await
 import scala.concurrent.Future
 
 class ServiceLocatorSessionProviderSpec extends WordSpec with MustMatchers with BeforeAndAfterAll {
-
   val system         = ActorSystem("test")
   val config: Config = ConfigFactory.load()
   val uri            = new URI("http://localhost:8080")
@@ -44,7 +43,6 @@ class ServiceLocatorSessionProviderSpec extends WordSpec with MustMatchers with 
   ServiceLocatorHolder(system).setServiceLocator(locator)
 
   "ServiceLocatorSessionProvider" should {
-
     "Get the address when the contact points exist" in {
       val future = provider.lookupContactPoints("existing")
 

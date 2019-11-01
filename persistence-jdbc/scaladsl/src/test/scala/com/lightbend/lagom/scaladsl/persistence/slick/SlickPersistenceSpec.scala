@@ -29,7 +29,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 abstract class SlickPersistenceSpec private (_system: ActorSystem) extends ActorSystemSpec(_system) {
-
   def this(testName: String, config: Config, registry: JsonSerializerRegistry) =
     this(
       ActorSystem(

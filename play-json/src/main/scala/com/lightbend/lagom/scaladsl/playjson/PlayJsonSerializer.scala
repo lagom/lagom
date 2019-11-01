@@ -26,7 +26,6 @@ import scala.annotation.tailrec
 private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, registry: JsonSerializerRegistry)
     extends SerializerWithStringManifest
     with BaseSerializer {
-
   import Compression._
 
   private val charset        = StandardCharsets.UTF_8
@@ -171,7 +170,6 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
     val manifestClassName = if (i == -1) manifest else manifest.substring(0, i)
     (fromVersion, manifestClassName)
   }
-
 }
 
 // This code is copied from JacksonJsonSerializer

@@ -22,7 +22,6 @@ import com.lightbend.lagom.scaladsl.playjson.JsonSerializer
 import scala.concurrent.duration._
 
 object AbstractEmbeddedPersistentActorSpec {
-
   final case class Cmd(data: String)
   final case class Evt(data: String)
   case object Get
@@ -52,7 +51,6 @@ object AbstractEmbeddedPersistentActorSpec {
   }
 
   object EmbeddedPersistentActorSerializers extends JsonSerializerRegistry {
-
     override def serializers: immutable.Seq[JsonSerializer[_]] = {
       import play.api.libs.json._
       import JsonSerializer.emptySingletonFormat
@@ -65,7 +63,6 @@ object AbstractEmbeddedPersistentActorSpec {
       )
     }
   }
-
 }
 
 trait AbstractEmbeddedPersistentActorSpec { spec: ActorSystemSpec =>
@@ -89,7 +86,5 @@ trait AbstractEmbeddedPersistentActorSpec { spec: ActorSystemSpec =>
       p2 ! Get
       expectMsg(State(Vector("A", "B", "C")))
     }
-
   }
-
 }

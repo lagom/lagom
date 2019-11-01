@@ -20,12 +20,10 @@ import scala.concurrent.Promise
 //#imports
 
 trait CassandraBlogEventProcessor {
-
   trait Initial {
     //#initial
     class BlogEventProcessor(session: CassandraSession, readSide: CassandraReadSide)(implicit ec: ExecutionContext)
         extends ReadSideProcessor[BlogEvent] {
-
       override def buildHandler(): ReadSideProcessor.ReadSideHandler[BlogEvent] = {
         // TODO build read side handler
         ???
@@ -41,7 +39,6 @@ trait CassandraBlogEventProcessor {
 
   class BlogEventProcessor(session: CassandraSession, readSide: CassandraReadSide)(implicit ec: ExecutionContext)
       extends ReadSideProcessor[BlogEvent] {
-
     //#tag
     override def aggregateTags: Set[AggregateEventTag[BlogEvent]] =
       BlogEvent.Tag.allTags
@@ -99,5 +96,4 @@ trait CassandraBlogEventProcessor {
       //#build
     }
   }
-
 }

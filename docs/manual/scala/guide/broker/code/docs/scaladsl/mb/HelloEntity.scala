@@ -20,7 +20,6 @@ import play.api.libs.json.Json
 import scala.collection.immutable.Seq
 
 class HelloEntity extends PersistentEntity {
-
   override type Command = HelloCommand[_]
   override type Event   = HelloEvent
   override type State   = HelloState
@@ -31,7 +30,6 @@ class HelloEntity extends PersistentEntity {
     case HelloState(message, _) =>
       Actions()
         .onCommand[UseGreetingMessage, Done] {
-
           // Command handler for the UseGreetingMessage command
           case (UseGreetingMessage(newMessage), ctx, state) =>
             // In response to this command, we want to first persist it as a
@@ -41,25 +39,20 @@ class HelloEntity extends PersistentEntity {
               _ =>
                 ctx.reply(Done)
             }
-
         }
         .onReadOnlyCommand[Hello, String] {
-
           // Command handler for the Hello command
           case (Hello(name, organization), ctx, state) =>
             // Reply with a message built from the current message, and the name of
             // the person we're meant to say hello to.
             ctx.reply(s"$message, $name!")
-
         }
         .onEvent {
-
           // Event handler for the GreetingMessageChanged event
           case (GreetingMessageChanged(newMessage), state) =>
             // We simply update the current state to use the greeting message from
             // the event.
             HelloState(newMessage, LocalDateTime.now().toString)
-
         }
   }
 }

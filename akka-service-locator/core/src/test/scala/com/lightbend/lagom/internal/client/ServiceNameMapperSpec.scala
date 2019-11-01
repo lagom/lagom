@@ -10,7 +10,6 @@ import org.scalatest.Matchers
 import org.scalatest.WordSpec
 
 class ServiceNameMapperSpec extends WordSpec with Matchers {
-
   private val defaultConfig = ConfigFactory.defaultReference().getConfig("lagom.akka.discovery")
   private val parser        = new ServiceNameMapper(defaultConfig)
 
@@ -22,7 +21,6 @@ class ServiceNameMapperSpec extends WordSpec with Matchers {
     new ServiceNameMapper(ConfigFactory.parseString(config).withFallback(defaultConfig))
 
   "The ServiceNameMapper" should {
-
     // ------------------------------------------------------------------------------
     // Assert SRV lookups
     "parse an unqualified SRV lookup" in {
@@ -154,7 +152,5 @@ class ServiceNameMapperSpec extends WordSpec with Matchers {
       val serviceLookup = customParser.mapLookupQuery("myservice")
       serviceLookup.scheme should be(Some("foo"))
     }
-
   }
-
 }

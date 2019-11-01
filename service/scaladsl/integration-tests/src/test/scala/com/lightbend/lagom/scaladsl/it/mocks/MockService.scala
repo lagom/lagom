@@ -65,7 +65,6 @@ object MockResponseEntity {
 }
 
 trait MockService extends Service {
-
   def mockCall(id: Long): ServiceCall[MockRequestEntity, MockResponseEntity]
   def doNothing: ServiceCall[NotUsed, NotUsed]
   def alwaysFail: ServiceCall[NotUsed, NotUsed]
@@ -121,7 +120,6 @@ object MockService {
 }
 
 class MockServiceImpl(implicit mat: Materializer, ec: ExecutionContext) extends MockService {
-
   override def mockCall(id: Long) = ServiceCall { req =>
     Future.successful(MockResponseEntity(id, req))
   }

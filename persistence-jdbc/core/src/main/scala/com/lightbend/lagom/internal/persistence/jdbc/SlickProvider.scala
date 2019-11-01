@@ -33,7 +33,6 @@ import scala.util.Success
 import scala.util.Try
 
 private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionContext) {
-
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val readSideConfig    = system.settings.config.getConfig("lagom.persistence.read-side.jdbc")
@@ -152,7 +151,6 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
       schemaStatements: Seq[String],
       tableExists: (Vector[MTable], Option[String]) => Boolean
   ) = {
-
     if (tableExists(tables, currentSchema)) {
       DBIO.successful(())
     } else {
@@ -256,5 +254,4 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
         task.askExecute()
     }
   }
-
 }

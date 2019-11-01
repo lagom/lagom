@@ -20,7 +20,6 @@ import scala.concurrent.Future
 object TestEntityReadSide {
   class TestEntityReadSideProcessor(system: ActorSystem, readSide: CassandraReadSide, session: CassandraSession)
       extends ReadSideProcessor[TestEntity.Evt] {
-
     def buildHandler: ReadSideHandler[TestEntity.Evt] = {
       import system.dispatcher
 
@@ -59,13 +58,10 @@ object TestEntityReadSide {
     }
 
     def aggregateTags: Set[AggregateEventTag[TestEntity.Evt]] = TestEntity.Evt.aggregateEventShards.allTags
-
   }
-
 }
 
 class TestEntityReadSide(system: ActorSystem, session: CassandraSession) {
-
   import system.dispatcher
 
   def getAppendCount(entityId: String): Future[Long] = {

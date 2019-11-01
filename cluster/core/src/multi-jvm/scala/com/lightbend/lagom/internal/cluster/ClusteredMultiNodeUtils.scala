@@ -19,7 +19,6 @@ abstract class ClusteredMultiNodeUtils(val numOfNodes: Int)
     extends MultiNodeSpec(ClusterMultiNodeConfig, ClusterMultiNodeActorSystemFactory.createActorSystem())
     with STMultiNodeSpec
     with ImplicitSender {
-
   override def initialParticipants: Int = roles.size
 
   def join(from: RoleName, to: RoleName): Unit = {
@@ -44,5 +43,4 @@ abstract class ClusteredMultiNodeUtils(val numOfNodes: Int)
 
     enterBarrier("startup")
   }
-
 }

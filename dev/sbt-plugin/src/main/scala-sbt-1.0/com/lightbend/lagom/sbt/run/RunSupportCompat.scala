@@ -21,7 +21,6 @@ import com.lightbend.lagom.dev.Reloader.CompileSuccess
 import com.lightbend.lagom.dev.Reloader.Source
 
 trait RunSupportCompat {
-
   def taskFailureHandler(incomplete: Incomplete, streams: Option[Streams]): PlayException = {
     Incomplete
       .allExceptions(incomplete)
@@ -151,9 +150,7 @@ trait RunSupportCompat {
                 def severity = xsbti.Severity.Error
               }
           }
-
       }
     }
   }
-
 }

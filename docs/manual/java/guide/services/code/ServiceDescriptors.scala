@@ -15,7 +15,6 @@ import docs.services.FirstDescriptor._
 import scala.concurrent.Future
 
 class ServiceDescriptorsSpec extends ServiceSupport {
-
   "Service descriptors documentation" should {
     "show a hello service" in withServiceInstance[HelloService](new HelloService {
       override def sayHello(): ServiceCall[String, String] = serviceCall { name =>
@@ -66,7 +65,5 @@ class ServiceDescriptorsSpec extends ServiceSupport {
       item.id should ===("foo")
       item.orderId should ===(10)
     }
-
   }
-
 }

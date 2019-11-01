@@ -12,14 +12,12 @@ import scala.concurrent.duration._
 
 @InternalApi
 sealed trait WorkerConfig {
-
   def minBackoff: FiniteDuration
   def maxBackoff: FiniteDuration
   def randomFactor: Double
 }
 
 object WorkerConfig {
-
   def apply(config: Config): WorkerConfig = new WorkerConfigImpl(config.getConfig("lagom.projection.worker"))
 
   private final class WorkerConfigImpl(config: Config) extends WorkerConfig {

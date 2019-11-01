@@ -18,7 +18,6 @@ import play.api.Mode
 import scala.concurrent.Future
 
 private[lagom] object JoinClusterImpl {
-
   def join(system: ActorSystem, environment: Environment, akkaManagementTrigger: AkkaManagementTrigger): Unit = {
     val config   = system.settings.config
     val joinSelf = config.getBoolean("lagom.cluster.join-self")
@@ -61,9 +60,7 @@ private[lagom] object JoinClusterImpl {
      *  extra code in Lagom's codebase.
      */
     if (cluster.settings.SeedNodes.isEmpty) {
-
       if (clusterBootstrapEnabled) {
-
         // akka-management is a hard requirement for Akka ClusterBootstrap
         // therefore, we must make sure it get started.
         // forcedStart won't honour `lagom.akka.management.enabled` and will start akka-management anyway
@@ -73,11 +70,9 @@ private[lagom] object JoinClusterImpl {
         // we should only run ClusterBootstrap if the user didn't configure the seed-needs
         // and left clusterBootstrapEnabled on true (default)
         ClusterBootstrap(system.asInstanceOf[ExtendedActorSystem]).start()
-
       } else if (joinSelf) {
         cluster.join(cluster.selfAddress)
       }
-
     }
 
     CoordinatedShutdown(system).addTask(PhaseClusterShutdown, "exit-jvm-when-downed") { () =>
@@ -95,7 +90,6 @@ private[lagom] object JoinClusterImpl {
       // JoinUnsuccessful, etc... we must exit the JVM. This can lead to the cluster closing before
       // the `Application` but we're out of the cluster (downed) already so the impact is acceptable.
       if (exitJvm && reasonIsDowning) {
-
         // If this code is running, it means CoordinatedShutdown was triggered. CoordinatedShutdown of
         // a given actor system can only be invoked once: further invocations block until the initial
         // one completes. The code below works as following:
@@ -125,5 +119,4 @@ private[lagom] object JoinClusterImpl {
       Future.successful(Done)
     }
   }
-
 }

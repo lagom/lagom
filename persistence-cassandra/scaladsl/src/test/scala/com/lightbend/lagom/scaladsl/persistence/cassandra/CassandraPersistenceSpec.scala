@@ -20,7 +20,6 @@ import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 
 class CassandraPersistenceSpec private (system: ActorSystem) extends ActorSystemSpec(system) {
-
   def this(testName: String, config: Config, jsonSerializerRegistry: JsonSerializerRegistry) =
     this(
       ActorSystem(
@@ -56,5 +55,4 @@ class CassandraPersistenceSpec private (system: ActorSystem) extends ActorSystem
     CassandraLauncher.stop()
     super.afterAll()
   }
-
 }

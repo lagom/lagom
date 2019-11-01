@@ -33,13 +33,11 @@ import scala.concurrent.Future
  *
  */
 class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
-
   val timeout      = PatienceConfiguration.Timeout(Span(5, Seconds))
   val defaultSetup = ServiceTest.defaultSetup.withCluster(false)
 
   "TestOverTls" when {
     "started with ssl" should {
-
       "not provide an ssl port by default" in {
         ServiceTest.withServer(defaultSetup)(new TestTlsApplication(_)) { server =>
           server.playServer.httpsPort shouldBe empty
@@ -93,7 +91,6 @@ class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
         }
       }
       // #tls-test-service
-
     }
   }
 
@@ -110,7 +107,6 @@ class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
 }
 
 trait TestTlsService extends Service {
-
   import Service._
 
   def sampleCall(): ServiceCall[NotUsed, String]
@@ -120,7 +116,6 @@ trait TestTlsService extends Service {
       .withCalls(
         restCall(Method.GET, "/api/sample", sampleCall _)
       )
-
 }
 
 class TestTlsServiceImpl() extends TestTlsService {
@@ -133,7 +128,5 @@ class TestTlsApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
     with LocalServiceLocator
     with AhcWSComponents {
-
   override lazy val lagomServer: LagomServer = serverFor[TestTlsService](new TestTlsServiceImpl())
-
 }

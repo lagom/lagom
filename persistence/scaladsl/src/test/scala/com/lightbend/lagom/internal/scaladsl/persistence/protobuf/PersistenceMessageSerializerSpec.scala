@@ -22,7 +22,6 @@ import com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry
 
 class PersistenceMessageSerializerSpec
     extends ActorSystemSpec(JsonSerializerRegistry.actorSystemSetupFor(TestEntitySerializerRegistry)) {
-
   val serializer = new PersistenceMessageSerializer(system.asInstanceOf[ExtendedActorSystem])
 
   def checkSerialization(obj: AnyRef): Unit = {
@@ -36,7 +35,6 @@ class PersistenceMessageSerializerSpec
   }
 
   "PersistenceMessageSerializer" must {
-
     "serialize CommandEnvelope" in {
       checkSerialization(CommandEnvelope("entityId", TestEntity.Add("a")))
     }
@@ -65,5 +63,4 @@ class PersistenceMessageSerializerSpec
       }
     }
   }
-
 }

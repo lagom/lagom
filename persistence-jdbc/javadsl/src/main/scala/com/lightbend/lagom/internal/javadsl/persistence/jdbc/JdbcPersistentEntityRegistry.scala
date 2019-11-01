@@ -21,12 +21,10 @@ private[lagom] final class JdbcPersistentEntityRegistry @Inject() (
     injector: Injector,
     slickProvider: SlickProvider
 ) extends AbstractPersistentEntityRegistry(system, injector, JdbcReadJournal.Identifier) {
-
   private lazy val ensureTablesCreated = slickProvider.ensureTablesCreated()
 
   override def register[C, E, S](entityClass: Class[_ <: PersistentEntity[C, E, S]]): Unit = {
     ensureTablesCreated
     super.register(entityClass)
   }
-
 }

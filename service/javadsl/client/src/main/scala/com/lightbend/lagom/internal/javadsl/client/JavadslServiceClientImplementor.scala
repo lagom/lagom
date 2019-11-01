@@ -50,7 +50,6 @@ class JavadslServiceClientImplementor @Inject() (
     environment: Environment,
     topicFactoryProvider: TopicFactoryProvider
 )(implicit ec: ExecutionContext, mat: Materializer) {
-
   private val log = LoggerFactory.getLogger(classOf[JavadslServiceClientImplementor])
 
   def implement[T](interface: Class[T], descriptor: Descriptor): T = {
@@ -161,7 +160,6 @@ private class JavadslClientServiceCall[Request, ResponseMessage, ServiceCallResp
     responseHandler: (ResponseHeader, ResponseMessage) => ServiceCallResponse
 )(implicit ec: ExecutionContext)
     extends ServiceCall[Request, ServiceCallResponse] {
-
   override def invoke(request: Request): CompletionStage[ServiceCallResponse] = {
     invoker.doInvoke(request, requestHeaderHandler).map(responseHandler.tupled).toJava
   }
@@ -208,7 +206,6 @@ private class JavadslClientServiceCallInvoker[Request, Response](
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ClientServiceCallInvoker[Request, Response](ws, serviceInfo.serviceName(), path, queryParams)
     with JavadslServiceApiBridge {
-
   protected override def doMakeStreamedCall(
       requestStream: Source[ByteString, NotUsed],
       requestSerializer: MessageSerializer.NegotiatedSerializer[_, _],

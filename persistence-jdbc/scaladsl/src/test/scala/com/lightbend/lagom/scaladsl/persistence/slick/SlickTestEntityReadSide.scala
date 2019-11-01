@@ -17,7 +17,6 @@ import slick.jdbc.JdbcBackend.Database
 import slick.jdbc.JdbcProfile
 
 trait Tables {
-
   val profile: JdbcProfile
   import profile.api._
   implicit val ec: ExecutionContext
@@ -48,12 +47,10 @@ trait Tables {
 }
 
 object SlickTestEntityReadSide {
-
   class TestEntityReadSideProcessor(readSide: SlickReadSide, db: Database, val profile: JdbcProfile)(
       implicit val ec: ExecutionContext
   ) extends ReadSideProcessor[TestEntity.Evt]
       with Tables {
-
     def buildHandler(): ReadSideHandler[TestEntity.Evt] =
       readSide
         .builder[TestEntity.Evt]("test-entity-read-side")
@@ -69,7 +66,6 @@ object SlickTestEntityReadSide {
 
 class SlickTestEntityReadSide(db: Database, val profile: JdbcProfile)(implicit val ec: ExecutionContext)
     extends Tables {
-
   import profile.api._
 
   def getAppendCount(id: String): Future[Long] = db.run {

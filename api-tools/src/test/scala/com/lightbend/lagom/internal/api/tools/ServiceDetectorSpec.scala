@@ -15,9 +15,7 @@ import org.scalatest._
 import play.api.libs.json.Json
 
 class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
-
   "The service detector" should {
-
     "resolve the service descriptor for a LagomJava project with ACLs" in {
       val expectedJsonString =
         """
@@ -72,7 +70,6 @@ class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
         }
 
         override def loadClass(name: String): Class[_] = classLoader.loadClass(name)
-
       }
     }
 

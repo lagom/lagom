@@ -42,7 +42,6 @@ class JdbcClusteredPersistentEntitySpecMultiJvmNode3 extends JdbcClusteredPersis
 
 class JdbcClusteredPersistentEntitySpec
     extends AbstractClusteredPersistentEntitySpec(JdbcClusteredPersistentEntityConfig) {
-
   import JdbcClusteredPersistentEntityConfig._
 
   var h2: Server = _

@@ -20,7 +20,6 @@ import akka.japi.Effect
 import akka.event.Logging
 
 object PersistentEntity {
-
   /**
    * Commands to a `PersistentEntity` must implement this interface
    * to define the reply type.
@@ -188,7 +187,6 @@ abstract class PersistentEntity[Command, Event, State] {
       eventHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
       commandHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]]
   ) {
-
     /**
      * @return new instance with the given state
      */
@@ -200,7 +198,6 @@ abstract class PersistentEntity[Command, Event, State] {
      * is populated with same state, same event and command handler functions.
      */
     def builder(): BehaviorBuilder = new BehaviorBuilderImpl(state, eventHandlers, commandHandlers)
-
   }
 
   // in order to keep all the constructors protected but still generate javadocs this class
@@ -210,7 +207,6 @@ abstract class PersistentEntity[Command, Event, State] {
       evtHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
       cmdHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]]
   ) extends BehaviorBuilder {
-
     def this(state: State) = this(state, Map.empty, Map.empty)
 
     private var _state                                                                 = state
@@ -268,7 +264,6 @@ abstract class PersistentEntity[Command, Event, State] {
 
     def build(): Behavior =
       Behavior(_state, eventHandlers, commandHandlers)
-
   }
 
   /**
@@ -356,14 +351,12 @@ abstract class PersistentEntity[Command, Event, State] {
      * Construct the corresponding immutable `Behavior`.
      */
     def build(): Behavior
-
   }
 
   /**
    * The context that is passed to read-only command handlers.
    */
   abstract class ReadOnlyCommandContext[R] {
-
     /**
      * Send reply to a command. The type `R` must be the type defined by
      * the command.
@@ -387,7 +380,6 @@ abstract class PersistentEntity[Command, Event, State] {
    * The context that is passed to command handler function.
    */
   abstract class CommandContext[R] extends ReadOnlyCommandContext[R] {
-
     /**
      * A command handler may return this `Persist` directive to define
      * that one event is to be persisted.
@@ -438,7 +430,6 @@ abstract class PersistentEntity[Command, Event, State] {
      * that no events are to be persisted.
      */
     def done[B <: Event](): Persist[B] = persistNone.asInstanceOf[Persist[B]]
-
   }
 
   /**
@@ -467,5 +458,4 @@ abstract class PersistentEntity[Command, Event, State] {
   }
 
   private val persistNone: PersistNone[Nothing] = PersistNone[Nothing]
-
 }

@@ -21,16 +21,13 @@ class ClusterDistributionSpecMultiJvmNode2 extends ClusterDistributionSpec
 class ClusterDistributionSpecMultiJvmNode3 extends ClusterDistributionSpec
 
 class ClusterDistributionSpec extends ClusteredMultiNodeUtils(numOfNodes = 3) with ScalaFutures with Eventually {
-
   private val ensureActiveInterval: FiniteDuration = 1.second
   private val distributionSettings: ClusterDistributionSettings =
     ClusterDistributionSettings(system)
       .copy(ensureActiveInterval = ensureActiveInterval)
 
   "A ClusterDistribution" must {
-
     "distribute the entityIds across nodes (so all nodes get a response)" in {
-
       val numOfEntities        = 20
       val minimalShardsPerNode = numOfEntities / numOfNodes
 

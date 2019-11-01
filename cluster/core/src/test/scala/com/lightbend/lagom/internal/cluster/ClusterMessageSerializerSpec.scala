@@ -30,11 +30,9 @@ class ClusterMessageSerializerSpec
     with BeforeAndAfterAll
     with TypeCheckedTripleEquals
     with ImplicitSender {
-
   val clusterMessageSerializer = new ClusterMessageSerializer(system.asInstanceOf[ExtendedActorSystem])
 
   "ClusterMessageSerializer" must {
-
     "serialize EnsureActive" in {
       val ensureActive = EnsureActive("entity-1")
       val bytes        = clusterMessageSerializer.toBinary(ensureActive)

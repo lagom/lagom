@@ -12,7 +12,6 @@ import org.apache.kafka.common.record.TimestampType
  * Metadata keys specific to the Kafka broker implementation.
  */
 object KafkaMetadataKeys {
-
   /**
    * The partition the message is published to.
    */
@@ -42,5 +41,4 @@ object KafkaMetadataKeys {
    * The timestamp type of the Kafka message.
    */
   val TimestampType: MetadataKey[TimestampType] = MetadataKey("kafkaTimestampType")
-
 }

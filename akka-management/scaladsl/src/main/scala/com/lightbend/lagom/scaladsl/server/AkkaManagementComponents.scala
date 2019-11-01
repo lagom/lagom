@@ -13,7 +13,6 @@ import play.api.Mode
 import scala.concurrent.ExecutionContext
 
 trait AkkaManagementComponents {
-
   def configuration: play.api.Configuration
   def actorSystem: ActorSystem
   def coordinatedShutdown: CoordinatedShutdown
@@ -30,5 +29,4 @@ trait AkkaManagementComponents {
     }
     instance
   }
-
 }

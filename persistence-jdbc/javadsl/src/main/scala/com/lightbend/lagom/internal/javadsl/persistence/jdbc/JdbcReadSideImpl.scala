@@ -35,7 +35,6 @@ import scala.concurrent.Future
 private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetStore: JavadslJdbcOffsetStore)(
     implicit val ec: ExecutionContext
 ) extends JdbcReadSide {
-
   private val log = LoggerFactory.getLogger(this.getClass)
 
   override def builder[Event <: AggregateEvent[Event]](readSideId: String): ReadSideHandlerBuilder[Event] =
@@ -84,7 +83,6 @@ private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetSto
       prepareCallback: (Connection, AggregateEventTag[Event]) => Unit,
       eventHandlers: Map[Class[_ <: Event], (Connection, _ <: Event, Offset) => Unit]
   ) extends ReadSideHandler[Event] {
-
     import slick.profile.api._
 
     @volatile
@@ -119,7 +117,6 @@ private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetSto
     }
 
     override def handle(): Flow[Pair[Event, Offset], Done, Any] = {
-
       //      val res: scaladsl.Flow[Pair[Event, Offset], Done.type, NotUsed]
       val res: scaladsl.Flow[Pair[Event, Offset], Done, Any] = akka.stream.scaladsl
         .Flow[Pair[Event, Offset]]
@@ -145,11 +142,9 @@ private[lagom] class JdbcReadSideImpl @Inject() (slick: SlickProvider, offsetSto
             .map(_ => Done)
 
           slick.db.run(dbAction.transactionally)
-
         }
 
       res.asJava
     }
   }
-
 }

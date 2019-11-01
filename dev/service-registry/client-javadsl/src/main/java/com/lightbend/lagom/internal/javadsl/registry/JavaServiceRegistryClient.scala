@@ -23,7 +23,6 @@ private[lagom] class JavaServiceRegistryClient @Inject() (
     registry: ServiceRegistry,
     implicit val ec: ExecutionContext
 ) extends AbstractLoggingServiceRegistryClient {
-
   protected override def internalLocateAll(serviceName: String, portName: Option[String]): Future[immutable.Seq[URI]] =
     registry
       .lookup(serviceName, OptionConverters.toJava(portName))
@@ -33,5 +32,4 @@ private[lagom] class JavaServiceRegistryClient @Inject() (
       .recover {
         case _: NotFound => Nil
       }
-
 }

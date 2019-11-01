@@ -32,5 +32,4 @@ class JpaReadSideImplSpec extends JpaPersistenceSpec with AbstractReadSideSpec {
   override def afterAll(): Unit = {
     super.afterAll()
   }
-
 }

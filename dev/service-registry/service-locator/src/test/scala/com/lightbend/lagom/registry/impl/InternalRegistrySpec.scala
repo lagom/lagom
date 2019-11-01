@@ -14,7 +14,6 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
 class InternalRegistrySpec extends FlatSpec with Matchers {
-
   behavior.of("InternalRegistry")
 
   it should "add unmanaged services" in {
@@ -113,5 +112,4 @@ class InternalRegistrySpec extends FlatSpec with Matchers {
     val actual = registry.serviceValues;
     actual.size should be(2)
   }
-
 }

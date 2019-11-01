@@ -44,7 +44,6 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wit
   private val multiExpectTimeout = 30.seconds
 
   "A ProjectionRegistry" must {
-
     "register a projection with a single worker" in {
       val projectionName = "test-canary"
       val tagNamePrefix  = "streamName"
@@ -225,7 +224,6 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wit
       }
 
       expectProjectionStatus(projectionName, 5, Started)
-
     }
 
     "respect worker-level requests that arrive after projection-level requests" in {
@@ -256,9 +254,7 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wit
       }
       expectWorkerStatus(projectionName, tagName001, Started)
       expectWorkerStatus(projectionName, tagName002, Stopped)
-
     }
-
   }
 
   private def expectMsgFromWorker[T](t: T, expectationKey: String, testProbe: TestProbe, max: FiniteDuration): Unit = {
@@ -314,7 +310,6 @@ class ProjectionRegistrySpec extends ClusteredMultiNodeUtils(numOfNodes = 3) wit
 }
 
 object FakeProjectionActor {
-
   case class FakeStarting(tagName: String)
 
   def props(tagName: String, testProbe: TestProbe): Props =
@@ -323,7 +318,6 @@ object FakeProjectionActor {
 
 // its state should be an actual copy of the desired state in the projection registry
 class FakeProjectionActor(tagName: String, testProbe: TestProbe) extends Actor with ActorLogging {
-
   override def preStart(): Unit = {
     super.preStart()
     testProbe.ref ! FakeStarting(tagName)
@@ -332,5 +326,4 @@ class FakeProjectionActor(tagName: String, testProbe: TestProbe) extends Actor w
   override def receive: Receive = {
     case _ =>
   }
-
 }

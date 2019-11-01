@@ -13,7 +13,6 @@ import com.lightbend.lagom.macrotestkit.ShouldNotTypecheck
 import Service._
 
 object ServiceClientMacroErrors {
-
   ShouldNotTypecheck(
     "Abstract non service call check",
     "MacroErrorsServiceClient.implement[AbstractNonServiceCall]",
@@ -31,7 +30,6 @@ object ServiceClientMacroErrors {
     "MacroErrorsServiceClient.implement[OverloadedMethods]",
     ".*overloaded methods are: foo.*"
   )
-
 }
 
 object MacroErrorsServiceClient extends ServiceClientConstructor {

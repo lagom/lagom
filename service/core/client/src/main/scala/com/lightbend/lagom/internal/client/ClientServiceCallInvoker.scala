@@ -29,7 +29,6 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
     queryParams: Map[String, Seq[String]]
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends LagomServiceApiBridge {
-
   val descriptor: Descriptor
   val serviceLocator: ServiceLocator
   val call: Call[Request, Response]
@@ -76,7 +75,6 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
 
         val result: Future[(ResponseHeader, Response)] =
           (requestSerializerStreamed, responseSerializerStreamed) match {
-
             case (false, false) =>
               makeStrictCall(
                 headerFilterTransformClientRequest(headerFilter, requestHeader),
@@ -130,7 +128,6 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
       responseSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString, NotUsed]],
       request: Request
   ): Future[(ResponseHeader, Response)] = {
-
     val serializer = messageSerializerSerializerForRequest[Request, ByteString](requestSerializer)
 
     // We have a single source, followed by a maybe source (that is, a source that never produces any message, and
@@ -160,7 +157,6 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
       responseSerializer: MessageSerializer[Response, ByteString],
       request: Request
   ): Future[(ResponseHeader, Response)] = {
-
     val negotiatedSerializer = messageSerializerSerializerForRequest(
       requestSerializer
         .asInstanceOf[MessageSerializer[AkkaStreamsSource[Any, NotUsed], AkkaStreamsSource[ByteString, NotUsed]]]
@@ -195,7 +191,6 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
       responseSerializer: MessageSerializer[_, AkkaStreamsSource[ByteString, NotUsed]],
       request: Request
   ): Future[(ResponseHeader, Response)] = {
-
     val negotiatedSerializer = messageSerializerSerializerForRequest(
       requestSerializer
         .asInstanceOf[MessageSerializer[AkkaStreamsSource[Any, NotUsed], AkkaStreamsSource[ByteString, NotUsed]]]
@@ -238,7 +233,6 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
       responseSerializer: MessageSerializer[Response, ByteString],
       request: Request
   ): Future[(ResponseHeader, Response)] = {
-
     val contentTypeHeader =
       messageProtocolToContentTypeHeader(messageHeaderProtocol(requestHeader)).toSeq.map(HeaderNames.CONTENT_TYPE -> _)
 
@@ -292,5 +286,4 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
       }
     }
   }
-
 }

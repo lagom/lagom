@@ -46,7 +46,6 @@ private[lagom] trait SlickOffsetStoreConfiguration {
  */
 private[lagom] abstract class AbstractSlickOffsetStoreConfiguration(config: Config)
     extends SlickOffsetStoreConfiguration {
-
   private val cfg                      = config.getConfig("lagom.persistence.read-side.jdbc.tables.offset")
   val tableName: String                = cfg.getString("tableName")
   val schemaName: Option[String]       = Option(cfg.getString("schemaName")).filter(_.trim != "")
@@ -66,7 +65,6 @@ private[lagom] class SlickOffsetStore(
     val slick: SlickProvider,
     config: SlickOffsetStoreConfiguration
 ) extends OffsetStore {
-
   case class OffsetRow(id: String, tag: String, sequenceOffset: Option[Long], timeUuidOffset: Option[String])
 
   import slick.profile.api._
@@ -160,7 +158,6 @@ private[lagom] class SlickOffsetStore(
         .map(_ => Done.getInstance())
     )
   }
-
 }
 
 private[lagom] class SlickOffsetDao(
@@ -170,7 +167,6 @@ private[lagom] class SlickOffsetDao(
     override val loadedOffset: Offset
 )(implicit ec: ExecutionContext)
     extends OffsetDao {
-
   override def saveOffset(offset: Offset): Future[Done] = {
     slickOffsetStore.slick.db.run(
       slickOffsetStore

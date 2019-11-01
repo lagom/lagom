@@ -62,7 +62,6 @@ object ClusterMultiNodeConfig extends MultiNodeConfig {
     """
       )
   )
-
 }
 
 // heavily inspired by AbstractClusteredPersistentEntitySpec

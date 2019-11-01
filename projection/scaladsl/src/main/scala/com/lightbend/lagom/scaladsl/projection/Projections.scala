@@ -21,7 +21,6 @@ import scala.concurrent.Future
  */
 @ApiMayChange
 final class Projections(private val registry: ProjectionRegistry) {
-
   /**
    * Read an eventually consistent copy of the projections and workers running on the service.
    * Invocations to this method return a local copy of the {{{State}}} so multiple invocations in
@@ -69,5 +68,4 @@ final class Projections(private val registry: ProjectionRegistry) {
    */
   def startWorker(projectionName: String, tagName: String): Unit =
     registry.startWorker(WorkerCoordinates(projectionName, tagName))
-
 }

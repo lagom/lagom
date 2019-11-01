@@ -21,7 +21,6 @@ import scala.collection.immutable.Seq
  * values for query string parameters.
  */
 trait PathParamSerializer[Param] {
-
   /**
    * Serialize the given `parameter` into path parameters.
    */
@@ -38,7 +37,6 @@ trait PathParamSerializer[Param] {
 object PathParamSerializer extends DefaultPathParamSerializers
 
 trait DefaultPathParamSerializers extends LowPriorityPathParamSerializers {
-
   /**
    * Create a PathParamSerializer for required parameters.
    */
@@ -89,7 +87,6 @@ trait DefaultPathParamSerializers extends LowPriorityPathParamSerializers {
   implicit def optionPathParamSerializer[Param](
       implicit delegate: PathParamSerializer[Param]
   ): PathParamSerializer[Option[Param]] = {
-
     val name = delegate match {
       case named: NamedPathParamSerializer[_] => s"Option[${named.name}]"
       case other                              => s"Option($other)"
@@ -110,7 +107,6 @@ trait DefaultPathParamSerializers extends LowPriorityPathParamSerializers {
 }
 
 trait LowPriorityPathParamSerializers {
-
   sealed abstract class NamedPathParamSerializer[Param](val name: String) extends PathParamSerializer[Param] {
     override def toString: String = "PathParamSerializer(" + name + ")"
   }
@@ -122,7 +118,6 @@ trait LowPriorityPathParamSerializers {
       implicit delegate: PathParamSerializer[Param],
       bf: Factory[Param, CC[Param]]
   ): PathParamSerializer[CC[Param]] = {
-
     val name = delegate match {
       case named: NamedPathParamSerializer[_] => s"Traversable[${named.name}]"
       case other                              => s"Traversable($other)"

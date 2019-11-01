@@ -21,7 +21,6 @@ import scala.language.higherKinds
 // and define methods to interrogate them here. This shouldn't create as much garbage, and helps to keep the bridge
 // itself quite anaemic, which is a good thing.
 trait LagomServiceApiBridge {
-
   // All the types that get adapted
   type AkkaStreamsSource[T, M]
   def akkaStreamsSourceAsScala[T, M](source: AkkaStreamsSource[T, M]): Source[T, M]

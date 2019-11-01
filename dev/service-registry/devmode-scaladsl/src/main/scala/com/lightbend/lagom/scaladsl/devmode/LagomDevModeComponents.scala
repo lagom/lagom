@@ -60,7 +60,6 @@ trait LagomDevModeComponents extends LagomDevModeServiceLocatorComponents {
  * will be automatically provided to the service by Lagom's dev mode build plugins.
  */
 trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
-
   /**
    * If being used in a Lagom service, this will be implemented by
    * [[com.lightbend.lagom.scaladsl.server.LagomServerComponents]], however if it's being
@@ -76,7 +75,6 @@ trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
 
   lazy val devModeServiceLocatorUrl: URI = URI.create(config.getString("lagom.service-locator.url"))
   lazy val serviceRegistry: ServiceRegistry = {
-
     // We need to create our own static service locator since the service locator will depend on this service registry.
     val staticServiceLocator = new ServiceLocator {
       override def doWithService[T](name: String, serviceCall: Call[_, _])(
@@ -123,5 +121,4 @@ trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
     new ServiceRegistryServiceLocator(circuitBreakersPanel, serviceRegistryClient, executionContext)
   lazy val serviceDiscovery: ServiceDiscovery =
     devModeSimpleServiceDiscovery
-
 }

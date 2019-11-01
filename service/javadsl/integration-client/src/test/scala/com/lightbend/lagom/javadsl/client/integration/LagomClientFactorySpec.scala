@@ -21,7 +21,6 @@ import akka.stream.ActorMaterializer
 import akka.util.Timeout
 
 class LagomClientFactorySpec extends FlatSpec with Matchers with BeforeAndAfterEach with ScalaFutures {
-
   private var system: ActorSystem = _
   private var echoActor: ActorRef = _
   implicit val timeout            = Timeout(5.seconds)
@@ -31,7 +30,6 @@ class LagomClientFactorySpec extends FlatSpec with Matchers with BeforeAndAfterE
    * won't shutdown the ActorSystem when closed.
    */
   "LagomClientFactory" should "when using a unmanaged actor system, shoudl not terminate it upon closing" in {
-
     // check that actor system is operational
     (echoActor ? "hey").mapTo[String].futureValue shouldBe "hey"
 

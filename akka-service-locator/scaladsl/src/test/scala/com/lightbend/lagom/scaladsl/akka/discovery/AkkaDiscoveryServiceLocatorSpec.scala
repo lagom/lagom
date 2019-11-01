@@ -20,7 +20,6 @@ import play.api.libs.ws.ahc.AhcWSComponents
 import scala.concurrent.Future
 
 class AkkaDiscoveryServiceLocatorSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll with OptionValues {
-
   "ServiceLocator" should {
     "retrieve registered services" in {
       val serviceLocator = server.application.serviceLocator
@@ -41,7 +40,6 @@ class AkkaDiscoveryServiceLocatorSpec extends AsyncWordSpec with Matchers with B
       extends LagomApplication(ctx)
       with AhcWSComponents
       with AkkaDiscoveryComponents {
-
     override def lagomServer: LagomServer = serverFor[TestService](new TestServiceImpl)
   }
 
@@ -63,5 +61,4 @@ class AkkaDiscoveryServiceLocatorSpec extends AsyncWordSpec with Matchers with B
       Future.successful(s"Hello $name")
     }
   }
-
 }

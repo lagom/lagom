@@ -33,7 +33,6 @@ final class CassandraSession(
     settings: CassandraSessionSettings,
     executionContext: ExecutionContext
 ) {
-
   def this(system: ActorSystem) =
     this(
       system,
@@ -212,5 +211,4 @@ final class CassandraSession(
   @varargs
   def selectOne(stmt: String, bindValues: AnyRef*): Future[Option[Row]] =
     delegate.selectOne(stmt, bindValues: _*)
-
 }

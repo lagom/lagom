@@ -14,7 +14,6 @@ case class OrderPlaced(shoppingCartId: String)
 //#rename-class
 
 class ShopSerializerRegistry extends JsonSerializerRegistry {
-
   override def serializers = Vector.empty[JsonSerializer[_]]
 
   //#rename-class-migration

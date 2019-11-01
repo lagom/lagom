@@ -24,7 +24,6 @@ import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
  */
 @deprecated("Use ReadSideProcessor instead with CassandraReadSide builder", "1.2.0")
 abstract class CassandraReadSideProcessor[Event <: AggregateEvent[Event]] {
-
   case class EventHandlers(
       handlers: Map[Class[_ <: Event], BiFunction[_ <: Event, UUID, CompletionStage[JList[BoundStatement]]]]
   )

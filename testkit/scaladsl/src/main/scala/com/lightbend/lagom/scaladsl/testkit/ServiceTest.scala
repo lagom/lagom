@@ -45,9 +45,7 @@ import scala.util.control.NonFatal
  * before all tests hook, and then stop it in an after all test hook.
  */
 object ServiceTest {
-
   sealed trait Setup {
-
     /**
      * Enable or disable Cassandra.
      *
@@ -142,7 +140,6 @@ object ServiceTest {
      * Whether SSL is enabled.
      */
     def ssl: Boolean
-
   }
 
   private case class SetupImpl(
@@ -151,7 +148,6 @@ object ServiceTest {
       cluster: Boolean = false,
       ssl: Boolean = false
   ) extends Setup {
-
     override def withCassandra(enabled: Boolean): Setup = {
       if (enabled) {
         copy(cassandra = true, cluster = true)
@@ -194,7 +190,6 @@ object ServiceTest {
       val playServer: Server,
       @ApiMayChange val clientSslContext: Option[SSLContext] = None
   ) {
-
     /**
      * Convenient access to the materializer
      */
@@ -283,7 +278,6 @@ object ServiceTest {
   def startServer[T <: LagomApplication](
       setup: Setup
   )(applicationConstructor: LagomApplicationContext => T): TestServer[T] = {
-
     val lifecycle = new DefaultApplicationLifecycle
 
     val config: Map[String, AnyRef] =
@@ -353,5 +347,4 @@ object ServiceTest {
 
     new TestServer[T](lagomApplication, server, sslSetup.clientSslContext)
   }
-
 }

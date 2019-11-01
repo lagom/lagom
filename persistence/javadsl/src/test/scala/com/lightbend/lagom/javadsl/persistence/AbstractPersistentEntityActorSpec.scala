@@ -20,7 +20,6 @@ import com.lightbend.lagom.persistence.ActorSystemSpec
 
 object AbstractPersistentEntityActorSpec {
   class TestPassivationParent extends Actor {
-
     val child = context.actorOf(
       PersistentEntityActor
         .props("test", Optional.of("1"), () => new TestEntity(context.system), Optional.empty(), 1.second, "", "")
@@ -147,7 +146,6 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
       // awaitAssert because it is not guaranteed that we will see the snapshot immediately
       within(10.seconds) {
         awaitAssert {
-
           val probe2 = TestProbe()
           val p2 = system.actorOf(
             PersistentEntityActor.props(
@@ -188,7 +186,5 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
       watch(entity)
       expectTerminated(entity)
     }
-
   }
-
 }

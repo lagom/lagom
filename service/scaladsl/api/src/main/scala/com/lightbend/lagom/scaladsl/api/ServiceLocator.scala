@@ -23,7 +23,6 @@ import scala.concurrent.Future
  * routing pool, or it may decide to notify some up stream service registry that that node is no longer responding.
  */
 trait ServiceLocator {
-
   /**
    * Locate a service's URI for the given name.
    *
@@ -82,7 +81,6 @@ trait ServiceLocator {
 }
 
 object ServiceLocator {
-
   /**
    * A service locator that doesn't resolve any services.
    */

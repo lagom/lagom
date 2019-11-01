@@ -16,7 +16,6 @@ class JsonSerializationFailed private[lagom] (
     errors: Seq[(JsPath, Seq[JsonValidationError])],
     json: JsValue
 ) extends RuntimeException {
-
   override def getMessage: String =
     s"$message\nerrors:\n${errors.map(errorToString).mkString("\t", "\n\t", "\n")}}\n${Json.prettyPrint(json)}"
 

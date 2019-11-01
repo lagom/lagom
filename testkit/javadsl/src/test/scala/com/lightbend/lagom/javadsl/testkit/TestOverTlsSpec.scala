@@ -36,13 +36,11 @@ import scala.compat.java8.FunctionConverters._
  *
  */
 class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
-
   val timeout      = PatienceConfiguration.Timeout(Span(5, Seconds))
   val defaultSetup = ServiceTest.defaultSetup.withCluster(false)
 
   "TestOverTls" when {
     "started with ssl" should {
-
       "not provide an ssl port by default" in {
         withServer(defaultSetup) { server =>
           server.portSsl.isPresent shouldBe false

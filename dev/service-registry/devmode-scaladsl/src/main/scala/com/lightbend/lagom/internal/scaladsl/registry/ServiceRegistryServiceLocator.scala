@@ -19,7 +19,6 @@ private[lagom] class ServiceRegistryServiceLocator(
     client: ServiceRegistryClient,
     implicit val ec: ExecutionContext
 ) extends CircuitBreakingServiceLocator(circuitBreakers) {
-
   override def locateAll(name: String, serviceCall: Call[_, _]): Future[List[URI]] =
     // a ServiceLocator doesn't know what a `portName` is so we default to `None` and the
     // implementation will return any registry without a port name. This means that in order
@@ -29,5 +28,4 @@ private[lagom] class ServiceRegistryServiceLocator(
 
   override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] =
     locateAll(name, serviceCall).map(_.headOption)
-
 }

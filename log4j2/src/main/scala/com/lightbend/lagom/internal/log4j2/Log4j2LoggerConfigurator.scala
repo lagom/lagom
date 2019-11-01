@@ -20,7 +20,6 @@ object Log4j2LoggerConfigurator {
 }
 
 class Log4j2LoggerConfigurator extends LoggerConfigurator {
-
   import Log4j2LoggerConfigurator._
 
   override def loggerFactory: ILoggerFactory = {

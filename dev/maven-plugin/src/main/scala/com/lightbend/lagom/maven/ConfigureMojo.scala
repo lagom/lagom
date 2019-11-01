@@ -15,7 +15,6 @@ import scala.beans.BeanProperty
  * for a project and set up the projects context values.
  */
 class ConfigureMojo @Inject() (session: MavenSession) extends AbstractMojo {
-
   @BeanProperty
   var lagomService: Boolean = _
 

@@ -8,7 +8,6 @@ import sbt.Task
 import sbt.taskKey
 
 object LagomPublish {
-
   val validatePublishSettings = taskKey[Unit]("Validate Lagom settings to publish released artifacts.")
 
   val validatePublishSettingsTask: Def.Initialize[Task[Unit]] = Def.task {
@@ -45,5 +44,4 @@ object LagomPublish {
       this(s"""Invalid resolver. Expected: "$expectedResolver" but was "$actual".""")
     override def toString = message
   }
-
 }

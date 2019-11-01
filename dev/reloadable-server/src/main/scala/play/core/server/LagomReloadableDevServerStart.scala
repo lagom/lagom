@@ -32,7 +32,6 @@ import scala.util.Try
  * is reloaded whenever its source changes.
  */
 object LagomReloadableDevServerStart {
-
   /**
    * A threshold for retrieving the current hostname.
    *
@@ -157,13 +156,10 @@ object LagomReloadableDevServerStart {
 
         // Create reloadable ApplicationProvider
         val appProvider = new ApplicationProvider {
-
           var lastState: Try[Application] = Failure(new PlayException("Not initialized", "?"))
 
           def get: Try[Application] = {
-
             synchronized {
-
               val reloaded = buildLink.reload match {
                 case NonFatal(t)     => Failure(t)
                 case cl: ClassLoader => Success(Some(cl))
@@ -173,7 +169,6 @@ object LagomReloadableDevServerStart {
               reloaded.flatMap { maybeClassLoader =>
                 val maybeApplication: Option[Try[Application]] = maybeClassLoader.map { projectClassloader =>
                   try {
-
                     if (lastState.isSuccess) {
                       println()
                       println(play.utils.Colors.magenta("--- (RELOAD) ---"))
@@ -241,7 +236,6 @@ object LagomReloadableDevServerStart {
                       lastState = Failure(UnexpectedException(unexpected = Some(e)))
                       logExceptionAndGetResult(path, e)
                       lastState
-
                   }
                 }
 
@@ -306,8 +300,6 @@ object LagomReloadableDevServerStart {
       } catch {
         case e: ExceptionInInitializerError => throw e.getCause
       }
-
     }
   }
-
 }

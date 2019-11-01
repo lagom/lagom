@@ -32,7 +32,6 @@ object ServiceRegistryActor {
   sealed trait RouteResult
   case class Found(address: URI)                                extends RouteResult
   case class NotFound(registry: Map[String, ServiceToRegister]) extends RouteResult
-
 }
 
 case class ServiceName(name: String) extends AnyVal
@@ -42,7 +41,6 @@ case class ServiceName(name: String) extends AnyVal
 case class ServiceRegistryKey(serviceName: ServiceName, portName: Option[String])
 
 object InternalRegistry {
-
   def build(unmanagedServices: UnmanagedServices): InternalRegistry = new InternalRegistry(
     unmanagedServices.services.flatMap {
       case (serviceName, serviceRegistryService) =>
@@ -81,7 +79,6 @@ object InternalRegistry {
         buildRegistryItem(serviceName, details)
       }
       .toMap
-
 }
 
 final case class ServiceToRegister(uri: URI, serviceRegistryService: ServiceRegistryService)
@@ -193,11 +190,9 @@ class InternalRouter {
       }
     }
   }
-
 }
 
 class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) extends Actor {
-
   private val logger: Logger = Logger(classOf[ServiceLocatorServer])
 
   import ServiceRegistryActor._
@@ -210,7 +205,6 @@ class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) exte
   }
 
   override def receive: Receive = {
-
     // Service Locator operations
     case Remove(name) =>
       registry.remove(name)
@@ -231,7 +225,6 @@ class ServiceRegistryActor @Inject() (unmanagedServices: UnmanagedServices) exte
       sender() ! router.routeFor(route)
       router.warnOnAmbiguity(route)
   }
-
 }
 
 private class ServiceAlreadyRegistered(serviceName: String)

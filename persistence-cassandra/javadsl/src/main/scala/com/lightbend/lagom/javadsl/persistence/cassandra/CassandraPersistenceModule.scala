@@ -28,7 +28,6 @@ import scala.util.Try
  * Guice module for the Persistence API.
  */
 class CassandraPersistenceModule extends Module {
-
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
     bind[CassandraPersistenceModule.InitServiceLocatorHolder].toSelf.eagerly(),
     bind[PersistentEntityRegistry].to[CassandraPersistentEntityRegistry],
@@ -38,13 +37,10 @@ class CassandraPersistenceModule extends Module {
     bind[CassandraOffsetStore].to[JavadslCassandraOffsetStore],
     bind[OffsetStore].to(bind[CassandraOffsetStore])
   )
-
 }
 
 private[lagom] object CassandraPersistenceModule {
-
   class InitServiceLocatorHolder @Inject() (system: ActorSystem, injector: Injector) {
-
     // Guice doesn't support this, but other DI frameworks do.
     @PostConstruct
     def init(): Unit = {
@@ -60,5 +56,4 @@ private[lagom] object CassandraPersistenceModule {
       }
     }
   }
-
 }

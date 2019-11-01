@@ -11,7 +11,6 @@ import com.typesafe.config.Config
 
 @deprecated("Internal object, not intended for direct use.", "1.5.0")
 object TestUtil extends AbstractTestUtil {
-
   def persistenceConfig(testName: String, cassandraPort: Int, useServiceLocator: Boolean): Config =
     cassandraConfig(testName, cassandraPort)
 

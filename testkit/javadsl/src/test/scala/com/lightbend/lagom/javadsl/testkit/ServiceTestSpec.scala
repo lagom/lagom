@@ -79,11 +79,9 @@ class ServiceTestSpec extends WordSpec with Matchers {
 }
 
 trait TestService extends Service {
-
   import Service._
 
   final override def descriptor: Descriptor = named("test")
-
 }
 
 class TestServiceImpl @Inject() (persistentEntityRegistry: PersistentEntityRegistry) extends TestService

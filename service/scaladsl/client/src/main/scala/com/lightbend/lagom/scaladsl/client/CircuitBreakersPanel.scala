@@ -12,7 +12,6 @@ import scala.concurrent.Future
  * Calls to remote services can make use of this facility in order to add circuit breaking capabilities to it.
  */
 trait CircuitBreakersPanel {
-
   /**
    * Executes `body` in the context of the circuit breaker identified by `id`. Whether `body` is actually invoked is
    * implementation-dependent, but implementations should call it at most once.

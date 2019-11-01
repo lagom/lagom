@@ -18,7 +18,6 @@ case class ItemAdded(shoppingCartId: String, itemId: String, quantity: Int)
 //#rename
 
 object ItemAddedMigration {
-
   class ShopSerializerRegistry1 extends JsonSerializerRegistry {
     override def serializers = Vector.empty
 
@@ -41,7 +40,6 @@ object ItemAddedMigration {
   }
 
   class ShopSerializerRegistry2 extends JsonSerializerRegistry {
-
     override val serializers = Vector.empty
 
     //#transformer-migration
@@ -61,5 +59,4 @@ object ItemAddedMigration {
     )
     //#transformer-migration
   }
-
 }

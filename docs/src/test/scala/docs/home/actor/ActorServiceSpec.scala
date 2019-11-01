@@ -31,7 +31,6 @@ class ActorServiceSpec
     with BeforeAndAfterAll
     with TypeCheckedTripleEquals
     with ImplicitSender {
-
   val workerRoleConfig = ConfigFactory.parseString("akka.cluster.roles = [worker-node]")
   val node2            = ActorSystem("ActorServiceSpec", workerRoleConfig.withFallback(system.settings.config))
   val node3            = ActorSystem("ActorServiceSpec", workerRoleConfig.withFallback(system.settings.config))
@@ -69,8 +68,6 @@ class ActorServiceSpec
           }
         }
       }
-
     }
   }
-
 }

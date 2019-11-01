@@ -7,7 +7,6 @@ package com.lightbend.lagom.dev
 import scala.collection.immutable
 
 object PortAssigner {
-
   private[lagom] case class ProjectName(name: String) {
     def withTls = ProjectName(name + "-tls")
   }

@@ -24,7 +24,6 @@ class AkkaDiscoveryServiceLocator(circuitBreakers: CircuitBreakersPanel, actorSy
     implicit
     ec: ExecutionContext
 ) extends CircuitBreakingServiceLocator(circuitBreakers) {
-
   private val helper: AkkaDiscoveryHelper = new AkkaDiscoveryHelper(
     actorSystem.settings.config.getConfig("lagom.akka.discovery"),
     Discovery(actorSystem).discovery

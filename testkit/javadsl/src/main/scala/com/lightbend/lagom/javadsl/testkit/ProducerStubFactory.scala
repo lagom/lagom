@@ -24,7 +24,6 @@ import com.lightbend.lagom.javadsl.api.broker.Topic
  */
 @Singleton
 final class ProducerStubFactory @Inject() (actorSystem: ActorSystem, materializer: Materializer) {
-
   private val topics = new ConcurrentHashMap[String, ProducerStub[_]]
 
   def producer[T](topicId: String): ProducerStub[T] = {

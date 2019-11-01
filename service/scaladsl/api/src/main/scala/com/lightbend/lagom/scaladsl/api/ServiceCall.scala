@@ -20,7 +20,6 @@ import scala.concurrent.Future
  * using json.
  */
 trait ServiceCall[Request, Response] {
-
   /**
    * Invoke the service call.
    *
@@ -98,7 +97,6 @@ trait ServiceCall[Request, Response] {
 }
 
 object ServiceCall {
-
   /**
    * Create a service call from a function to handle it.
    */
