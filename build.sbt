@@ -1411,8 +1411,8 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
     pomExtra ~= (existingPomExtra => {
       existingPomExtra ++
         <prerequisites>
-        <maven>{Dependencies.Versions.Maven}</maven>
-      </prerequisites>
+          <maven>{CrossVersion.partialVersion(Dependencies.Versions.Maven).get.productIterator.mkString(".")}</maven>
+        </prerequisites>
     })
   )
   .dependsOn(`build-tool-support`)
