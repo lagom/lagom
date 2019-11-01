@@ -330,7 +330,7 @@ abstract class ShoppingCartApplication(context: LagomApplicationContext)
 
 ### Getting instances of the Aggregate Entity
 
-To access instances of the Aggregate (which may be running locally or remotely on the cluster), you should inject the `ClusterSharding` on your service can instantiate an `EntityRef` using the method `entityRefFor`. 
+To access instances of the Aggregate (which may be running locally or remotely on the cluster), you should inject the `ClusterSharding` on your service can instantiate an `EntityRef` using the method `entityRefFor`.
 
 ```scala
 val shoppingCartRef: EntityRef[ShoppingCartCommand] =
@@ -376,5 +376,10 @@ Akka supports both programmatic passivation and [automatic passivation](https://
 
 ## Data Serialization
 
-// TODO: this is mainly about play-json and Lagom's PlayJsonSerializer
-// then also about why commands can't use play-json and need to use Akka Jackson
+The messages (commands, replies) and the durable classes (events, state snapshots) need to be serializable to be sent over the wire across the cluster or be stored on the database. Akka recommends [Jackson-based serializers](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html) --preferably JSON, but CBOR is also supported-- as a good default in most cases. On top of Akka serializers, Lagom makes it easy to add [[Play-JSON serialization|SerializationPlayJson]] support, which may be more familiar to some scala developers.
+
+In [Akka Persistence Typed](https://doc.akka.io/docs/akka/2.6/typed/persistence.html), in particular, and when you adopt CQRS/ES practices, commands will include a `replyTo: ActorRef[Reply]` field. This `replyTo` field will be used on your code to send a `Reply` back, as shown in the examples above. Serializing an `ActorRef[T]` requires using the Akka Jackson serializer, meaning you cannot use Play-JSON to serialize commands.
+
+The limitation to use Akka Jackson for Command messages doesn't apply to other messages like events, snapshots, or even replies. Each type Akka needs to serialize may use a different serializer.
+
+Read more about the serialization setup and configuration in the [[serialization|Serialization]] section.
