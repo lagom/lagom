@@ -1,6 +1,6 @@
 # Creating and running Hello World with Maven
 
-> **Note**: Lagom requires Maven 3.6.2 or later.
+> **Note**: Lagom requires Maven 3.6.0 or later.
 
 The easiest way to get started with Lagom and Maven is to use the Maven archetype plugin and a Lagom archetype to create a new project.  A Maven project includes sub-projects organized in sub-directories. The top-level and sub-project directories each include a [Project Object Model (POM)](https://maven.apache.org/pom.html) that contains build configuration. When you run the `generate` command, Maven prompts you for POM element values. The Lagom archetype creates a project that includes two Lagom services, `hello` and `stream`.
 
