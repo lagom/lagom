@@ -15,7 +15,6 @@ import com.lightbend.lagom.javadsl.persistence.TestEntity
 import scala.annotation.varargs
 
 class PersistentEntityTestDriverSpec extends ActorSystemSpec {
-
   def newDriver() = new PersistentEntityTestDriver(system, new TestEntity(system, TestProbe().ref), "1")
 
   "PersistentEntityTestDriver" must {
@@ -115,5 +114,4 @@ class PersistentEntityTestDriverSpec extends ActorSystemSpec {
       outcomeAfterClearing.issues.asScala.toList should be(Nil)
     }
   }
-
 }

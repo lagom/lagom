@@ -37,7 +37,6 @@ class LagomPlayModule extends Module {
     Seq(
       playRegistry
     ) ++ maybeServiceInfoBinding.toList
-
   }
 
   private def prepareServiceInfoBinding(config: Config) = {
@@ -88,7 +87,6 @@ class PlayRegisterWithServiceRegistry @Inject() (
     serviceRegistry: ServiceRegistry,
     applicationLifecycle: ApplicationLifecycle
 ) {
-
   val uris = serviceDnsRecords(config)
 
   private val serviceAcls = serviceInfo.getAcls

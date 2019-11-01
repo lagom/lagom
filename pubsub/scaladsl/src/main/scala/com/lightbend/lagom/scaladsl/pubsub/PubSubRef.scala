@@ -120,5 +120,4 @@ final class PubSubRef[T] private[lagom] (
     throw new NotSerializableException(s"${getClass.getName} is not serializable. Send the entityId instead.")
 
   override def toString: String = s"PubSubRef($topic)"
-
 }

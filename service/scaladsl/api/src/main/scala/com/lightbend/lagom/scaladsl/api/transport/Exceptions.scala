@@ -30,7 +30,6 @@ import scala.collection.immutable
  * class uses the generic HTTP 404 error code.
  */
 sealed trait TransportErrorCode extends Serializable {
-
   /**
    * The HTTP status code for this error.
    */
@@ -53,7 +52,6 @@ sealed trait TransportErrorCode extends Serializable {
 }
 
 object TransportErrorCode {
-
   def apply(http: Int, webSocket: Int, description: String): TransportErrorCode =
     TransportErrorCodeImpl(http, webSocket, description)
 
@@ -218,7 +216,6 @@ final class ExceptionMessage(val name: String, val detail: String) extends Seria
  */
 class TransportException(val errorCode: TransportErrorCode, val exceptionMessage: ExceptionMessage, cause: Throwable)
     extends RuntimeException(exceptionMessage.detail, cause) {
-
   def this(errorCode: TransportErrorCode, message: String) =
     this(errorCode, new ExceptionMessage(classOf[TransportException].getSimpleName, message), null)
 
@@ -232,7 +229,6 @@ class TransportException(val errorCode: TransportErrorCode, val exceptionMessage
 }
 
 object TransportException {
-
   /**
    * Convert an error code and exception message to an exception.
    *
@@ -275,7 +271,6 @@ object TransportException {
     PayloadTooLarge.ErrorCode          -> ((tec, em) => new PayloadTooLarge(tec, em)),
     UnsupportedMediaType.ErrorCode     -> ((tec, em) => new UnsupportedMediaType(tec, em))
   )
-
 }
 
 final class UnsupportedMediaType(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage)

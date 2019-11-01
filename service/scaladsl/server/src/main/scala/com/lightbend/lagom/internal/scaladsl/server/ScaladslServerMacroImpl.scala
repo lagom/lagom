@@ -64,5 +64,4 @@ private[lagom] class ScaladslServerMacroImpl(override val c: blackbox.Context) e
       }.descriptor
     """)
   }
-
 }

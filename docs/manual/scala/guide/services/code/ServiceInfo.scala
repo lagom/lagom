@@ -5,7 +5,6 @@
 package docs.scaladsl.services
 
 package helloserviceinfo {
-
   //#service-name
   import com.lightbend.lagom.scaladsl.api._
 
@@ -24,7 +23,6 @@ package helloserviceinfo {
 }
 
 package serviceacls {
-
   import akka.NotUsed
   import com.lightbend.lagom.scaladsl.api._
 
@@ -44,5 +42,4 @@ package serviceacls {
 
     //#service-acls
   }
-
 }

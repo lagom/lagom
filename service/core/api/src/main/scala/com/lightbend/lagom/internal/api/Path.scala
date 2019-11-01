@@ -33,7 +33,6 @@ case class Path(pathSpec: String, parts: Seq[PathPart], queryParams: Seq[String]
   }
 
   def format(allParams: Seq[Seq[String]]): (String, Map[String, Seq[String]]) = {
-
     if (dynamicParts.size + queryParams.size != allParams.size) {
       throw new IllegalArgumentException(
         s"Param number mismatch, attempt to encode ${allParams.size} params into path spec $pathSpec"
@@ -62,7 +61,6 @@ case class Path(pathSpec: String, parts: Seq[PathPart], queryParams: Seq[String]
     val queryValues = queryParams.zip(leftOverParams).toMap
     path -> queryValues
   }
-
 }
 
 sealed trait PathPart {
@@ -121,7 +119,6 @@ object Path {
     def parser(spec: String): Parser[Path] = pathSpec ~ queryParams.? ^^ {
       case parts ~ queryParams => Path(spec, parts, queryParams.getOrElse(Nil))
     }
-
   }
 
   def parse(spec: String): Path = {

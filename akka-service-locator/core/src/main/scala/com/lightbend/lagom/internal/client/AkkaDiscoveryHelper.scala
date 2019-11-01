@@ -25,7 +25,6 @@ private[lagom] class AkkaDiscoveryHelper(config: Config, serviceDiscovery: Servi
     implicit
     ec: ExecutionContext
 ) {
-
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val serviceNameMapper = new ServiceNameMapper(config)
@@ -44,7 +43,6 @@ private[lagom] class AkkaDiscoveryHelper(config: Config, serviceDiscovery: Servi
   def locate(name: String): Future[Option[URI]] = locateAll(name).map(selectRandomURI)
 
   private def toURI(resolvedTarget: ResolvedTarget, lookup: ServiceLookup): URI = {
-
     val port = resolvedTarget.port.getOrElse(-1)
 
     val scheme = lookup.scheme.orNull
@@ -69,5 +67,4 @@ private[lagom] class AkkaDiscoveryHelper(config: Config, serviceDiscovery: Servi
     case Seq(one) => Some(one)
     case many     => Some(many(ThreadLocalRandom.current().nextInt(many.size)))
   }
-
 }

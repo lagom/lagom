@@ -26,7 +26,6 @@ private[lagom] class KafkaTopicFactory(
     config: Config
 )(implicit materializer: Materializer, executionContext: ExecutionContext)
     extends TopicFactory {
-
   @deprecated("Use constructor that accepts a Config", "2.0.0")
   def this(serviceInfo: ServiceInfo, system: ActorSystem, serviceLocator: ServiceLocator)(
       implicit materializer: Materializer,

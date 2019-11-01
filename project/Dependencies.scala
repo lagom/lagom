@@ -8,7 +8,6 @@ import sbt.Keys._
 import sbt._
 
 object Dependencies {
-
   object Versions {
     // Version numbers
 
@@ -1268,7 +1267,6 @@ object Dependencies {
     } else {
       log.error(s"${name.value} needs a complete whitelist.")
     }
-
   }
   val pruneWhitelistSetting = pruneWhitelist := pruneWhitelistTask.value
 
@@ -1278,5 +1276,4 @@ object Dependencies {
   private class DependencyWhitelistValidationFailed extends RuntimeException with FeedbackProvidedException {
     override def toString = "Dependency whitelist validation failed!"
   }
-
 }

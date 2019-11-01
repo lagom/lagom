@@ -22,7 +22,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
-
   val app = new PubSubComponents {
     override lazy val actorSystem = {
       val config = ConfigFactory.parseString("""
@@ -174,5 +173,4 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
       probe.expectNoMessage(100.milliseconds)
     }
   }
-
 }

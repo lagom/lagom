@@ -23,7 +23,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorSystemSpec(_system) {
-
   def this(testName: String, config: Config) = {
     this(ActorSystem(testName, config.withFallback(Configuration.load(Environment.simple()).underlying)))
   }
@@ -70,5 +69,4 @@ abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorS
     Await.ready(applicationLifecycle.stop(), 20.seconds)
     super.afterAll()
   }
-
 }

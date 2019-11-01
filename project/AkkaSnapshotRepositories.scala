@@ -8,7 +8,6 @@ import sbt._
  * This plugins adds Akka snapshot repositories when running a nightly build.
  */
 object AkkaSnapshotRepositories extends AutoPlugin {
-
   override def trigger: PluginTrigger = allRequirements
 
   // This is copy & pasted to ScriptedTools so that scripted tests
@@ -25,6 +24,5 @@ object AkkaSnapshotRepositories extends AutoPlugin {
         )
       case None => Seq.empty
     })
-
   }
 }

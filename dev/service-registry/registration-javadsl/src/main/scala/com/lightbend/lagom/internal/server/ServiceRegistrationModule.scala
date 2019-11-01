@@ -38,7 +38,6 @@ class ServiceRegistrationModule extends Module {
 }
 
 object ServiceRegistrationModule {
-
   class ServiceConfigProvider @Inject() (config: Config) extends Provider[ServiceConfig] {
     override lazy val get = ServiceConfig(serviceDnsRecords(config))
   }
@@ -55,7 +54,6 @@ object ServiceRegistrationModule {
       config: ServiceConfig,
       registry: ServiceRegistry
   )(implicit ec: ExecutionContext) {
-
     private lazy val logger: Logger = Logger(this.getClass())
 
     private val locatableServices = resolvedServices.services.filter(_.descriptor.locatableService)

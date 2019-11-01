@@ -68,7 +68,6 @@ class JavadslKafkaApiSpec
     with BeforeAndAfterAll
     with ScalaFutures
     with OptionValues {
-
   private val log = LoggerFactory.getLogger(getClass)
   private val miniLogger = new MiniLogger {
     def debug(message: => String): Unit = log.debug(message)
@@ -139,7 +138,6 @@ class JavadslKafkaApiSpec
   import application.materializer
 
   "The Kafka message broker api" should {
-
     val testService = application.injector.instanceOf(classOf[JavadslKafkaApiSpec.TestService])
 
     "eagerly publish event stream registered in the service topic implementation" in {
@@ -377,9 +375,7 @@ class JavadslKafkaApiSpec
       messages(2).getPayload shouldBe "A3"
       messages(2).get(KafkaMetadataKeys.OFFSET).asScala.value shouldBe (offset + 2)
     }
-
   }
-
 }
 
 object VarianceCompat {
@@ -394,7 +390,6 @@ object VarianceCompat {
 }
 
 object JavadslKafkaApiSpec {
-
   private val test1EventJournal = new EventJournal[String]
   private val test2EventJournal = new EventJournal[String]
   private val test3EventJournal = new EventJournal[String]
@@ -509,5 +504,4 @@ object JavadslKafkaApiSpec {
         entityClass: Class[_ <: com.lightbend.lagom.javadsl.persistence.PersistentEntity[C, E, S]]
     ): Unit = ()
   }
-
 }

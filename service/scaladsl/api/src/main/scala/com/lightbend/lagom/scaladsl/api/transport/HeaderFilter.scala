@@ -16,7 +16,6 @@ import scala.collection.immutable
  * negotiation, as well as authentication.
  */
 trait HeaderFilter {
-
   /**
    * Transform the given client request.
    *
@@ -63,7 +62,6 @@ trait HeaderFilter {
 }
 
 object HeaderFilter {
-
   /**
    * A noop header transformer, used to deconfigure specific transformers.
    */
@@ -113,7 +111,6 @@ object HeaderFilter {
       filters.foldRight(response)((filter, resp) => filter.transformClientResponse(response, request))
     }
   }
-
 }
 
 /**

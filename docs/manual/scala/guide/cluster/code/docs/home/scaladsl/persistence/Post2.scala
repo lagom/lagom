@@ -13,7 +13,6 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 
 final class Post2 extends PersistentEntity {
-
   override type Command = BlogCommand
   override type Event   = BlogEvent
   override type State   = BlogState
@@ -91,5 +90,4 @@ final class Post2 extends PersistentEntity {
       }
     //#read-only-command-handler
   }
-
 }

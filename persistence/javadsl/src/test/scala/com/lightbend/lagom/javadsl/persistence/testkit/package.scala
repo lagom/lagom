@@ -10,7 +10,6 @@ import java.util.function.BiConsumer
 import akka.actor.ActorRef
 
 package object testkit {
-
   implicit class pipe[T](val stage: CompletionStage[T]) extends AnyVal {
     def pipeTo(recipient: ActorRef): Unit = {
       stage.whenComplete(new BiConsumer[T, Throwable] {

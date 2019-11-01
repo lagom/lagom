@@ -18,12 +18,10 @@ import com.lightbend.lagom.scaladsl.persistence.jdbc.JdbcSession.tryWith
 //#imports
 
 trait JdbcBlogEventProcessor {
-
   trait Initial {
     //#initial
     class BlogEventProcessor(readSide: JdbcReadSide)(implicit ec: ExecutionContext)
         extends ReadSideProcessor[BlogEvent] {
-
       override def buildHandler(): ReadSideProcessor.ReadSideHandler[BlogEvent] = {
         // TODO build read side handler
         ???
@@ -38,7 +36,6 @@ trait JdbcBlogEventProcessor {
   }
 
   class BlogEventProcessor(readSide: JdbcReadSide) extends ReadSideProcessor[BlogEvent] {
-
     //#tag
     override def aggregateTags: Set[AggregateEventTag[BlogEvent]] =
       BlogEvent.Tag.allTags
@@ -85,5 +82,4 @@ trait JdbcBlogEventProcessor {
       //#build
     }
   }
-
 }

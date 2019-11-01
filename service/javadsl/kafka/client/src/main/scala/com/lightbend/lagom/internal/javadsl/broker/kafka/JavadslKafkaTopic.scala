@@ -27,7 +27,6 @@ private[lagom] class JavadslKafkaTopic[Payload](
     serviceLocator: ServiceLocator
 )(implicit mat: Materializer, ec: ExecutionContext)
     extends Topic[Payload] {
-
   override def topicId: TopicId = topicCall.topicId
 
   override def subscribe(): Subscriber[Payload] =

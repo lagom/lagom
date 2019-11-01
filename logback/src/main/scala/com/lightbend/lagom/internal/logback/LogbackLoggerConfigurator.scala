@@ -132,9 +132,7 @@ class LogbackLoggerConfigurator extends LoggerConfigurator {
       } catch {
         case NonFatal(_) =>
       }
-
     }
-
   }
 
   /**

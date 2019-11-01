@@ -45,7 +45,6 @@ case object Netty extends HttpBackend {
 }
 
 trait ServiceSupport extends WordSpecLike with Matchers with Inside {
-
   def withServer(
       configureBuilder: GuiceApplicationBuilder => GuiceApplicationBuilder
   )(block: Application => Unit)(implicit httpBackend: HttpBackend): Unit = {

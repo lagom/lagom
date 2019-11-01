@@ -49,7 +49,6 @@ class NoAclServiceLoader extends LagomApplicationLoader {
 abstract class NoAclServiceApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
     with AhcWSComponents {
-
   override lazy val lagomServer = serverFor[NoAclService](new NoAclServiceImpl)
 }
 // ---------------------------------------

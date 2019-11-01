@@ -30,7 +30,6 @@ trait JdbcPersistenceComponents
     with WriteSideJdbcPersistenceComponents
 
 private[lagom] trait SlickProviderComponents extends DBComponents {
-
   def actorSystem: ActorSystem
   def executionContext: ExecutionContext
 
@@ -45,20 +44,17 @@ private[lagom] trait SlickProviderComponents extends DBComponents {
  * Write-side persistence JDBC components (for compile-time injection).
  */
 trait WriteSideJdbcPersistenceComponents extends WriteSidePersistenceComponents with SlickProviderComponents {
-
   def actorSystem: ActorSystem
   def executionContext: ExecutionContext
 
   override lazy val persistentEntityRegistry: PersistentEntityRegistry =
     new JdbcPersistentEntityRegistry(actorSystem, slickProvider)
-
 }
 
 /**
  * Read-side persistence JDBC components (for compile-time injection).
  */
 trait ReadSideJdbcPersistenceComponents extends ReadSidePersistenceComponents with SlickProviderComponents {
-
   lazy val offsetTableConfiguration: OffsetTableConfiguration = new OffsetTableConfiguration(
     configuration.underlying,
     readSideConfig
@@ -71,5 +67,4 @@ trait ReadSideJdbcPersistenceComponents extends ReadSidePersistenceComponents wi
   lazy val jdbcReadSide: JdbcReadSide = new JdbcReadSideImpl(slickProvider, slickOffsetStore)(executionContext)
 
   lazy val jdbcSession: JdbcSession = new JdbcSessionImpl(slickProvider)
-
 }

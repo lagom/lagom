@@ -27,7 +27,6 @@ object PersistentEntityTestDriver {
       sideEffects: immutable.Seq[SideEffect],
       issues: immutable.Seq[Issue]
   ) {
-
     /**
      * The messages that were sent as replies using the context that is
      * passed as parameter to the command handler functions.
@@ -62,7 +61,6 @@ object PersistentEntityTestDriver {
   final case class UnhandledEvent(event: Any) extends Issue {
     override def toString: String = s"No event handler registered for ${event.getClass}"
   }
-
 }
 
 /**
@@ -286,5 +284,4 @@ class PersistentEntityTestDriver[C, E, S](
     clazz.getName.startsWith("java.lang.") ||
     clazz.getName.startsWith("akka.")
   }
-
 }

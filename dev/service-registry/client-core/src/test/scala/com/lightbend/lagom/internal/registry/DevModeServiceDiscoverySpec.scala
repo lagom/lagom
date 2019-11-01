@@ -25,7 +25,6 @@ class DevModeServiceDiscoverySpec
     with WordSpecLike
     with Matchers
     with BeforeAndAfterAll {
-
   private val client = new StaticServiceRegistryClient(
     Map(
       "test-service"              -> List(URI.create("http://localhost:8080")),
@@ -53,7 +52,6 @@ class DevModeServiceDiscoverySpec
       discovery.lookup("test-service-without-port", 100.milliseconds).futureValue shouldBe expected
     }
   }
-
 }
 
 private class StaticServiceRegistryClient(registrations: Map[String, List[URI]]) extends ServiceRegistryClient {

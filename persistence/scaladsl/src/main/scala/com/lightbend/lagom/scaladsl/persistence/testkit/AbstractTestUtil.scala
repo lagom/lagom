@@ -16,9 +16,7 @@ object AbstractTestUtil {
 
 @deprecated("Internal trait, not intended for direct use.", "1.5.0")
 trait AbstractTestUtil {
-
   def clusterConfig(): Config = PersistenceTestConfig.ClusterConfig
 
   def awaitPersistenceInit(system: ActorSystem): Unit = InternalAwaitPersistenceInit.awaitPersistenceInit(system)
-
 }

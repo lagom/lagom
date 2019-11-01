@@ -23,7 +23,6 @@ import scala.reflect.ClassTag
  * Offsets are automatically handled.
  */
 trait SlickReadSide {
-
   protected implicit val executionContext: ExecutionContext
 
   /**
@@ -38,7 +37,6 @@ trait SlickReadSide {
    * Builder for the handler.
    */
   trait ReadSideHandlerBuilder[Event <: AggregateEvent[Event]] {
-
     /**
      * Set a global prepare Database I/O Action.
      *

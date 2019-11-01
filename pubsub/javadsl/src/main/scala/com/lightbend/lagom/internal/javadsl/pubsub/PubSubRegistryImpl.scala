@@ -16,7 +16,6 @@ import com.lightbend.lagom.javadsl.pubsub.TopicId
 
 @Singleton
 private[lagom] class PubSubRegistryImpl(system: ActorSystem, conf: Config) extends PubSubRegistry {
-
   @Inject
   def this(system: ActorSystem) =
     this(system, system.settings.config.getConfig("lagom.pubsub"))
@@ -26,5 +25,4 @@ private[lagom] class PubSubRegistryImpl(system: ActorSystem, conf: Config) exten
 
   override def refFor[T](topic: TopicId[T]): PubSubRef[T] =
     new PubSubRef(topic, pubsub.mediator, system, bufferSize)
-
 }

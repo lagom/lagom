@@ -28,7 +28,6 @@ private[lagom] final class CassandraReadSideImpl(
     session: CassandraSession,
     offsetStore: CassandraOffsetStore
 ) extends CassandraReadSide {
-
   private val dispatcher = system.settings.config.getString("lagom.persistence.read-side.use-dispatcher")
   implicit val ec        = system.dispatchers.lookup(dispatcher)
 

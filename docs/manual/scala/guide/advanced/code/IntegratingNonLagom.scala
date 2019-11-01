@@ -8,7 +8,6 @@ import _root_.akka.actor.ActorSystem
 import _root_.akka.stream.Materializer
 
 package staticservicelocator {
-
   import docs.scaladsl.services.helloservice.HelloService
 
   class MyAppStandalone {
@@ -21,7 +20,6 @@ package staticservicelocator {
       new StandaloneLagomClientFactory("my-client", classOf[StandaloneLagomClientFactory].getClassLoader)
         with StaticServiceLocatorComponents
         with AhcWSComponents {
-
         override def staticServiceUri = URI.create("http://localhost:8080")
       }
     //#static-service-locator-standalone
@@ -60,7 +58,6 @@ package staticservicelocator {
 }
 
 package devmode {
-
   class MyApp {
     val devMode = true
 
@@ -74,7 +71,6 @@ package devmode {
       new StandaloneLagomClientFactory("my-client") with AhcWSComponents with LagomDevModeServiceLocatorComponents
     } else {
       new StandaloneLagomClientFactory("my-client") with StaticServiceLocatorComponents with AhcWSComponents {
-
         override def staticServiceUri = URI.create("http://localhost:8080")
       }
     }
@@ -82,12 +78,10 @@ package devmode {
 
     //#dev-mode-url
     new StandaloneLagomClientFactory("my-client") with AhcWSComponents with LagomDevModeServiceLocatorComponents {
-
       override lazy val devModeServiceLocatorUrl =
         URI.create("http://localhost:8001")
     }
 
     //#dev-mode-url
   }
-
 }

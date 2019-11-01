@@ -31,7 +31,6 @@ private[lagom] abstract class CassandraOffsetStore(
     cassandraReadSideSettings: CassandraReadSideSettings,
     config: ReadSideConfig
 ) extends OffsetStore {
-
   import system.dispatcher
 
   override def prepare(eventProcessorId: String, tag: String): Future[CassandraOffsetDao] = {
@@ -80,7 +79,6 @@ private[lagom] abstract class CassandraOffsetStore(
     session.prepare(
       "INSERT INTO offsetStore (eventProcessorId, tag, timeUuidOffset, sequenceOffset) VALUES (?, ?, ?, ?)"
     )
-
   }
 
   private def readOffset(eventProcessorId: String, tag: String): Future[Offset] = {
@@ -109,7 +107,6 @@ private[lagom] abstract class CassandraOffsetStore(
       case None => NoOffset
     }
   }
-
 }
 
 /**

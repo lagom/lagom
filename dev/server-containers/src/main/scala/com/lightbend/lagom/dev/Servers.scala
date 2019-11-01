@@ -24,7 +24,6 @@ import scala.util.control.NonFatal
 import scala.language.reflectiveCalls
 
 private[lagom] object Servers {
-
   private val servers = Seq(ServiceLocator, CassandraServer, KafkaServer)
 
   def tryStop(log: MiniLogger): Unit = {
@@ -37,7 +36,6 @@ private[lagom] object Servers {
   }
 
   abstract class ServerContainer {
-
     /**
      * Each ServerContainer implementation needs to define the Server type using structural typing.
      * This is needed because the server classes are not available on the classloader used by the tooling.
@@ -286,7 +284,6 @@ private[lagom] object Servers {
         targetDir: File,
         cleanOnStart: Boolean
     ): Closeable = {
-
       val args =
         kafkaPort.toString ::
           zooKeeperPort.toString ::
@@ -334,5 +331,4 @@ private[lagom] object Servers {
       }
     }
   }
-
 }

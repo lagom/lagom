@@ -20,14 +20,12 @@ import com.lightbend.lagom.projection.Stopped
 import scala.concurrent.duration._
 
 object WorkerCoordinator {
-
   def props(
       projectionName: String,
       workerConfig: WorkerConfig,
       workerProps: WorkerCoordinates => Props,
       projectionRegistryActorRef: ActorRef
   ): Props = {
-
     val backOffChildProps: WorkerCoordinates => Props = coordinates =>
       BackoffSupervisor.props(
         BackoffOpts.onFailure(
@@ -55,7 +53,6 @@ object WorkerCoordinator {
       )
     )
   }
-
 }
 
 /**
@@ -86,7 +83,6 @@ class WorkerCoordinator(
     projectionRegistryActorRef: ActorRef
 ) extends Actor
     with ActorLogging {
-
   override def receive: Receive = unidentified
 
   var lastStashed: Option[Status] = None
@@ -173,5 +169,4 @@ class WorkerCoordinator(
     // become(started) but become(starting)
     becomeStarted(coordinates)
   }
-
 }

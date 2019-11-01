@@ -29,7 +29,6 @@ class JdbcClusteredPersistentEntitySpecMultiJvmNode3 extends JdbcClusteredPersis
 
 class JdbcClusteredPersistentEntitySpec
     extends AbstractClusteredPersistentEntitySpec(JdbcClusteredPersistentEntityConfig) {
-
   import JdbcClusteredPersistentEntityConfig._
 
   var h2: Server = _
@@ -37,7 +36,6 @@ class JdbcClusteredPersistentEntitySpec
   protected override def atStartup() {
     runOn(node1) {
       h2 = Server.createTcpServer("-tcpPort", databasePort.toString).start()
-
     }
 
     enterBarrier("h2-started")

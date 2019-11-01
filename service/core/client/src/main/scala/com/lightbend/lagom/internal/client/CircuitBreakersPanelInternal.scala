@@ -34,7 +34,6 @@ private[lagom] class CircuitBreakersPanelInternal(
     circuitBreakerConfig: CircuitBreakerConfig,
     metricsProvider: CircuitBreakerMetricsProvider
 ) {
-
   private final case class CircuitBreakerHolder(
       breaker: AkkaCircuitBreaker,
       metrics: CircuitBreakerMetrics,
@@ -66,7 +65,6 @@ private[lagom] class CircuitBreakersPanelInternal(
   }
 
   private val createCircuitBreaker = new JFunction[String, Option[CircuitBreakerHolder]] {
-
     private val allExceptionAsFailure: Try[_] => Boolean = {
       case _: Success[_] => false
       case _             => true
@@ -79,13 +77,11 @@ private[lagom] class CircuitBreakersPanelInternal(
     }
 
     override def apply(id: String): Option[CircuitBreakerHolder] = {
-
       val breakerConfig =
         if (config.hasPath(id)) config.getConfig(id).withFallback(defaultBreakerConfig)
         else defaultBreakerConfig
 
       if (breakerConfig.getBoolean("enabled")) {
-
         val maxFailures  = breakerConfig.getInt("max-failures")
         val callTimeout  = breakerConfig.getDuration("call-timeout", MILLISECONDS).millis
         val resetTimeout = breakerConfig.getDuration("reset-timeout", MILLISECONDS).millis
@@ -111,7 +107,6 @@ private[lagom] class CircuitBreakersPanelInternal(
 
   private def breaker(id: String): Option[CircuitBreakerHolder] =
     breakers.computeIfAbsent(id, createCircuitBreaker)
-
 }
 
 @Singleton

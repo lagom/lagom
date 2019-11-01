@@ -16,11 +16,9 @@ private[lagom] object TopicBufferActor {
   def props(): Props = Props(new TopicBufferActor())
 
   case class SubscribeToBuffer(groupId: String, actorRef: ActorRef)
-
 }
 
 private[lagom] class TopicBufferActor extends Actor with ActorLogging {
-
   import TopicBufferActor._
 
   var downstreams                    = Map.empty[String, ActorRef]

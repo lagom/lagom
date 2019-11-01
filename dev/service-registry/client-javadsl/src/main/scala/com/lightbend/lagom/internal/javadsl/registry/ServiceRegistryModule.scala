@@ -145,11 +145,9 @@ private final class DevModeSimpleServiceDiscoveryProvider @Inject() (
     actorSystem: ActorSystem,
     serviceRegistryClient: ServiceRegistryClient
 ) extends Provider[DevModeServiceDiscovery] {
-
   override def get(): DevModeServiceDiscovery = {
     val discovery = DevModeServiceDiscovery(actorSystem)
     discovery.setServiceRegistryClient(serviceRegistryClient)
     discovery
   }
-
 }

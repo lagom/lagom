@@ -11,16 +11,12 @@ import slick.dbio.Effect.All
 import slick.sql.FixedSqlAction
 
 object SlickRepos {
-
   object Initial {
-
     // #slick-mapping-initial
     import slick.jdbc.H2Profile.api._
 
     class PostSummaryRepository {
-
       class PostSummaryTable(tag: Tag) extends Table[PostSummary](tag, "post_summary") {
-
         def *      = (postId, title) <> (PostSummary.tupled, PostSummary.unapply)
         def postId = column[String]("post_id", O.PrimaryKey)
         def title  = column[String]("title")
@@ -35,13 +31,11 @@ object SlickRepos {
   }
 
   object WithCreateTable {
-
     // need to import it first to make table compile
     import scala.concurrent.ExecutionContext.Implicits.global
     import slick.jdbc.H2Profile.api._
 
     class PostSummaryTable(tag: Tag) extends Table[PostSummary](tag, "post_summary") {
-
       def *      = (postId, title) <> (PostSummary.tupled, PostSummary.unapply)
       def postId = column[String]("post_id", O.PrimaryKey)
       def title  = column[String]("title")
@@ -62,13 +56,11 @@ object SlickRepos {
   }
 
   object Full {
-
     import scala.concurrent.ExecutionContext.Implicits.global
     import slick.jdbc.H2Profile.api._
 
     class PostSummaryRepository {
       class PostSummaryTable(tag: Tag) extends Table[PostSummary](tag, "post_summary") {
-
         def *      = (postId, title) <> (PostSummary.tupled, PostSummary.unapply)
         def postId = column[String]("post_id", O.PrimaryKey)
         def title  = column[String]("title")

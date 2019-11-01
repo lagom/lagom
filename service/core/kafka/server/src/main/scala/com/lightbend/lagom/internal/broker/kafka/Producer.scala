@@ -23,7 +23,6 @@ import scala.concurrent.Future
  * A Producer for publishing messages in Kafka using the Alpakka Kafka API.
  */
 private[lagom] object Producer {
-
   def startTaggedOffsetProducer[Message](
       system: ActorSystem,
       tags: immutable.Seq[String],
@@ -36,7 +35,6 @@ private[lagom] object Producer {
       offsetStore: OffsetStore,
       projectionRegistry: ProjectionRegistry
   )(implicit mat: Materializer, ec: ExecutionContext): Unit = {
-
     val projectionName = s"kafkaProducer-$topicId"
 
     val producerConfig = ProducerConfig(system.settings.config)
@@ -61,7 +59,5 @@ private[lagom] object Producer {
       topicProducerProps,
       producerConfig.role
     )
-
   }
-
 }

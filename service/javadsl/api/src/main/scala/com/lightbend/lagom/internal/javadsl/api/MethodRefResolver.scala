@@ -19,7 +19,6 @@ import java.lang.reflect.Method
  * The SAM that the lambda implements must be Serializable for this to work.
  */
 private[api] object MethodRefResolver {
-
   /**
    * Resolve the method ref for a lambda.
    */
@@ -68,7 +67,6 @@ private[api] object MethodRefResolver {
   }
 
   private def getArgumentClasses(classLoader: ClassLoader, methodDescriptor: String): List[Class[_]] = {
-
     def parseArgumentClasses(offset: Int, arrayDepth: Int): List[Class[_]] = {
       methodDescriptor.charAt(offset) match {
         case ')' => Nil

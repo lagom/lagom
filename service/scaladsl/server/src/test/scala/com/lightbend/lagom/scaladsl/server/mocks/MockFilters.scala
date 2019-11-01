@@ -24,7 +24,6 @@ import scala.concurrent.Future
 // be added once so invoking this Filter twice breaks the test.
 class VerboseHeaderPlayFilter(atomicInt: AtomicInteger, mt: Materializer)(implicit ctx: ExecutionContext)
     extends Filter {
-
   import VerboseHeaderPlayFilter._
 
   implicit override def mat: Materializer = mt

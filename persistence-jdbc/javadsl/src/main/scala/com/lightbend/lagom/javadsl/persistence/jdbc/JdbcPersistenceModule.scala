@@ -23,7 +23,6 @@ import play.api.inject.Module
 import scala.concurrent.ExecutionContext
 
 class JdbcPersistenceModule extends Module {
-
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
     bind[SlickProvider].toProvider[GuiceSlickProvider],
     bind[JdbcReadSide].to[JdbcReadSideImpl],
@@ -38,7 +37,6 @@ class JdbcPersistenceModule extends Module {
 class GuiceSlickProvider @Inject() (dbApi: DBApi, actorSystem: ActorSystem, applicationLifecycle: ApplicationLifecycle)(
     implicit ec: ExecutionContext
 ) extends Provider[SlickProvider] {
-
   lazy val get = {
     // Ensures JNDI bindings are made before we build the SlickProvider
     SlickDbProvider.buildAndBindSlickDatabases(dbApi, actorSystem.settings.config, applicationLifecycle)

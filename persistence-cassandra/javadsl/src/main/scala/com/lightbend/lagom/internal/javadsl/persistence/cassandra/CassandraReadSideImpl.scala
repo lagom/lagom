@@ -40,17 +40,14 @@ private[lagom] final class CassandraReadSideImpl @Inject() (
     readSide: ReadSideImpl,
     injector: Injector
 ) extends CassandraReadSide {
-
   private val dispatcher = system.settings.config.getString("lagom.persistence.read-side.use-dispatcher")
   implicit val ec        = system.dispatchers.lookup(dispatcher)
 
   override def register[Event <: AggregateEvent[Event]](
       processorClass: Class[_ <: CassandraReadSideProcessor[Event]]
   ): Unit = {
-
     readSide.registerFactory(
       () => {
-
         val processor = injector.instanceOf(processorClass)
 
         new ReadSideProcessor[Event] {
@@ -94,7 +91,6 @@ private[lagom] final class CassandraReadSideImpl @Inject() (
           eventClass: Class[E],
           handler: Function[E, CompletionStage[util.List[BoundStatement]]]
       ): ReadSideHandlerBuilder[Event] = {
-
         handlers += (eventClass -> ((event: E, offset: Offset) => handler(event)))
         this
       }
@@ -103,7 +99,6 @@ private[lagom] final class CassandraReadSideImpl @Inject() (
           eventClass: Class[E],
           handler: BiFunction[E, Offset, CompletionStage[util.List[BoundStatement]]]
       ): ReadSideHandlerBuilder[Event] = {
-
         handlers += (eventClass -> handler.apply _)
         this
       }

@@ -14,7 +14,6 @@ import java.util.Optional
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraPersistenceSpec
 
 class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec {
-
   "PersistentEntityActor and PersistentEntityTestDriver" must {
     "produce same events and state" in {
       val probe1 = TestProbe()
@@ -63,7 +62,5 @@ class PersistentEntityTestDriverCompatSpec extends CassandraPersistenceSpec {
 
       outcome.issues.asScala.toList should be(Nil)
     }
-
   }
-
 }

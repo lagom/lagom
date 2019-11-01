@@ -43,7 +43,6 @@ class CassandraClusteredPersistentEntitySpecMultiJvmNode3 extends CassandraClust
 class CassandraClusteredPersistentEntitySpec
     extends AbstractClusteredPersistentEntitySpec(CassandraClusteredPersistentEntityConfig)
     with TolerateFailuresWhenRunningContinuousIntegration {
-
   import CassandraClusteredPersistentEntityConfig._
 
   protected override def atStartup(): Unit = {
@@ -81,7 +80,6 @@ class CassandraClusteredPersistentEntitySpec
       override def configuration: Configuration                   = Configuration(system.settings.config)
       override def serviceLocator: ServiceLocator                 = NoServiceLocator
       override def jsonSerializerRegistry: JsonSerializerRegistry = ???
-
     }
 
   def testEntityReadSide = new TestEntityReadSide(components.actorSystem, components.cassandraSession)

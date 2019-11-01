@@ -35,7 +35,6 @@ import scala.concurrent.duration.FiniteDuration
  * If the task fails, it will be re-executed using exponential backoff using the given backoff parameters.
  */
 object ClusterStartupTask {
-
   def apply(
       system: ActorSystem,
       taskName: String,
@@ -46,7 +45,6 @@ object ClusterStartupTask {
       maxBackoff: FiniteDuration,
       randomBackoffFactor: Double
   ): ClusterStartupTask = {
-
     val startupTaskProps = Props(classOf[ClusterStartupTaskActor], task, taskTimeout)
 
     val backoffProps = BackoffOpts
@@ -75,7 +73,6 @@ object ClusterStartupTask {
 }
 
 class ClusterStartupTask(actorRef: ActorRef) {
-
   import ClusterStartupTaskActor._
 
   /**
@@ -101,15 +98,12 @@ class ClusterStartupTask(actorRef: ActorRef) {
 }
 
 private[lagom] object ClusterStartupTaskActor {
-
   case object Execute
-
 }
 
 private[lagom] class ClusterStartupTaskActor(task: () => Future[Done], timeout: FiniteDuration)
     extends Actor
     with ActorLogging {
-
   import ClusterStartupTaskActor._
   import akka.pattern.ask
   import akka.pattern.pipe
@@ -155,5 +149,4 @@ private[lagom] class ClusterStartupTaskActor(task: () => Future[Done], timeout: 
     case Done =>
     // We do expect to receive Done once executed since we initially asked ourselves to execute
   }
-
 }

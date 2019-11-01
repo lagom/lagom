@@ -24,7 +24,6 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 
 object CassandraReadSideSpec {
-
   val defaultConfig      = ConfigFactory.parseString("akka.loglevel = INFO")
   val noAutoCreateConfig = ConfigFactory.parseString("lagom.persistence.read-side.cassandra.tables-autocreate = false")
 }
@@ -67,7 +66,6 @@ class CassandraReadSideSpec
   override def afterAll(): Unit = {
     super.afterAll()
   }
-
 }
 
 class CassandraReadSideAutoCreateSpec extends CassandraPersistenceSpec(CassandraReadSideSpec.noAutoCreateConfig) {

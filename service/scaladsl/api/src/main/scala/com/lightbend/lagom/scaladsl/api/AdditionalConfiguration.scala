@@ -15,7 +15,6 @@ import play.api.Configuration
  * can control which order this configuration gets applied by changing the order in which traits are mixed together.
  */
 trait ProvidesAdditionalConfiguration {
-
   /**
    * Define the additional configuration to add to the application.
    *
@@ -32,14 +31,12 @@ trait ProvidesAdditionalConfiguration {
  * Additional configuration that will be added to the main system configuration.
  */
 final class AdditionalConfiguration private (private[lagom] val configuration: Config) {
-
   /**
    * Add configuration to the additional configuration.
    */
   def ++(configurationToAdd: Config): AdditionalConfiguration = {
     new AdditionalConfiguration(configuration.withFallback(configurationToAdd))
   }
-
 }
 
 object AdditionalConfiguration {

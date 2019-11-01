@@ -48,7 +48,6 @@ import scala.language.experimental.macros
  * This class provides an abstraction over Play's application loader that provides Lagom specific functionality.
  */
 abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDiscovery {
-
   val logger = Logger(classOf[LagomApplicationLoader])
 
   /**
@@ -146,7 +145,6 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
       _.configure(environment)
     }
   }
-
 }
 
 /**
@@ -156,7 +154,6 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
  * to an app, this can be extended without breaking compatibility.
  */
 sealed trait LagomApplicationContext {
-
   /**
    * The Play application loader context.
    */
@@ -164,7 +161,6 @@ sealed trait LagomApplicationContext {
 }
 
 object LagomApplicationContext {
-
   /**
    * Create a Lagom application loader context.
    *
@@ -186,7 +182,6 @@ object LagomApplicationContext {
       lifecycle = new DefaultApplicationLifecycle
     )
   )
-
 }
 
 /**
@@ -214,7 +209,6 @@ abstract class LagomApplication(context: LagomApplicationContext)
     with LagomServiceClientComponents
     with LagomConfigComponent
     with AkkaManagementComponents {
-
   override val httpFilters: Seq[EssentialFilter] = Nil
 
   @deprecated(message = "prefer `config` using typesafe Config instead", since = "1.4.0")
@@ -230,7 +224,6 @@ abstract class LagomApplication(context: LagomApplicationContext)
 }
 
 private object ActorSystemProvider {
-
   val logger = Logger(classOf[LagomApplication])
 
   /**
@@ -250,7 +243,6 @@ private object ActorSystemProvider {
       serializationSetup
     )
   }
-
 }
 
 /**
@@ -313,7 +305,6 @@ trait LocalServiceLocator extends RequiresLagomServicePort with CircuitBreakerCo
  * Verifies that if there are any topics published by the Lagom server, that there is also a topic publisher.
  */
 private[lagom] object LagomServerTopicFactoryVerifier {
-
   def verify(lagomServer: LagomServer, topicPublisherName: Option[String]): Unit = {
     topicPublisherName match {
       case None =>
@@ -339,5 +330,4 @@ private[lagom] object LagomServerTopicFactoryVerifier {
   }
 
   class NoTopicPublisherException(msg: String) extends RuntimeException(msg)
-
 }

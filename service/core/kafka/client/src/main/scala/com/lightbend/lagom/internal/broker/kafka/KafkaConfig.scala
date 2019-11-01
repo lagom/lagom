@@ -15,7 +15,6 @@ import scala.concurrent.duration._
 import scala.util.control.NoStackTrace
 
 sealed trait KafkaConfig {
-
   /** The name of the Kafka server to look up out of the service locator. */
   def serviceName: Option[String]
 
@@ -80,7 +79,6 @@ object ConsumerConfig {
   private final class ConsumerConfigImpl(conf: Config, alpakkaCommitterSettings: CommitterSettings)
       extends ClientConfig.ClientConfigImpl(conf)
       with ConsumerConfig {
-
     override val offsetBuffer: Int = conf.getInt("offset-buffer")
 
     override val committerSettings: CommitterSettings = alpakkaCommitterSettings

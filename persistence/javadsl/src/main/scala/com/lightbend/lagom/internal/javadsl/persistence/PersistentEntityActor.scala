@@ -95,7 +95,6 @@ private[lagom] class PersistentEntityActor[C, E, S](
     override def commandFailed(cause: Throwable): Unit =
       // not using akka.actor.Status.Failure because it is using Java serialization
       reply(cause)
-
   }
 
   private def eventHandlers: Map[Class[E], JFunction[E, entity.Behavior]] =
@@ -106,7 +105,6 @@ private[lagom] class PersistentEntityActor[C, E, S](
       .asInstanceOf[Map[Class[C], JBiFunction[C, entity.CommandContext[Any], entity.Persist[E]]]]
 
   override def receiveRecover: Receive = {
-
     var initialized = false
 
     def initEmpty(): Unit =
@@ -133,7 +131,6 @@ private[lagom] class PersistentEntityActor[C, E, S](
         initEmpty()
         applyEvent(evt)
         eventCount += 1
-
     }
   }
 
@@ -219,7 +216,6 @@ private[lagom] class PersistentEntityActor[C, E, S](
     // handle it, it will pollute the event stream with UnhandledMessage
     // notifications
     case SaveSnapshotSuccess(_) => () // nothing to do
-
   }
 
   private def tag(event: Any): Any = {
@@ -251,5 +247,4 @@ private[lagom] class PersistentEntityActor[C, E, S](
     )
     super.onPersistFailure(cause, event, seqNr)
   }
-
 }

@@ -63,7 +63,6 @@ object ProjectionRegistryActor {
    * concurrently in other nodes).
    */
   case object GetState
-
 }
 
 /**
@@ -75,7 +74,6 @@ object ProjectionRegistryActor {
  * See also https://github.com/playframework/play-meta/blob/master/docs/design/projections-design.md
  */
 class ProjectionRegistryActor extends Actor with ActorLogging {
-
   import ProjectionRegistryActor._
 
   val replicator: ActorRef             = DistributedData(context.system).replicator
@@ -120,7 +118,6 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
   val DefaultRequestedStatus: Status = projectionConfig.defaultRequestedStatus
 
   override def receive: Receive = {
-
     case ReportForDuty(coordinates) =>
       log.debug(s"Registering worker $coordinates to [${sender().path.toString}]")
       // keep track
@@ -231,7 +228,6 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
       // ... and then update indices and stop watching
       actorIndex = actorIndex - reversedActorIndex(deadActor)
       reversedActorIndex = reversedActorIndex - deadActor
-
   }
 
   private def updateStateChangeRequests(coordinates: WorkerCoordinates, requested: Status): Unit = {
@@ -245,5 +241,4 @@ class ProjectionRegistryActor extends Actor with ActorLogging {
       _.:+(coordinates -> status)
     )
   }
-
 }

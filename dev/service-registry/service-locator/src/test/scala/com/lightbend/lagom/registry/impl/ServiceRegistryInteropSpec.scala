@@ -29,7 +29,6 @@ import play.api.libs.json.Format
 import play.api.libs.json.Json
 
 class ServiceRegistryInteropSpec extends FlatSpec with Matchers with Futures with BeforeAndAfterAll {
-
   val system                   = ActorSystem()
   val jacksonSerializerFactory = new JacksonSerializerFactory(system)
 
@@ -92,5 +91,4 @@ class ServiceRegistryInteropSpec extends FlatSpec with Matchers with Futures wit
       )
     jacksonDeserializer.deserialize(ByteString(str))
   }
-
 }

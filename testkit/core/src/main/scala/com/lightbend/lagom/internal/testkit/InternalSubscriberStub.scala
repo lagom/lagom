@@ -20,7 +20,6 @@ private[lagom] class InternalSubscriberStub[Payload, Message[_]](
     groupId: String,
     topicBuffer: ActorRef
 )(implicit materializer: Materializer) {
-
   def mostOnceSource: Source[Message[Payload], _] = {
     Source
       .actorRef[Message[Payload]](1024, OverflowStrategy.fail)

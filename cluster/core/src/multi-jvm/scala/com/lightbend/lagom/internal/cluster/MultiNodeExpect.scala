@@ -35,7 +35,6 @@ import scala.util.control.NonFatal
 
 @ApiMayChange
 class MultiNodeExpect(probe: TestProbe)(implicit system: ActorSystem) {
-
   private implicit val scheduler: Scheduler               = system.scheduler
   private implicit val executionContext: ExecutionContext = system.dispatcher
 
@@ -49,7 +48,6 @@ class MultiNodeExpect(probe: TestProbe)(implicit system: ActorSystem) {
   def expectMsg[T](t: T, expectationKey: String, max: FiniteDuration): Future[Done] = {
     val eventualT = () => Future(errorAsRuntime(probe.expectMsg(max, t)))
     doExpect(eventualT)(expectationKey, max)
-
   }
 
   /**
@@ -114,5 +112,4 @@ class MultiNodeExpect(probe: TestProbe)(implicit system: ActorSystem) {
   // From vklang's https://gist.github.com/viktorklang/9414163
   def retry[T](op: () => Future[T], delay: FiniteDuration, retries: Int): Future[T] =
     op().recoverWith { case _ if retries > 0 => after(delay, scheduler)(retry(op, delay, retries - 1)) }
-
 }

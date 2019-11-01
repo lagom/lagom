@@ -53,7 +53,6 @@ class JavadslServerBuilder @Inject() (
     jacksonSerializerFactory: JacksonSerializerFactory,
     jacksonExceptionSerializer: JacksonExceptionSerializer
 )(implicit ec: ExecutionContext, mat: Materializer) {
-
   private val log = Logger(this.getClass)
 
   /**
@@ -150,7 +149,6 @@ class JavadslServicesRouter @Inject() (
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends SimpleRouter
     with LagomServiceRouter {
-
   private val serviceRouters = resolvedServices.services.map { service =>
     new JavadslServiceRouter(service.descriptor, service.service, httpConfiguration, parsers)
   }
@@ -178,7 +176,6 @@ class JavadslServiceRouter(
     extends ServiceRouter(httpConfiguration, parsers)
     with JavadslServiceApiBridge
     with LagomServiceRouter {
-
   private class JavadslServiceRoute(override val call: Call[Any, Any]) extends ServiceRoute {
     override val path: Path = JavadslPath.fromCallId(call.callId)
     override val method: Method = call.callId match {
@@ -215,7 +212,6 @@ class JavadslServiceRouter(
       requestSerializer: MessageSerializer[Request, ByteString],
       responseSerializer: MessageSerializer[Response, ByteString]
   ): EssentialAction = {
-
     serviceCall match {
       // If it's a Play service call, then rather than creating the action directly, we let it create the action, and
       // pass it a callback that allows it to convert a service call into an action.
@@ -264,5 +260,4 @@ class JavadslServiceRouter(
           .toScala
     }
   }
-
 }

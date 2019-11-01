@@ -7,7 +7,6 @@ package com.lightbend.lagom.scaladsl.persistence
 import scala.reflect.ClassTag
 
 object AggregateEventTag {
-
   /**
    * Convenience factory method of [[AggregateEventTag]] that uses the
    * class name of the event type as `tag`. Note that it is needed to
@@ -117,7 +116,6 @@ final class AggregateEventTag[Event <: AggregateEvent[Event]](
     val eventType: Class[Event],
     val tag: String
 ) extends AggregateEventTagger[Event] {
-
   override def toString: String = s"AggregateEventTag($eventType, $tag)"
 
   override def equals(other: Any): Boolean = other match {
@@ -145,7 +143,6 @@ final class AggregateEventShards[Event <: AggregateEvent[Event]](
     val tag: String,
     val numShards: Int
 ) extends AggregateEventTagger[Event] {
-
   /**
    * Get the tag for the given entity ID.
    *
@@ -176,5 +173,4 @@ final class AggregateEventShards[Event <: AggregateEvent[Event]](
   }
 
   override def hashCode(): Int = tag.hashCode
-
 }

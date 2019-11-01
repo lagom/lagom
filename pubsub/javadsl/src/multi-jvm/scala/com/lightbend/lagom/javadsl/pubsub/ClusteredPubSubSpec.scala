@@ -32,14 +32,12 @@ object ClusteredPubSubConfig extends MultiNodeConfig {
     akka.loglevel = INFO
     akka.actor.provider = "cluster"
     """))
-
 }
 
 class ClusteredPubSubSpecMultiJvmNode1 extends ClusteredPubSubSpec
 class ClusteredPubSubSpecMultiJvmNode2 extends ClusteredPubSubSpec
 
 class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig) with STMultiNodeSpec with ImplicitSender {
-
   import ClusteredPubSubConfig._
 
   override def initialParticipants = roles.size
@@ -80,7 +78,6 @@ class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig) with STMu
   val registry = injector.instanceOf(classOf[PubSubRegistry])
 
   "PubSub in a Cluster" must {
-
     "publish messages to subscriber on other node" in within(20.seconds) {
       val ref1 = registry.refFor(topic1)
 
@@ -125,7 +122,6 @@ class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig) with STMu
           .expectNext("D")
           .cancel()
           .expectNoMessage(200.millis)
-
       }
 
       runOn(node1) {
@@ -142,6 +138,5 @@ class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig) with STMu
 
       enterBarrier("after-2")
     }
-
   }
 }

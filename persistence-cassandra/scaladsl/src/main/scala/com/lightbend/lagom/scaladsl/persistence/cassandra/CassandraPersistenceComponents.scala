@@ -47,7 +47,6 @@ trait WriteSideCassandraPersistenceComponents extends WriteSidePersistenceCompon
     })
     holder
   }
-
 }
 
 /**

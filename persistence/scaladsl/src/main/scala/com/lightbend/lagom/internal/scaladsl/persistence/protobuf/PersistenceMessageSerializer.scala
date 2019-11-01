@@ -22,7 +22,6 @@ import com.lightbend.lagom.internal.scaladsl.persistence.protobuf.msg.{ Persiste
 private[lagom] class PersistenceMessageSerializer(val system: ExtendedActorSystem)
     extends SerializerWithStringManifest
     with BaseSerializer {
-
   @volatile
   private var ser: Serialization = _
   def serialization: Serialization = {

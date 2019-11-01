@@ -43,10 +43,8 @@ private[lagom] class ScaladslServiceClient(
     topicFactory: Option[TopicFactory]
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ServiceClientConstructor {
-
   private val ctx: ServiceClientImplementationContext = new ServiceClientImplementationContext {
     override def resolve(unresolvedDescriptor: Descriptor): ServiceClientContext = new ServiceClientContext {
-
       val descriptor = serviceResolver.resolve(unresolvedDescriptor)
 
       val serviceCalls: Map[String, ScalaServiceCall] = descriptor.calls.map { call =>
@@ -127,7 +125,6 @@ private class ScaladslClientServiceCall[Request, ResponseMessage, ServiceCallRes
     responseHandler: (ResponseHeader, ResponseMessage) => ServiceCallResponse
 )(implicit ec: ExecutionContext)
     extends ServiceCall[Request, ServiceCallResponse] {
-
   override def invoke(request: Request): Future[ServiceCallResponse] = {
     invoker.doInvoke(request, requestHeaderHandler).map(responseHandler.tupled)
   }
@@ -159,7 +156,6 @@ private class ScaladslClientServiceCallInvoker[Request, Response](
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ClientServiceCallInvoker[Request, Response](ws, serviceInfo.serviceName, path, queryParams)
     with ScaladslServiceApiBridge {
-
   protected override def doMakeStreamedCall(
       requestStream: Source[ByteString, NotUsed],
       requestSerializer: NegotiatedSerializer[_, _],
@@ -217,5 +213,4 @@ private[lagom] class ScaladslServiceResolver(defaultExceptionSerializer: Excepti
         }
     }
   }
-
 }

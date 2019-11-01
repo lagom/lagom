@@ -12,11 +12,9 @@ import sbt._
 import sbt.Keys._
 
 private[sbt] object RunSupport extends RunSupportCompat {
-
   def reloadRunTask(
       extraConfigs: Map[String, String]
   ): Def.Initialize[Task[Reloader.DevServer]] = Def.task {
-
     val state = Keys.state.value
     val scope = resolvedScoped.value.scope
 
@@ -48,7 +46,6 @@ private[sbt] object RunSupport extends RunSupportCompat {
   def nonReloadRunTask(
       extraConfigs: Map[String, String]
   ): Def.Initialize[Task[Reloader.DevServer]] = Def.task {
-
     val classpath = (devModeDependencies.value ++ (fullClasspath in Runtime).value).distinct
 
     val buildLinkSettings = extraConfigs.toSeq ++ lagomDevSettings.value
@@ -71,7 +68,6 @@ private[sbt] object RunSupport extends RunSupportCompat {
    * This task must be removed together with the deprecated lagomServicePort.
    */
   private def selectHttpPortToUse = Def.task {
-
     val logger                = Keys.sLog.value
     val deprecatedServicePort = lagomServicePort.value
     val serviceHttpPort       = lagomServiceHttpPort.value

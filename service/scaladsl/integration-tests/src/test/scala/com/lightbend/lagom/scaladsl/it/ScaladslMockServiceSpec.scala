@@ -37,7 +37,6 @@ import scala.util.Success
 import scala.util.Try
 
 class ScaladslMockServiceSpec extends WordSpec with Matchers {
-
   List(AkkaHttp, Netty).foreach { implicit backend =>
     s"A mock service ($backend)" should {
       "be possible to invoke" in withServer { implicit mat => client =>
@@ -212,7 +211,6 @@ class ScaladslMockServiceSpec extends WordSpec with Matchers {
         }
         MockService.invoked.get() should ===(false)
       }
-
     }
   }
 
@@ -221,7 +219,6 @@ class ScaladslMockServiceSpec extends WordSpec with Matchers {
   }
 
   private def withServer(block: Materializer => MockService => Unit)(implicit httpBackend: HttpBackend): Unit = {
-
     ServiceTest.withServer(ServiceTest.defaultSetup) { ctx =>
       new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with LocalServiceLocator {
         override lazy val lagomServer = serverFor[MockService](new MockServiceImpl)
@@ -238,6 +235,5 @@ class ScaladslMockServiceSpec extends WordSpec with Matchers {
     } { server =>
       block(server.materializer)(server.serviceClient.implement[MockService])
     }
-
   }
 }

@@ -30,7 +30,6 @@ object ActorSystemSpec {
     }
     reduced.head.replaceFirst(""".*\.""", "").replaceAll("[^a-zA-Z_0-9]", "_")
   }
-
 }
 
 abstract class ActorSystemSpec(system: ActorSystem)
@@ -40,7 +39,6 @@ abstract class ActorSystemSpec(system: ActorSystem)
     with BeforeAndAfterAll
     with TypeCheckedTripleEquals
     with ImplicitSender {
-
   def this(testName: String, config: Config) =
     this(ActorSystem(testName, config))
 
@@ -62,5 +60,4 @@ abstract class ActorSystemSpec(system: ActorSystem)
     new CanEqual[Class[A], Class[B]] {
       def areEqual(a: Class[A], b: Class[B]) = a == b
     }
-
 }

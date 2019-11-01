@@ -12,7 +12,6 @@ import com.lightbend.lagom.scaladsl.pubsub.TopicId
 import com.typesafe.config.Config
 
 private[lagom] class PubSubRegistryImpl(system: ActorSystem, conf: Config) extends PubSubRegistry {
-
   def this(system: ActorSystem) =
     this(system, system.settings.config.getConfig("lagom.pubsub"))
 
@@ -21,5 +20,4 @@ private[lagom] class PubSubRegistryImpl(system: ActorSystem, conf: Config) exten
 
   override def refFor[T](topic: TopicId[T]): PubSubRef[T] =
     new PubSubRef(topic, pubsub.mediator, system, bufferSize)
-
 }

@@ -58,7 +58,6 @@ class UnresolvedOptionalPathParamSerializer[Param] extends UnresolvedPathParamSe
 
 class UnresolvedListPathParamSerializer[Param] extends UnresolvedPathParamSerializer[java.util.List[Param]] {
   override def resolve(resolver: ServiceCallResolver, typeInfo: Type): PathParamSerializer[java.util.List[Param]] = {
-
     typeInfo match {
       case paramType: ParameterizedType if paramType.getRawType == classOf[java.util.List[_]] =>
         val wrappedType       = paramType.getActualTypeArguments.apply(0)
@@ -78,7 +77,6 @@ class UnresolvedListPathParamSerializer[Param] extends UnresolvedPathParamSerial
 
 class UnresolvedSetPathParamSerializer[Param] extends UnresolvedPathParamSerializer[java.util.Set[Param]] {
   override def resolve(resolver: ServiceCallResolver, typeInfo: Type): PathParamSerializer[java.util.Set[Param]] = {
-
     typeInfo match {
       case paramType: ParameterizedType if paramType.getRawType == classOf[java.util.Set[_]] =>
         val wrappedType       = paramType.getActualTypeArguments.apply(0)
@@ -102,7 +100,6 @@ class UnresolvedCollectionPathParamSerializer[Param]
       resolver: ServiceCallResolver,
       typeInfo: Type
   ): PathParamSerializer[java.util.Collection[Param]] = {
-
     typeInfo match {
       case paramType: ParameterizedType if paramType.getRawType == classOf[java.util.Collection[_]] =>
         val wrappedType       = paramType.getActualTypeArguments.apply(0)

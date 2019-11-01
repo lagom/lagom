@@ -20,7 +20,6 @@ case class ReadSideConfig(
 )
 
 object ReadSideConfig {
-
   def apply(conf: Config): ReadSideConfig = {
     ReadSideConfig(
       conf.getDuration("offset-timeout", TimeUnit.MILLISECONDS).millis,
@@ -34,5 +33,4 @@ object ReadSideConfig {
       }
     )
   }
-
 }

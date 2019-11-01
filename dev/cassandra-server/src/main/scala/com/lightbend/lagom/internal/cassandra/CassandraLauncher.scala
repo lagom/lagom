@@ -17,7 +17,6 @@ import akka.persistence.cassandra.testkit.{ CassandraLauncher => AkkaCassandraLa
  * Adapted from akka.persistence.cassandra.testkit.CassandraLauncher.
  */
 class CassandraLauncher {
-
   private val ForcedShutdownTimeout              = 20.seconds
   private var cassandraDaemon: Option[Closeable] = None
 
@@ -36,9 +35,7 @@ class CassandraLauncher {
       port: Int,
       jvmOptions: Array[String]
   ): Unit = this.synchronized {
-
     if (cassandraDaemon.isEmpty) {
-
       prepareCassandraDirectory(cassandraDirectory, clean)
 
       val storagePort = AkkaCassandraLauncher.freePort()

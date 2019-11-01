@@ -18,7 +18,6 @@ import org.scalatest.WordSpec
 import scala.concurrent.Future
 
 class ServiceAclResolverSpec extends WordSpec with Matchers {
-
   class SomeService extends Service {
     private def echo[A]                                                                 = ServiceCall[A, A](Future.successful)
     def callString: ServiceCall[String, String]                                         = echo
@@ -87,7 +86,6 @@ class ServiceAclResolverSpec extends WordSpec with Matchers {
       "generate the right number of acls" in {
         acls should have size 7
       }
-
     }
 
     "auto acl is false" should {
@@ -98,5 +96,4 @@ class ServiceAclResolverSpec extends WordSpec with Matchers {
       }
     }
   }
-
 }

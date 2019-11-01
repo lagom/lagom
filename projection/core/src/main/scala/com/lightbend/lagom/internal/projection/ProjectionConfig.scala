@@ -15,7 +15,6 @@ import scala.concurrent.duration._
 
 @InternalApi
 sealed trait ProjectionConfig {
-
   def writeMajorityTimeout: FiniteDuration
   def defaultRequestedStatus: Status
 }
@@ -26,7 +25,6 @@ object ProjectionConfig {
   }
 
   private final class ProjectionConfigImpl(config: Config) extends ProjectionConfig {
-
     val writeMajorityTimeout: FiniteDuration =
       config.getDuration("write.majority.timeout", TimeUnit.MILLISECONDS).millis
 

@@ -15,7 +15,6 @@ import com.lightbend.lagom.scaladsl.persistence.TestEntity
 import scala.concurrent.Future
 
 object JdbcTestEntityReadSide {
-
   class TestEntityReadSideProcessor(readSide: JdbcReadSide) extends ReadSideProcessor[TestEntity.Evt] {
     import JdbcSession.tryWith
 
@@ -53,11 +52,9 @@ object JdbcTestEntityReadSide {
 
     def aggregateTags: Set[AggregateEventTag[Evt]] = TestEntity.Evt.aggregateEventShards.allTags
   }
-
 }
 
 class JdbcTestEntityReadSide(session: JdbcSession) {
-
   import JdbcSession.tryWith
 
   def getAppendCount(id: String): Future[Long] =
@@ -71,5 +68,4 @@ class JdbcTestEntityReadSide(session: JdbcSession) {
         }
       }
     })
-
 }

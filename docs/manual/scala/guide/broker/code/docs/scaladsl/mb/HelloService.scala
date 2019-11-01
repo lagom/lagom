@@ -18,7 +18,6 @@ object HelloService {
   val TOPIC_NAME = "greetings"
 }
 trait HelloService extends Service {
-
   final override def descriptor = {
     import Service._
     named("brokerdocs")

@@ -23,7 +23,6 @@ class ServiceRegistration(
     config: Config,
     registry: ServiceRegistry
 )(implicit ec: ExecutionContext) {
-
   private val logger: Logger = Logger(this.getClass)
 
   private val uris = serviceDnsRecords(config)
@@ -44,5 +43,4 @@ class ServiceRegistration(
       case Failure(e) =>
         logger.error(s"Service name=[${serviceInfo.serviceName}] couldn't register itself to the service locator.", e)
     }
-
 }

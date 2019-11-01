@@ -23,7 +23,6 @@ import scala.reflect.ClassTag
  * using a `PersistentEntityRef`.
  */
 trait PersistentEntityRegistry {
-
   /**
    * At system startup all [[com.lightbend.lagom.scaladsl.persistence.PersistentEntity]]
    * classes must be registered with this method.
@@ -62,5 +61,4 @@ trait PersistentEntityRegistry {
       aggregateTag: AggregateEventTag[Event],
       fromOffset: Offset
   ): scaladsl.Source[EventStreamElement[Event], NotUsed]
-
 }

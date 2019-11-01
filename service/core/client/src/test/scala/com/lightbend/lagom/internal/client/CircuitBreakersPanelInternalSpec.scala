@@ -18,7 +18,6 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 
 class CircuitBreakersPanelInternalSpec extends AsyncFlatSpec with Matchers with BeforeAndAfterAll with Futures {
-
   val actorSystem = ActorSystem("CircuitBreakersPanelInternalSpec")
 
   override def afterAll() = {
@@ -111,7 +110,6 @@ class CircuitBreakersPanelInternalSpec extends AsyncFlatSpec with Matchers with 
        |#//#circuit-breaker-default
     """.stripMargin
   )
-
 }
 
 class FakeException(msg: String) extends RuntimeException(msg)

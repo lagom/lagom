@@ -27,7 +27,6 @@ private[lagom] class ServiceRegistryServiceLocator @Inject() (
     client: ServiceRegistryClient,
     implicit val ec: ExecutionContext
 ) extends CircuitBreakingServiceLocator(circuitBreakers) {
-
   override def locateAll(name: String, serviceCall: Call[_, _]): CompletionStage[JList[URI]] =
     // a ServiceLocator doesn't know what a `portName` is so we default to `None` and the
     // implementation will return any registry without a port name. This means that in order
@@ -41,5 +40,4 @@ private[lagom] class ServiceRegistryServiceLocator @Inject() (
     // for this queries to work any service registered using `http` as portName will also have
     // to be registered without name.
     client.locateAll(name, None).map(_.headOption.asJava).toJava
-
 }

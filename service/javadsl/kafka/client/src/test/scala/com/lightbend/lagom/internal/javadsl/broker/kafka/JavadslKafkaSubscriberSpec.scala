@@ -11,7 +11,6 @@ import org.scalatest.Matchers
  *
  */
 class JavadslKafkaSubscriberSpec extends FlatSpec with Matchers {
-
   behavior.of("JavadslKafkaSubscriber")
 
   it should "create a new subscriber with updated groupId" in {

@@ -156,5 +156,4 @@ class CircuitBreakerMetricsImpl(val breakerId: String, provider: CircuitBreakerM
 
   private def updateFailureThroughput(): Unit =
     failureThroughput.mark()
-
 }

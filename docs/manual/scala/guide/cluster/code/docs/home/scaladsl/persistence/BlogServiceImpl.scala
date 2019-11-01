@@ -24,7 +24,6 @@ trait BlogServiceImpl {
   //#service-impl
   class BlogServiceImpl(persistentEntities: PersistentEntityRegistry)(implicit ec: ExecutionContext)
       extends BlogService {
-
     persistentEntities.register(new Post)
 
     override def addPost(id: String): ServiceCall[AddPost, String] =
@@ -39,7 +38,6 @@ trait BlogServiceImpl {
 
   class BlogServiceImpl2(persistentEntities: PersistentEntityRegistry)(implicit ec: ExecutionContext)
       extends BlogService {
-
     persistentEntities.register(new Post)
 
     //#service-impl2
@@ -49,5 +47,4 @@ trait BlogServiceImpl {
     }
     //#service-impl2
   }
-
 }

@@ -54,7 +54,6 @@ private[lagom] abstract class WebSocketClient(
     lifecycle: ApplicationLifecycle
 )(implicit ec: ExecutionContext)
     extends LagomServiceApiBridge {
-
   lifecycle.addStopHook(() => shutdown())
 
   // Netty channel groups are used to track open channels (connections), they automatically clean themselves up when
@@ -80,7 +79,6 @@ private[lagom] abstract class WebSocketClient(
       requestHeader: RequestHeader,
       outgoing: Source[ByteString, NotUsed]
   ): Future[(ResponseHeader, Source[ByteString, NotUsed])] = {
-
     val normalized = requestHeaderUri(requestHeader).normalize()
     val tgt = if (normalized.getPath == null || normalized.getPath.trim().isEmpty) {
       new URI(normalized.getScheme, normalized.getAuthority, "/", normalized.getQuery, normalized.getFragment)
@@ -147,7 +145,6 @@ private[lagom] abstract class WebSocketClient(
       incomingPromise: Promise[(ResponseHeader, Source[ByteString, NotUsed])],
       requestProtocol: MessageProtocol
   ) extends ChannelDuplexHandler {
-
     private val NormalClosure = 1000
 
     private sealed trait State
@@ -189,9 +186,7 @@ private[lagom] abstract class WebSocketClient(
                 )
               )
               ctx.close()
-
             } else {
-
               // Setup the pipeline
               val channelPublisher = new HandlerPublisher(ctx.executor, classOf[ByteString]) {
                 override def cancelled() = clientInitiatedClose(ctx)
@@ -235,7 +230,6 @@ private[lagom] abstract class WebSocketClient(
                 // the normal case, this will result in the server then closing the connection, which will eventually
                 // close this stream, which is what will trigger that error to be published.
                 val injectOutgoingStreamError = Flow[ByteString].via(new GraphStage[FlowShape[ByteString, ByteString]] {
-
                   val in: Inlet[ByteString]   = Inlet("BytesIn")
                   val out: Outlet[ByteString] = Outlet("BytesOut")
                   override val shape          = FlowShape(in, out)
@@ -275,7 +269,6 @@ private[lagom] abstract class WebSocketClient(
                   incomingPromise.failure(e)
               }
             }
-
           } finally {
             ReferenceCountUtil.release(resp)
           }
@@ -437,7 +430,6 @@ private[lagom] abstract class WebSocketClient(
       }
     }
   }
-
 }
 
 private[lagom] object WebSocketClient {
@@ -461,7 +453,6 @@ private[lagom] sealed trait WebSocketClientConfig {
 }
 
 private[lagom] object WebSocketClientConfig {
-
   def apply(conf: Config): WebSocketClientConfig =
     new WebSocketClientConfigImpl(conf.getConfig("lagom.client.websocket"))
 

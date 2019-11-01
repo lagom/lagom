@@ -32,7 +32,6 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 class AdditionalRoutersSpec extends WordSpec with Matchers with ScalaFutures {
-
   "A LagomServer " should {
     "be extensible with a Play Router" in withServer { server =>
       val request = FakeRequest(GET, "/hello/")
@@ -60,7 +59,6 @@ class AdditionalRoutersSpec extends WordSpec with Matchers with ScalaFutures {
       serverFor[AdditionalRoutersService](new AdditionalRoutersServiceImpl)
         .additionalRouter(FixedResponseRouter("hello").withPrefix("/hello"))
   }
-
 }
 
 /**
@@ -70,7 +68,6 @@ class AdditionalRoutersSpec extends WordSpec with Matchers with ScalaFutures {
  * @return
  */
 object FixedResponseRouter {
-
   def apply(msg: String) =
     new SimpleRouterImpl({
       case _ =>
@@ -84,5 +81,4 @@ object FixedResponseRouter {
             scala.concurrent.ExecutionContext.global
         }
     })
-
 }

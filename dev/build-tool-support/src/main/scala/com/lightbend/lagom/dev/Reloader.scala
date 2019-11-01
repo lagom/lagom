@@ -27,7 +27,6 @@ import scala.collection.JavaConverters._
 import better.files.{ File => _, _ }
 
 object Reloader {
-
   sealed trait CompileResult
   case class CompileSuccess(sources: Map[String, Source], classpath: Seq[File]) extends CompileResult
   case class CompileFailure(exception: PlayException)                           extends CompileResult
@@ -174,7 +173,6 @@ object Reloader {
       httpPort: Int,
       httpsPort: Int
   ): DevServer = {
-
     lazy val delegatingLoader: ClassLoader = buildDelegating(parentClassLoader, () => Some(applicationLoader))
     lazy val applicationLoader             = buildForApplication(dependencyClasspath, delegatingLoader)
 
@@ -248,7 +246,6 @@ object Reloader {
 
     bindings.result()
   }
-
 }
 
 import Reloader._
@@ -262,7 +259,6 @@ class Reloader(
     fileWatchService: FileWatchService,
     reloadLock: AnyRef
 ) extends BuildLink {
-
   // The current classloader for the application
   @volatile private var currentApplicationClassLoader: Option[ClassLoader] = None
   // Flag to force a reload on the next request.
@@ -282,7 +278,6 @@ class Reloader(
 
   // Create the watcher, updates the changed boolean when a file has changed.
   private val watcher = fileWatchService.watch(monitoredFiles, () => {
-
     changed = true
     onChange()
   })
