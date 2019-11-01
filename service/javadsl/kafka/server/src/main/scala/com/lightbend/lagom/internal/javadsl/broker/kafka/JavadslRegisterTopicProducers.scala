@@ -41,7 +41,6 @@ class JavadslRegisterTopicProducers @Inject() (
     serviceLocator: ServiceLocator,
     projectionRegistryImpl: ProjectionRegistry
 )(implicit ec: ExecutionContext, mat: Materializer) {
-
   private val log         = LoggerFactory.getLogger(classOf[JavadslRegisterTopicProducers])
   private val kafkaConfig = KafkaConfig(actorSystem.settings.config)
 
@@ -124,5 +123,4 @@ class JavadslRegisterTopicProducers @Inject() (
 
   private def locateService(name: String): Future[Seq[URI]] =
     serviceLocator.locateAll(name).toScala.map(_.asScala.toIndexedSeq)
-
 }

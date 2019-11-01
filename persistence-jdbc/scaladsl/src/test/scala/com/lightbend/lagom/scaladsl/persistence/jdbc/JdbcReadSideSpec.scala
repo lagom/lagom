@@ -25,5 +25,4 @@ class JdbcReadSideSpec extends JdbcPersistenceSpec(TestEntitySerializerRegistry)
   override def afterAll(): Unit = {
     super.afterAll()
   }
-
 }

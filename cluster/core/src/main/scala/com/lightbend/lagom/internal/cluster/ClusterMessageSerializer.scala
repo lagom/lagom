@@ -13,7 +13,6 @@ import com.lightbend.lagom.internal.cluster.protobuf.msg.{ ClusterMessages => cm
 private[lagom] class ClusterMessageSerializer(val system: ExtendedActorSystem)
     extends SerializerWithStringManifest
     with BaseSerializer {
-
   val EnsureActiveManifest = "E"
 
   override def manifest(obj: AnyRef): String = obj match {

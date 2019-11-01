@@ -41,7 +41,6 @@ trait SimpleStrictService extends Service {
 abstract class FilteredStrictService(atomicInteger: AtomicInteger) extends SimpleStrictService {
   override def descriptor: Descriptor =
     super.descriptor.withHeaderFilter(new VerboseHeaderLagomFilter(atomicInteger))
-
 }
 
 /**

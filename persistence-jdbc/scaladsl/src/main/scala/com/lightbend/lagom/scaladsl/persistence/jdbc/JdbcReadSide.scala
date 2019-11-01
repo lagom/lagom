@@ -21,7 +21,6 @@ import scala.reflect.ClassTag
  * Offsets are automatically handled.
  */
 trait JdbcReadSide {
-
   /**
    * Create a builder for a JDBC read side event handler.
    *
@@ -34,7 +33,6 @@ trait JdbcReadSide {
    * Builder for the handler.
    */
   trait ReadSideHandlerBuilder[Event <: AggregateEvent[Event]] {
-
     /**
      * Set a global prepare callback.
      *
@@ -71,5 +69,4 @@ trait JdbcReadSide {
      */
     def build(): ReadSideProcessor.ReadSideHandler[Event]
   }
-
 }

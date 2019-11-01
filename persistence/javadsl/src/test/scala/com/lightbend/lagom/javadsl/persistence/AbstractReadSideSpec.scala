@@ -84,7 +84,6 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
   }
 
   class Mock(numberOfFailures: Int = 0) extends Actor with ActorLogging {
-
     private var stats = Mock.MockStats(0, 0)
 
     private val prepared = new AtomicBoolean(false)
@@ -109,7 +108,6 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       case Mock.GetStats   => sender() ! stats
       case Mock.IsPrepared => sender() ! prepared.get()
     }
-
   }
 
   object Mock {
@@ -201,7 +199,6 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       .futureValue
 
   "ReadSide" must {
-
     "register on the projection registry" in {
       withReadSideProcessor("123") { _ =>
         projectionRegistryProbe.get.expectMsgType[ProjectionRegistryActor.ReportForDuty]
@@ -251,7 +248,6 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
       withReadSideProcessor(id) { _ =>
         assertAppendCount(id, 5L)
       }
-
     }
 
     "recover after failure in globalPrepare" in {
@@ -296,9 +292,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
         // however count doesn't change because ReadSide only handles Appended events
         // InPrependMode and Prepended events are ignored
         assertAppendCount(id, 3L)
-
       }
     }
   }
-
 }

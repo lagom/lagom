@@ -18,7 +18,6 @@ package helloservice {
 }
 
 package lagomapplication {
-
   import helloservice._
 
   //#lagom-application
@@ -29,14 +28,12 @@ package lagomapplication {
   abstract class HelloApplication(context: LagomApplicationContext)
       extends LagomApplication(context)
       with AhcWSComponents {
-
     override lazy val lagomServer = serverFor[HelloService](wire[HelloServiceImpl])
   }
   //#lagom-application
 }
 
 package lagomloader {
-
   import lagomapplication._
   import helloservice._
 
@@ -46,7 +43,6 @@ package lagomloader {
   import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 
   class HelloApplicationLoader extends LagomApplicationLoader {
-
     override def loadDevMode(context: LagomApplicationContext) =
       new HelloApplication(context) with LagomDevModeComponents
 
@@ -61,7 +57,6 @@ package lagomloader {
 }
 
 package callstream {
-
   import akka.NotUsed
   import com.lightbend.lagom.scaladsl.api.ServiceCall
 
@@ -88,7 +83,6 @@ package callstream {
 }
 
 package hellostream {
-
   import com.lightbend.lagom.scaladsl.api.ServiceCall
   import scala.concurrent.Future
 
@@ -102,7 +96,6 @@ package hellostream {
 }
 
 package serverservicecall {
-
   import scala.concurrent.Future
 
   class UsingServerServiceCall extends helloservice.HelloService {
@@ -126,7 +119,6 @@ package serverservicecall {
 }
 
 package servicecallcomposition {
-
   import scala.concurrent.ExecutionContext
   import scala.concurrent.Future
   import com.lightbend.lagom.scaladsl.server.ServerServiceCall
@@ -216,5 +208,4 @@ package servicecallcomposition {
     }
     //#filter-hello-service
   }
-
 }

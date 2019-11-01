@@ -30,5 +30,4 @@ class JdbcReadSideSpec extends JdbcPersistenceSpec with AbstractReadSideSpec {
   override def afterAll(): Unit = {
     super.afterAll()
   }
-
 }

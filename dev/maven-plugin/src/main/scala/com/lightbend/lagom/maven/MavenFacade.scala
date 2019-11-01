@@ -46,7 +46,6 @@ class MavenFacade @Inject() (
     lifecycleExecutionPlanCalculator: LifecycleExecutionPlanCalculator,
     logger: MavenLoggerProxy
 ) {
-
   /**
    * Resolve the classpath for the given artifact.
    *
@@ -76,7 +75,6 @@ class MavenFacade @Inject() (
    * @return The resolved project.
    */
   def resolveProject(project: MavenProject, additionalDependencies: Seq[Dependency]): Seq[Dependency] = {
-
     // We use a low level API rather than just resolving the project so we can inject our own dev mode dependencies
     // The implementation of this is modelled off org.apache.maven.project.DefaultProjectDependenciesResolver
     val collect = new CollectRequest()
@@ -161,13 +159,10 @@ class MavenFacade @Inject() (
   private def isService(project: MavenProject): Boolean = {
     // If the value is set, return it
     isLagomOrPlayService(project).getOrElse {
-
       // Otherwise try and run lagom:configure
       if (executeMavenPluginGoal(project, "configure")) {
-
         // Now try and get the value
         isLagomOrPlayService(project).getOrElse {
-
           // The value should have been set by lagom:configure, fail
           sys.error(s"${LagomKeys.LagomService} not set on project ${project.getArtifactId} after running configure!")
         }
@@ -267,7 +262,6 @@ class MavenFacade @Inject() (
   private def getLagomPlugin(project: MavenProject): Option[Plugin] = {
     Option(project.getPlugin("com.lightbend.lagom:lagom-maven-plugin"))
   }
-
 }
 
 /**

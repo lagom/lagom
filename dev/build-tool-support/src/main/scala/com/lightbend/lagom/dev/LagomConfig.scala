@@ -26,5 +26,4 @@ object LagomConfig {
     "lagom.cluster.bootstrap.enabled"               -> "off",
     "akka.discovery.method"                         -> "lagom-dev-mode"
   )
-
 }

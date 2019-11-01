@@ -50,7 +50,6 @@ class PersistentEntityRefSpec
     with BeforeAndAfterAll
     with ScalaFutures
     with TypeCheckedTripleEquals {
-
   implicit override val patienceConfig = PatienceConfig(5.seconds, 150.millis)
 
   val config: Config =
@@ -101,7 +100,6 @@ class PersistentEntityRefSpec
     override def materializer: Materializer                     = ActorMaterializer()(system)
     override def serviceLocator: ServiceLocator                 = NoServiceLocator
     override def jsonSerializerRegistry: JsonSerializerRegistry = TestEntitySerializerRegistry
-
   }
 
   private def registry: PersistentEntityRegistry = {
@@ -111,7 +109,6 @@ class PersistentEntityRefSpec
   }
 
   "The Cassandra persistence backend" should {
-
     "send commands to the registry" in {
       val ref1 = registry.refFor[TestEntity]("1")
       ref1
@@ -160,6 +157,5 @@ class PersistentEntityRefSpec
         registry.refFor[AnotherEntity]("whatever")
       }
     }
-
   }
 }

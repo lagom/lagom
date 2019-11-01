@@ -24,13 +24,11 @@ import play.api.Logger
  */
 private[lagom] final class ServiceLocatorSessionProvider(system: ActorSystem, config: Config)
     extends ConfigSessionProvider(system, config) {
-
   private val log = Logger(getClass)
 
   override def lookupContactPoints(
       clusterId: String
   )(implicit ec: ExecutionContext): Future[immutable.Seq[InetSocketAddress]] = {
-
     ServiceLocatorHolder(system).serviceLocatorEventually.flatMap { serviceLocatorAdapter =>
       serviceLocatorAdapter.locateAll(clusterId).map {
         case Nil => throw new NoContactPointsException(s"No contact points for [$clusterId]")

@@ -23,7 +23,6 @@ class DelegatingClassLoader(
     buildLoader: ClassLoader,
     applicationClassLoader: () => Option[ClassLoader]
 ) extends ClassLoader(commonLoader) {
-
   lazy val findResourceMethod: Method = {
     val method = classOf[ClassLoader].getDeclaredMethod("findResource", classOf[String])
     method.setAccessible(true)

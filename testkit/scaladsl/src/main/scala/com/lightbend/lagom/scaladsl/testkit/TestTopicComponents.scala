@@ -41,12 +41,10 @@ trait TestTopicComponents extends TopicFactoryProvider {
   }
 
   lazy val topicFactory: TopicFactory = new TestTopicFactory(lagomServer)(materializer)
-
 }
 
 private[lagom] class TestTopicFactory(lagomServer: LagomServer)(implicit materializer: Materializer)
     extends TopicFactory {
-
   private val topics: Map[TopicId, Service] = {
     val binding = lagomServer.serviceBinding
     binding.descriptor.topics.map { topic =>
@@ -80,20 +78,17 @@ private[lagom] class TestTopic[Payload, Event <: AggregateEvent[Event]](
     topicProducer: TaggedOffsetTopicProducer[Payload, Event]
 )(implicit materializer: Materializer)
     extends Topic[Payload] {
-
   override def topicId: TopicId = topicCall.topicId
 
   override def subscribe: Subscriber[Payload] = new TestSubscriber[Payload](identity)
 
   private class TestSubscriber[WrappedPayload](transform: Payload => WrappedPayload)
       extends Subscriber[WrappedPayload] {
-
     override def withGroupId(groupId: String): Subscriber[WrappedPayload] = this
 
     override def withMetadata = new TestSubscriber[Message[WrappedPayload]](transform.andThen(Message.apply))
 
     override def atMostOnceSource: Source[WrappedPayload, _] = {
-
       val serializer = topicCall.messageSerializer
       Source(topicProducer.tags)
         .flatMapMerge(topicProducer.tags.size, { tag =>
@@ -111,5 +106,4 @@ private[lagom] class TestTopic[Payload, Event <: AggregateEvent[Event]](
     override def atLeastOnce(flow: Flow[WrappedPayload, Done, _]): Future[Done] =
       atMostOnceSource.via(flow).runWith(Sink.ignore)
   }
-
 }

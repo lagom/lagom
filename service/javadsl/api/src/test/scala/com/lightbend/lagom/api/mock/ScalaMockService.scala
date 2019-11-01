@@ -13,7 +13,6 @@ import com.lightbend.lagom.javadsl.api.ServiceCall
 import com.lightbend.lagom.javadsl.api.transport.Method
 
 trait ScalaMockService extends Service {
-
   def hello(): ServiceCall[UUID, String]
 
   override def descriptor(): Descriptor =

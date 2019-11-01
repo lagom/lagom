@@ -28,7 +28,6 @@ case class ServiceBindingInfo(serviceName: String, bindings: Seq[DevServerBindin
  * Helper for working with the console
  */
 class ConsoleHelper(colors: Colors) {
-
   def printStartScreen(log: LoggerProxy, services: Seq[ServiceBindingInfo]): Unit = {
     services.foreach {
       case ServiceBindingInfo(name, bindings) =>

@@ -30,7 +30,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
-
   private val testTimeoutInSeconds = 5
   private implicit val testTimeout = Timeout(testTimeoutInSeconds.seconds)
 

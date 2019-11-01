@@ -41,7 +41,6 @@ class ProjectionMessagesSerializerSpec
     with BeforeAndAfterAll
     with TypeCheckedTripleEquals
     with ImplicitSender {
-
   import ProjectionMessageSerializer._
 
   private val serialization: Serialization = SerializationExtension(system)
@@ -60,7 +59,6 @@ class ProjectionMessagesSerializerSpec
   }
 
   "ProjectionMessageSerializer" must {
-
     "serialize status Started" in {
       val bytes = toBinary(Started)
       ByteString(bytes).utf8String should be("Started")

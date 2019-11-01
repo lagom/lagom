@@ -20,7 +20,6 @@ import com.lightbend.lagom.javadsl.persistence.TestEntity
 import java.time.{ Duration => JDuration }
 
 class PersistenceMessageSerializerSpec extends ActorSystemSpec {
-
   val serializer = new PersistenceMessageSerializer(system.asInstanceOf[ExtendedActorSystem])
 
   def checkSerialization(obj: AnyRef): Unit = {
@@ -34,7 +33,6 @@ class PersistenceMessageSerializerSpec extends ActorSystemSpec {
   }
 
   "PersistenceMessageSerializer" must {
-
     "serialize CommandEnvelope" in {
       checkSerialization(CommandEnvelope("entityId", TestEntity.Add.of("a")))
     }
@@ -63,5 +61,4 @@ class PersistenceMessageSerializerSpec extends ActorSystemSpec {
       }
     }
   }
-
 }

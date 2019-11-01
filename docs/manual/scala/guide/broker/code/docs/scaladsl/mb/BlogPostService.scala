@@ -17,7 +17,6 @@ import scala.collection.immutable.Seq
  *
  */
 trait BlogPostService extends Service {
-
   final override def descriptor: Descriptor = {
     import Service._
 

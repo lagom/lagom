@@ -19,7 +19,6 @@ import com.lightbend.lagom.javadsl.api.broker.Topic
  * Support for implementing javadsl service calls with Scala.
  */
 object ScalaService {
-
   import ScalaServiceSupport.ScalaMethodCall
 
   def call[Request, Response](method: ScalaMethodCall[ServiceCall[Request, Response]]): Call[Request, Response] =
@@ -47,7 +46,6 @@ object ScalaService {
 }
 
 object ScalaServiceSupport {
-
   final class ScalaMethodCall[T](val method: Method)
   object ScalaMethodCall {
     implicit def methodFor[T](f: () => T): ScalaMethodCall[T] = macro methodForImpl[T]

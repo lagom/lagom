@@ -29,7 +29,6 @@ import scala.util.control.NonFatal
 
 @Singleton
 class ReadSideConfigProvider @Inject() (configuration: Config) extends Provider[ReadSideConfig] {
-
   lazy val get = {
     ReadSideConfig(configuration.getConfig("lagom.persistence.read-side"))
   }
@@ -44,13 +43,11 @@ private[lagom] class ReadSideImpl @Inject() (
     projectionRegistry: ProjectionRegistry
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends ReadSide {
-
   protected val name: Optional[String] = Optional.empty()
 
   override def register[Event <: AggregateEvent[Event]](
       processorClass: Class[_ <: ReadSideProcessor[Event]]
   ): Unit = {
-
     val processorFactory: () => ReadSideProcessor[Event] =
       () => injector.instanceOf(processorClass)
 
@@ -61,7 +58,6 @@ private[lagom] class ReadSideImpl @Inject() (
       processorFactory: () => ReadSideProcessor[Event],
       clazz: Class[_]
   ) = {
-
     // Capture and improve failure messages. This improvement is only required due to using runtime DI
     val readSideProcessor = try {
       processorFactory()
@@ -114,7 +110,5 @@ private[lagom] class ReadSideImpl @Inject() (
       readSidePropsFactory,
       config.role
     )
-
   }
-
 }

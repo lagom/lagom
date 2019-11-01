@@ -34,7 +34,6 @@ import scala.concurrent.duration._
  * status code of the response (won't be 200) and locate the suspect line of code where that status code is launched.
  */
 class ScaladslStrictServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeAndAfterAll {
-
   private val system                        = ActorSystem("ScaladslServiceRouterSpec")
   private implicit val ec: ExecutionContext = system.dispatcher
   private implicit val mat: Materializer    = ActorMaterializer.create(system)

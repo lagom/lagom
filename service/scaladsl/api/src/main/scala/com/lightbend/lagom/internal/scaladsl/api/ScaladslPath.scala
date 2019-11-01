@@ -15,7 +15,6 @@ import com.lightbend.lagom.scaladsl.api.Descriptor.RestCallId
  * Path methods specific to the scaladsl
  */
 object ScaladslPath {
-
   def fromCallId(callId: CallId): Path = {
     callId match {
       case rest: RestCallId =>
@@ -28,5 +27,4 @@ object ScaladslPath {
         Path(path, Seq(StaticPathPart(path)), Nil)
     }
   }
-
 }

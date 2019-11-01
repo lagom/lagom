@@ -30,7 +30,6 @@ class CassandraClusteredPersistentEntitySpecMultiJvmNode3 extends CassandraClust
 class CassandraClusteredPersistentEntitySpec
     extends AbstractClusteredPersistentEntitySpec(CassandraClusteredPersistentEntityConfig)
     with TolerateFailuresWhenRunningContinuousIntegration {
-
   import CassandraClusteredPersistentEntityConfig._
 
   protected override def atStartup(): Unit = {

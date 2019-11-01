@@ -4,7 +4,6 @@ package sbt
  * Work around sbts private[sbt] on some plugin functions
  */
 object PluginsAccessor {
-
   /**
    * Exclude a plugin
    */

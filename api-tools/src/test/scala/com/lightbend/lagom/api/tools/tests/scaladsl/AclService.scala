@@ -14,7 +14,6 @@ import com.lightbend.lagom.scaladsl.api._
 import scala.concurrent.Future
 
 trait AclService extends Service {
-
   def getMock(id: String): ServiceCall[NotUsed, NotUsed]
 
   def addMock: ServiceCall[NotUsed, NotUsed]
@@ -26,7 +25,6 @@ trait AclService extends Service {
         restCall(Method.POST, "/scala-mocks", addMock)
       )
       .withAutoAcl(true)
-
 }
 
 class AclServiceImpl extends AclService {

@@ -8,7 +8,6 @@ import akka.event.LoggingAdapter
 import com.typesafe.config.Config
 
 private[lagom] object CassandraKeyspaceConfig {
-
   def validateKeyspace(namespace: String, config: Config, log: LoggingAdapter): Unit = {
     if (log.isErrorEnabled) {
       val keyspacePath = s"$namespace.keyspace"
@@ -17,5 +16,4 @@ private[lagom] object CassandraKeyspaceConfig {
       }
     }
   }
-
 }

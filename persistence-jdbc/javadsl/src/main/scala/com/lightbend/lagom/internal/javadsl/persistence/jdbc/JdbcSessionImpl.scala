@@ -18,7 +18,6 @@ import scala.compat.java8.FutureConverters._
  */
 @Singleton
 final class JdbcSessionImpl @Inject() (slick: SlickProvider) extends JdbcSession {
-
   import slick.profile.api._
 
   override def withConnection[T](block: ConnectionFunction[T]): CompletionStage[T] = {
@@ -36,5 +35,4 @@ final class JdbcSessionImpl @Inject() (slick: SlickProvider) extends JdbcSession
       }.transactionally
     }.toJava
   }
-
 }

@@ -24,7 +24,6 @@ import play.api.libs.ws.ahc.AhcWSComponents
 import scala.concurrent.Future
 
 class LagomApplicationSpec extends WordSpec with Matchers {
-
   "The Lagom Application" should {
     "fail to start if there are topics to publish but no topic publisher is provided" in {
       // Need to provide our own lifecycle so we can shutdown any components that started
@@ -64,7 +63,6 @@ class LagomApplicationSpec extends WordSpec with Matchers {
         override def serviceLocator = NoServiceLocator
       }.applicationLifecycle.stop()
     }
-
   }
   private val configKey = "akka.cluster.seed-nodes"
 
@@ -108,5 +106,4 @@ class LagomApplicationSpec extends WordSpec with Matchers {
       Future.successful(NotUsed)
     }
   }
-
 }

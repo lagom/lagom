@@ -14,7 +14,6 @@ import scala.concurrent.Future
 
 private[lagom] class CircuitBreakersPanelImpl(circuitBreakersInternal: CircuitBreakersPanelInternal)
     extends CircuitBreakersPanel {
-
   def this(system: ActorSystem, config: CircuitBreakerConfig, metricsProvider: CircuitBreakerMetricsProvider) =
     this(new CircuitBreakersPanelInternal(system, config, metricsProvider))
 

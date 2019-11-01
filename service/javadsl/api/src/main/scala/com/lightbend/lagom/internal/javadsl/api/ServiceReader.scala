@@ -32,7 +32,6 @@ import akka.util.ByteString
  * Reads a service interface
  */
 object ServiceReader {
-
   final val DescriptorMethodName = "descriptor"
 
   private val isJava8 =
@@ -80,7 +79,6 @@ object ServiceReader {
       builtInSerializerFactories: Map[PlaceholderSerializerFactory, SerializerFactory],
       builtInExceptionSerializers: Map[PlaceholderExceptionSerializer, ExceptionSerializer]
   ): Descriptor = {
-
     val builtInIdSerializers: Map[Type, PathParamSerializer[_]] = Map(
       classOf[String]                  -> PathParamSerializers.STRING,
       classOf[java.lang.Long]          -> PathParamSerializers.LONG,
@@ -271,7 +269,6 @@ object ServiceReader {
       serviceCallResolver: ServiceCallResolver,
       method: Method
   ): ServiceCallHolder = {
-
     val serializers = method.getGenericParameterTypes.toSeq.map { arg =>
       try {
         serviceCallResolver.resolvePathParamSerializer(new UnresolvedTypePathParamSerializer[AnyRef], arg)
@@ -311,7 +308,6 @@ object ServiceReader {
       }
       override val method: Method = theMethod
     }
-
   }
 
   private def constructTopicHolder(
@@ -338,7 +334,6 @@ object ServiceReader {
           .bindTo(proxy)
           // And now we actually invoke it
           .invokeWithArguments(args: _*)
-
       } else if (method.getName == DescriptorMethodName && method.getParameterCount == 0) {
         if (ScalaSig.isScala(serviceInterface)) {
           if (serviceInterface.isInterface()) {

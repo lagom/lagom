@@ -14,7 +14,6 @@ import scala.concurrent.Future
 import scala.concurrent.Promise
 
 object NettyFutureConverters {
-
   implicit class ToFuture[T](future: NettyFuture[T]) {
     def toScala: Future[T] = {
       val promise = Promise[T]()
@@ -50,5 +49,4 @@ object NettyFutureConverters {
       promise.future
     }
   }
-
 }

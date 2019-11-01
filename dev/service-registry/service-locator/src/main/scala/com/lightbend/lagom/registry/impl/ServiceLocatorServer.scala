@@ -73,7 +73,6 @@ class ServiceLocatorServer extends Closeable {
       serviceGatewayConfig: ServiceGatewayConfig,
       unmanagedServices: JMap[String, String]
   ): Application = {
-
     val initialSettings: Map[String, AnyRef] = Map(
       "ssl-config.loose.disableHostnameVerification" -> "true"
     )
@@ -107,5 +106,4 @@ class ServiceLocatorServer extends Closeable {
     // TODO: support multiple addresses for gateway (http vs https)
     new URI(s"http://${server.mainAddress.getAddress.getHostAddress}:${gatewayAddress.getPort}")
   }
-
 }

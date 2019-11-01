@@ -13,7 +13,6 @@ import scala.reflect.ClassTag
  * Convenience factories to create [[JsonMigration]]s.
  */
 object JsonMigrations {
-
   def apply(
       currentVersion: Int,
       transformation: (Int, JsValue) => JsValue,
@@ -76,7 +75,6 @@ object JsonMigrations {
  * current class name.
  */
 abstract class JsonMigration(val currentVersion: Int) {
-
   /**
    * Override to provide transformation of the old JSON structure to the new
    * JSON structure.
@@ -100,5 +98,4 @@ abstract class JsonMigration(val currentVersion: Int) {
    * current class name.
    */
   def transformClassName(fromVersion: Int, className: String): String = className
-
 }

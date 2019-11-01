@@ -71,7 +71,6 @@ import com.lightbend.lagom.javadsl.server.LagomServiceRouter
  * the test suite which endpoint in the descriptor to modify, and how to make a call to that endpoint.
  */
 class JavadslErrorHandlingSpec extends ServiceSupport {
-
   List(AkkaHttp, Netty).foreach { implicit backend =>
     s"Service error handling (${backend.codeName})" when {
       "handling errors with plain HTTP calls" should {
@@ -288,7 +287,6 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
       changeServer: Descriptor => Descriptor = identity,
       mode: Mode = Mode.Prod
   )(block: Application => MockService => Unit)(implicit httpBackend: HttpBackend): Unit = {
-
     val environment = Environment.simple(mode = mode)
 
     val jacksonConfig =
@@ -455,5 +453,4 @@ class JavadslErrorHandlingSpec extends ServiceSupport {
       failingServiceCall(call)
     }
   }
-
 }

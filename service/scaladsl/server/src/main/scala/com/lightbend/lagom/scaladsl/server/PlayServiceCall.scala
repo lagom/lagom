@@ -13,7 +13,6 @@ import scala.concurrent.Future
  * A service call implementation that allows plugging directly into Play's request handling.
  */
 trait PlayServiceCall[Request, Response] extends ServiceCall[Request, Response] {
-
   def invoke(request: Request): Future[Response] =
     throw new UnsupportedOperationException("Play service call must be invoked using Play specific methods")
 
@@ -33,7 +32,6 @@ trait PlayServiceCall[Request, Response] extends ServiceCall[Request, Response] 
 }
 
 object PlayServiceCall {
-
   /**
    * Convenience function for creating Play service calls.
    *
@@ -70,5 +68,4 @@ object PlayServiceCall {
         serviceCall(wrapCall)
     }
   }
-
 }

@@ -38,7 +38,6 @@ class AbstractPersistentEntityRegistry(
     system: ActorSystem,
     queryPluginId: String,
 ) extends PersistentEntityRegistry {
-
   protected val name: Option[String]     = None
   protected val journalPluginId: String  = ""
   protected val snapshotPluginId: String = ""
@@ -85,7 +84,6 @@ class AbstractPersistentEntityRegistry(
   private def prependName(entityTypeName: String) = name.fold("")(_ + "-") + entityTypeName
 
   override def register(entityFactory: => PersistentEntity): Unit = {
-
     // try to create one instance to fail fast
     val proto          = entityFactory
     val entityTypeName = proto.entityTypeName
@@ -146,5 +144,4 @@ class AbstractPersistentEntityRegistry(
           )
       )
   }
-
 }

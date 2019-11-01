@@ -1496,14 +1496,11 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
     name := "lagom-maven-dependencies",
     autoScalaLibrary := false,
     pomExtra := pomExtra.value :+ {
-
       val lagomDeps = Def.settingDyn {
-
         // all Lagom artifacts are cross compiled
         (javadslProjects ++ coreProjects).map {
           project =>
             Def.setting {
-
               val artifactName = (artifact in project).value.name
 
               Dependencies.Versions.Scala.map {

@@ -24,7 +24,6 @@ private[lagom] class ScaladslKafkaTopic[Message](
     serviceLocator: ServiceLocator
 )(implicit mat: Materializer, ec: ExecutionContext)
     extends Topic[Message] {
-
   override def topicId: TopicId = topicCall.topicId
 
   override def subscribe: Subscriber[Message] =

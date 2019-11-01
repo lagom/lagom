@@ -16,7 +16,6 @@ import scala.collection.immutable.Seq
  * A message header.
  */
 sealed trait MessageHeader {
-
   /**
    * The protocol of the message.
    */
@@ -114,7 +113,6 @@ sealed trait MessageHeader {
  * The headers are however still provided, in case information needs to be extracted out of non standard headers.
  */
 sealed trait RequestHeader extends MessageHeader {
-
   /**
    * The method used to make this request.
    */
@@ -182,7 +180,6 @@ sealed trait RequestHeader extends MessageHeader {
 }
 
 object RequestHeader {
-
   def apply(
       method: Method,
       uri: URI,
@@ -251,7 +248,6 @@ object RequestHeader {
  * The headers are however still provided, in case information needs to be extracted out of non standard headers.
  */
 sealed trait ResponseHeader extends MessageHeader {
-
   /**
    * The status code of the response.
    */

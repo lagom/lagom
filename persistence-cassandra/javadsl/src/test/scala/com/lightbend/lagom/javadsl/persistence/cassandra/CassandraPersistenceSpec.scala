@@ -17,7 +17,6 @@ import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 
 class CassandraPersistenceSpec(system: ActorSystem) extends ActorSystemSpec(system) {
-
   def this(testName: String, config: Config) =
     this(
       ActorSystem(
@@ -47,5 +46,4 @@ class CassandraPersistenceSpec(system: ActorSystem) extends ActorSystemSpec(syst
     CassandraLauncher.stop()
     super.afterAll()
   }
-
 }

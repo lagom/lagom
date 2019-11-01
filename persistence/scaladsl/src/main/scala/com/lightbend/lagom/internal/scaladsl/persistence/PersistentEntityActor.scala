@@ -68,7 +68,6 @@ private[lagom] object PersistentEntityActor {
           s"because there is no separator character ('$EntityIdSeparator')"
       )
   }
-
 }
 
 /**
@@ -83,7 +82,6 @@ private[lagom] class PersistentEntityActor(
     override val journalPluginId: String,
     override val snapshotPluginId: String
 ) extends PersistentActor {
-
   import PersistentEntityActor.EntityIdSeparator
 
   // we don't care about the types in the actor, but using these aliases for better readability
@@ -263,5 +261,4 @@ private[lagom] class PersistentEntityActor(
     )
     super.onPersistFailure(cause, event, seqNr)
   }
-
 }

@@ -53,7 +53,6 @@ import scala.util.Try
 import scala.util.control.NonFatal
 
 object ServiceRouter {
-
   /** RFC 6455 Section 5.5 - maximum control frame size is 125 bytes */
   val WebSocketControlFrameMaxLength = 125
 
@@ -65,7 +64,6 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
     mat: Materializer
 ) extends SimpleRouter
     with LagomServiceApiBridge {
-
   protected val descriptor: Descriptor
   protected val serviceRoutes: Seq[ServiceRoute]
 
@@ -98,7 +96,6 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
       // We match by method, but since we ignore the method if it's a WebSocket (because WebSockets require that GET
       // is used) we also match if it's a WebSocket request and this can be handled as a WebSocket.
       if (methodName(route.method) == request.method || (request.method == "GET" && route.isWebSocket)) {
-
         val path        = URI.create(request.uri).getRawPath
         val queryString = request.queryString
         route.path.extract(path, queryString).map {
@@ -366,7 +363,6 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
           requestMessageDeserializer.asInstanceOf[NegotiatedDeserializer[Request, AkkaStreamsSource[ByteString, _]]]
 
         val captureCancel = Flow[ByteString].via(new GraphStage[FlowShape[ByteString, ByteString]] {
-
           val in  = Inlet[ByteString]("CaptureCancelIn")
           val out = Outlet[ByteString]("CaptureCancelOut")
 
@@ -553,5 +549,4 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
       requestHeader: RequestHeader,
       request: Request
   ): Future[(ResponseHeader, Response)]
-
 }

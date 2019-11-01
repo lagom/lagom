@@ -3,13 +3,11 @@
  */
 
 package sbt {
-
   import sbt.internal.BuildStructure
   import sbt.internal.Load
   import sbt.internal.LoadedBuild
 
   object LagomLoad {
-
     def reapply(
         newSettings: Seq[Setting[_]],
         structure: BuildStructure
@@ -27,11 +25,9 @@ package sbt {
         settings: Seq[Setting[_]]
     ): Seq[Setting[_]] = Load.transformSettings(thisScope, uri, rootProject, settings)
   }
-
 }
 
 package com.lightbend.lagom.sbt {
-
   import sbt._
   import sbt.Keys._
   import sbt.Setting
@@ -41,7 +37,6 @@ package com.lightbend.lagom.sbt {
   import sbt.internal.BuildStructure
 
   object DynamicProjectAdder {
-
     /**
      * Add a list of projects to the state.
      *
@@ -146,9 +141,6 @@ package com.lightbend.lagom.sbt {
       } else {
         state
       }
-
     }
-
   }
-
 }

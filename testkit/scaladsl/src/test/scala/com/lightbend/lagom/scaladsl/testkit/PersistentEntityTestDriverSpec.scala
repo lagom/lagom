@@ -12,7 +12,6 @@ import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 
 class PersistentEntityTestDriverSpec
     extends ActorSystemSpec(JsonSerializerRegistry.actorSystemSetupFor(TestEntitySerializerRegistry)) {
-
   def newDriver() = new PersistentEntityTestDriver(system, new TestEntity(system, Some(TestProbe().ref)), "1")
 
   "PersistentEntityTestDriver" must {
@@ -119,5 +118,4 @@ class PersistentEntityTestDriverSpec
       outcomeAfterClearing.issues.toList should be(Nil)
     }
   }
-
 }

@@ -32,7 +32,6 @@ import scala.collection.JavaConverters._
 import scala.compat.java8.OptionConverters._
 
 class JavadslServiceDiscovery extends ServiceDiscovery {
-
   private val log = Logger(this.getClass)
 
   /**
@@ -198,5 +197,4 @@ class JavadslServiceDiscovery extends ServiceDiscovery {
     override def serialize(exception: Throwable, accept: util.Collection[MessageProtocol]): RawExceptionMessage = stub
     override def deserialize(message: RawExceptionMessage): Throwable                                           = stub
   }
-
 }

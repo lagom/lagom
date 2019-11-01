@@ -29,7 +29,6 @@ object AlphaService {
 }
 
 trait AlphaService extends Service {
-
   import AlphaService.TOPIC_ID
 
   override def descriptor: Descriptor = {
@@ -45,7 +44,6 @@ trait AlphaService extends Service {
 case class AlphaEvent(message: Int)
 
 object AlphaEvent {
-
   import play.api.libs.json._
 
   implicit val format: Format[AlphaEvent] = Json.format[AlphaEvent]
@@ -63,7 +61,6 @@ abstract class DownstreamApplication(context: LagomApplicationContext)
     with CassandraPersistenceComponents
     with ProvidesAdditionalConfiguration
     with AhcWSComponents {
-
   // This is a hack so C* persistence in this Applicaiton doesn't complain. C* Persistence is only used
   // so intances of this Application can mix-in a TopicComponents implementation (Test or Kafka)
   override def additionalConfiguration: AdditionalConfiguration = {
@@ -82,7 +79,6 @@ abstract class DownstreamApplication(context: LagomApplicationContext)
   lazy val alphaService = serviceClient.implement[AlphaService]
 
   override lazy val lagomServer = serverFor[CharlieService](new CharlieServiceImpl(alphaService))
-
 }
 
 trait CharlieService extends Service {
@@ -103,7 +99,6 @@ trait CharlieService extends Service {
 case class ReceivedMessage(topicId: String, msg: Int)
 
 object ReceivedMessage {
-
   import play.api.libs.json._
 
   implicit val format: Format[ReceivedMessage] = Json.format[ReceivedMessage]

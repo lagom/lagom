@@ -58,7 +58,6 @@ import scala.util.control.NonFatal
  * the test suite which endpoint in the descriptor to modify, and how to make a call to that endpoint.
  */
 class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
-
   List(AkkaHttp, Netty).foreach { implicit backend =>
     s"Service error handling (${backend.codeName})" when {
       "handling errors with plain HTTP calls" should {
@@ -244,7 +243,6 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
       changeServer: Descriptor => Descriptor = identity,
       mode: Mode = Mode.Prod
   )(block: Materializer => MockService => Unit)(implicit httpBackend: HttpBackend): Unit = {
-
     ServiceTest.withServer(ServiceTest.defaultSetup) { ctx =>
       new LagomApplication(ctx) with AhcWSComponents with LocalServiceLocator {
         override lazy val lagomServer = serverFor[MockService](new MockServiceImpl)
@@ -396,5 +394,4 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
       failingServiceCall(call)
     }
   }
-
 }

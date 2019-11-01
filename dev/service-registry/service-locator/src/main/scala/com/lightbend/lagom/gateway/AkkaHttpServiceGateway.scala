@@ -48,7 +48,6 @@ import scala.concurrent.duration._
 class AkkaHttpServiceGatewayFactory @Inject() (coordinatedShutdown: CoordinatedShutdown, config: ServiceGatewayConfig)(
     @Named("serviceRegistryActor") registry: ActorRef
 )(implicit actorSystem: ActorSystem, mat: Materializer) {
-
   def start(): InetSocketAddress = {
     new AkkaHttpServiceGateway(coordinatedShutdown, config, registry).address
   }
@@ -59,7 +58,6 @@ class AkkaHttpServiceGateway(
     config: ServiceGatewayConfig,
     registry: ActorRef
 )(implicit actorSystem: ActorSystem, mat: Materializer) {
-
   private val log = LoggerFactory.getLogger(classOf[AkkaHttpServiceGateway])
 
   import actorSystem.dispatcher
@@ -96,7 +94,6 @@ class AkkaHttpServiceGateway(
         log.debug("Sending not found response")
         Future.successful(renderNotFound(request, path, registryMap.mapValues(_.serviceRegistryService).toMap))
     }
-
   }
 
   private def handleWebSocketRequest(request: HttpRequest, uri: Uri, upgrade: UpgradeToWebSocket) = {
@@ -111,7 +108,6 @@ class AkkaHttpServiceGateway(
     )
 
     responseFuture.map {
-
       case ValidUpgrade(response, chosenSubprotocol) =>
         val webSocketResponse = upgrade.handleMessages(
           Flow.fromSinkAndSource(Sink.fromSubscriber(subscriber), Source.fromPublisher(publisher)),

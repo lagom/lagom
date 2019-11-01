@@ -19,7 +19,6 @@ import play.api.Configuration
 import play.api.Environment
 
 class CircuitBreakerModule extends Module {
-
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
     Seq(
       bind[CircuitBreakersPanel].to[CircuitBreakersPanelImpl],

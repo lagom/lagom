@@ -27,7 +27,6 @@ import scala.concurrent.Future
  * Factors [[com.lightbend.lagom.scaladsl.testkit.ProducerStub]]'s.
  */
 final class ProducerStubFactory(actorSystem: ActorSystem, materializer: Materializer) {
-
   private val topics = new ConcurrentHashMap[String, ProducerStub[_]]
 
   def producer[T](topicId: String): ProducerStub[T] = {
@@ -36,7 +35,6 @@ final class ProducerStubFactory(actorSystem: ActorSystem, materializer: Material
     }
     topics.computeIfAbsent(topicId, builder).asInstanceOf[ProducerStub[T]]
   }
-
 }
 
 /**
@@ -78,7 +76,6 @@ private[lagom] class TopicStub[T](val topicId: Topic.TopicId, topicBuffer: Actor
   )(implicit materializer: Materializer)
       extends InternalSubscriberStub[Payload, Message](groupId, topicBuffer)
       with Subscriber[SubscriberPayload] {
-
     override def withMetadata: Subscriber[Message[SubscriberPayload]] =
       new SubscriberStub[Payload, Message[SubscriberPayload]](
         groupId,
@@ -94,5 +91,4 @@ private[lagom] class TopicStub[T](val topicId: Topic.TopicId, topicBuffer: Actor
     override def atLeastOnce(flow: Flow[SubscriberPayload, Done, _]): Future[Done] =
       super.leastOnce(Flow[Message[Payload]].map(transform).via(flow))
   }
-
 }

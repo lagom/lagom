@@ -24,7 +24,6 @@ import scala.collection.JavaConverters._
 import java.util.Comparator
 
 class KafkaLocalServer private (kafkaProperties: Properties, zooKeeperServer: KafkaLocalServer.ZooKeeperLocalServer) {
-
   private val kafkaServerRef = new AtomicReference[KafkaServerStartable](null)
 
   def start(): Unit = {
@@ -66,7 +65,6 @@ class KafkaLocalServer private (kafkaProperties: Properties, zooKeeperServer: Ka
     }
     // else it's already stopped
   }
-
 }
 
 object KafkaLocalServer {

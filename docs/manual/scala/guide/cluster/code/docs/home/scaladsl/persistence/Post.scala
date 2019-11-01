@@ -9,7 +9,6 @@ import akka.Done
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
 
 final class Post extends PersistentEntity {
-
   override type Command = BlogCommand
   override type Event   = BlogEvent
   override type State   = BlogState
@@ -60,6 +59,5 @@ final class Post extends PersistentEntity {
           ctx.reply(state.content.get)
       }
   }
-
 }
 //#full-example

@@ -17,14 +17,12 @@ import scala.concurrent.ExecutionContext
 //#imports
 
 trait SlickBlogEventProcessor {
-
   trait Initial {
     //#initial
     class BlogEventProcessor(
         readSide: SlickReadSide,
         postSummaryRepo: PostSummaryRepository
     ) extends ReadSideProcessor[BlogEvent] {
-
       override def buildHandler(): ReadSideProcessor.ReadSideHandler[BlogEvent] = {
         // TODO build read side handler
         ???
@@ -39,12 +37,10 @@ trait SlickBlogEventProcessor {
   }
 
   trait Final {
-
     class BlogEventProcessor(
         readSide: SlickReadSide,
         postSummaryRepo: PostSummaryRepository
     ) extends ReadSideProcessor[BlogEvent] {
-
       //#tag
       override def aggregateTags: Set[AggregateEventTag[BlogEvent]] =
         BlogEvent.Tag.allTags
@@ -80,5 +76,4 @@ trait SlickBlogEventProcessor {
       }
     }
   }
-
 }

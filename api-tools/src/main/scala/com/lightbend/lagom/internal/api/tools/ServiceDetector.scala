@@ -20,7 +20,6 @@ import scala.compat.java8.OptionConverters._
  * A service detector locates the services of a Lagom project.
  */
 object ServiceDetector {
-
   private val ServiceDiscoveryKey  = "lagom.tools.service-discovery"
   private val ApplicationLoaderKey = "play.application.loader"
 

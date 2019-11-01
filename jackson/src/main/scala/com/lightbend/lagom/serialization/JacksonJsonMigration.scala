@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.JsonNode
  */
 @deprecated("Use akka.serialization.jackson.JacksonMigration instead", "1.6.0")
 abstract class JacksonJsonMigration {
-
   /**
    * Define current version. The first version, when no migration was used,
    * is always 1.

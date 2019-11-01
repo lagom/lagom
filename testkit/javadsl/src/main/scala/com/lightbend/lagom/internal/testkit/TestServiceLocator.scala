@@ -24,7 +24,6 @@ private[lagom] class TestServiceLocator @Inject() (
     port: TestServiceLocatorPort,
     implicit val ec: ExecutionContext
 ) extends CircuitBreakingServiceLocator(circuitBreakers) {
-
   private val futureUri = port.port.map(p => URI.create("http://localhost:" + p))
 
   override def locate(name: String, call: Descriptor.Call[_, _]): CompletionStage[Optional[URI]] =

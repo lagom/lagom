@@ -16,7 +16,6 @@ import org.apache.kafka.common.serialization.Serializer
  */
 private[lagom] class ScaladslKafkaDeserializer[T](deserializer: NegotiatedDeserializer[T, ByteString])
     extends Deserializer[T] {
-
   override def configure(configs: java.util.Map[String, _], isKey: Boolean): Unit = {
     () // ignore
   }
@@ -25,7 +24,6 @@ private[lagom] class ScaladslKafkaDeserializer[T](deserializer: NegotiatedDeseri
     deserializer.deserialize(ByteString(data))
 
   override def close(): Unit = () // nothing to do
-
 }
 
 /**
@@ -33,7 +31,6 @@ private[lagom] class ScaladslKafkaDeserializer[T](deserializer: NegotiatedDeseri
  * messages can be serialized into a byte array and published into Kafka.
  */
 private[lagom] class ScaladslKafkaSerializer[T](serializer: NegotiatedSerializer[T, ByteString]) extends Serializer[T] {
-
   override def configure(configs: java.util.Map[String, _], isKey: Boolean): Unit = {
     () // ignore
   }
@@ -42,5 +39,4 @@ private[lagom] class ScaladslKafkaSerializer[T](serializer: NegotiatedSerializer
     serializer.serialize(data).toArray
 
   override def close(): Unit = () // nothing to do
-
 }

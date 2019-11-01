@@ -15,7 +15,6 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
 class ScaladslServiceResolverSpec extends FlatSpec with Matchers {
-
   behavior.of("ScaladslServiceResolver")
 
   it should "setup circuit-breakers for all method calls using default values when nothing is specified" in {
@@ -37,7 +36,6 @@ class ScaladslServiceResolverSpec extends FlatSpec with Matchers {
   }
 
   trait Unspecified extends Service {
-
     import Service._
 
     def one: ServiceCall[NotUsed, NotUsed]
@@ -51,7 +49,6 @@ class ScaladslServiceResolverSpec extends FlatSpec with Matchers {
   }
 
   trait General extends Service {
-
     import Service._
 
     def one: ServiceCall[NotUsed, NotUsed]
@@ -66,7 +63,6 @@ class ScaladslServiceResolverSpec extends FlatSpec with Matchers {
   }
 
   trait PerCall extends Service {
-
     import Service._
 
     def one: ServiceCall[NotUsed, NotUsed]
@@ -80,5 +76,4 @@ class ScaladslServiceResolverSpec extends FlatSpec with Matchers {
         .withCircuitBreaker(CircuitBreaker.identifiedBy("general-cb"))
     }
   }
-
 }

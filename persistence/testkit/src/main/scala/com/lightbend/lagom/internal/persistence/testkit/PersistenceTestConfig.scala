@@ -9,7 +9,6 @@ import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 
 private[lagom] object PersistenceTestConfig {
-
   lazy val BasicConfigMap: Map[String, AnyRef] = Map(
     "lagom.akka.management.enabled" -> "off",
     "akka.actor.provider"           -> "local",

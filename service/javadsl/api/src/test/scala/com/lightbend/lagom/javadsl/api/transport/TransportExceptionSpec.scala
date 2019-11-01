@@ -18,7 +18,6 @@ import scala.collection.immutable
  *
  */
 class TransportExceptionSpec extends WordSpec with Matchers {
-
   val protocolTextPlain = new MessageProtocol(Optional.of("text/plain"), Optional.of("utf-8"), Optional.empty[String])
   val protocolJson      = new MessageProtocol(Optional.of("application/json"), Optional.of("utf-8"), Optional.empty[String])
   val protocolHtml      = new MessageProtocol(Optional.of("text/html"), Optional.of("utf-8"), Optional.empty[String])
@@ -36,7 +35,6 @@ class TransportExceptionSpec extends WordSpec with Matchers {
   )
 
   "Lagom-provided TransportExceptions" should {
-
     supportedExceptions.foreach { ex =>
       s"be buildable from code and message (${ex.getClass.getName})" in {
         val reconstructed = TransportException.fromCodeAndMessage(ex.errorCode(), ex.exceptionMessage())
@@ -46,7 +44,5 @@ class TransportExceptionSpec extends WordSpec with Matchers {
     }
 
     // TODO: implement roundtrip de/ser tests like in com.lightbend.lagom.scaladsl.api.ExceptionsSpec
-
   }
-
 }

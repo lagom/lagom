@@ -20,7 +20,6 @@ import play.api.inject.{ bind => playBind }
  * This test remains to ensure that Lagom doesn't introduce a startup failure.
  */
 class JdbcPersistenceModuleSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll {
-
   "The JdbcPersistenceModule" should {
     "should start the service when database is not available" in {
       // Should be okay to build an application since Lagom configuration
@@ -60,7 +59,6 @@ class JdbcPersistenceModuleSpec extends AsyncWordSpec with Matchers with BeforeA
       }
     }
   }
-
 }
 
 // So that we can confirm DBApi was created

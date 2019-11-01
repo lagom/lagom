@@ -27,7 +27,6 @@ import scala.language.implicitConversions
  * implementation for the [[Service#descriptor]] method.
  */
 trait Service {
-
   /**
    * Describe this service.
    *
@@ -37,7 +36,6 @@ trait Service {
 }
 
 object Service {
-
   import ServiceSupport._
   import Descriptor._
 
@@ -260,7 +258,6 @@ object ServiceSupport {
    * Provides implicit conversions to convert Scala AST that references methods to actual method references.
    */
   object ScalaMethodServiceCall {
-
     implicit def methodFor[Q, R](f: => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl0[Q, R]
     implicit def methodFor0[Q, R](f: () => ServiceCall[Q, R]): ScalaMethodServiceCall[Q, R] = macro methodForImpl0[Q, R]
 
@@ -462,5 +459,4 @@ object ServiceSupport {
 
     (thisClassExpr, methodNameLiteral)
   }
-
 }

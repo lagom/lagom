@@ -16,7 +16,6 @@ import com.lightbend.lagom.javadsl.persistence.{ Offset => LagomJavaDslOffset }
  * Converts between the Akka Persistence Query Offset type and the internal Lagom Java Offset type
  */
 object OffsetAdapter {
-
   def offsetToDslOffset(offset: Offset): LagomJavaDslOffset = offset match {
     case TimeBasedUUID(uuid) => LagomJavaDslOffset.timeBasedUUID(uuid)
     case Sequence(value)     => LagomJavaDslOffset.sequence(value)
@@ -30,5 +29,4 @@ object OffsetAdapter {
     case LagomJavaDslOffset.NONE                => NoOffset
     case _                                      => throw new IllegalArgumentException("Unsuppoerted offset type " + dslOffset.getClass.getName)
   }
-
 }

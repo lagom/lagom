@@ -16,7 +16,6 @@ import com.lightbend.lagom.scaladsl.playjson.JsonSerializer
 import scala.collection.immutable
 
 object TestEntity {
-
   object SharedFormats {
     import play.api.libs.json._
 
@@ -47,7 +46,6 @@ object TestEntity {
       JsonSerializer(emptySingletonFormat(GetAddress)),
       JsonSerializer(emptySingletonFormat(Clear))
     )
-
   }
 
   sealed trait Cmd
@@ -134,7 +132,6 @@ object TestEntitySerializerRegistry extends JsonSerializerRegistry {
   import TestEntity._
 
   override def serializers: immutable.Seq[JsonSerializer[_]] = Cmd.serializers ++ Evt.serializers ++ State.serializers
-
 }
 
 class TestEntity(system: ActorSystem) extends PersistentEntity {
@@ -236,5 +233,4 @@ class TestEntity(system: ActorSystem) extends PersistentEntity {
     probe.foreach(_ ! AfterRecovery(state))
     state
   }
-
 }

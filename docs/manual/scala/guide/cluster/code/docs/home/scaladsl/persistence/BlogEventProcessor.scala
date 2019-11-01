@@ -17,7 +17,6 @@ import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandle
 
 //#my-database
 trait MyDatabase {
-
   /**
    * Create the tables needed for this read side if not already created.
    */
@@ -42,7 +41,6 @@ object MyDatabase extends MyDatabase {
 }
 
 class BlogEventProcessor(myDatabase: MyDatabase) extends ReadSideProcessor[BlogEvent] {
-
   //#tag
   override def aggregateTags: Set[AggregateEventTag[BlogEvent]] =
     BlogEvent.Tag.allTags
@@ -51,7 +49,6 @@ class BlogEventProcessor(myDatabase: MyDatabase) extends ReadSideProcessor[BlogE
   //#build-handler
   override def buildHandler(): ReadSideProcessor.ReadSideHandler[BlogEvent] = {
     new ReadSideHandler[BlogEvent] {
-
       override def globalPrepare(): Future[Done] =
         myDatabase.createTables()
 
@@ -67,5 +64,4 @@ class BlogEventProcessor(myDatabase: MyDatabase) extends ReadSideProcessor[BlogE
     }
   }
   //#build-handler
-
 }

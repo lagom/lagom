@@ -14,7 +14,6 @@ import com.lightbend.lagom.serialization.Jsonable
 import scala.concurrent.duration._
 
 object AbstractEmbeddedPersistentActorSpec {
-
   // All commands and events extending Jsonable so that the
   // tests will use Jackson serialization instead of Java's.
   case object Get                    extends Jsonable
@@ -67,7 +66,5 @@ trait AbstractEmbeddedPersistentActorSpec { spec: ActorSystemSpec =>
       p2 ! Get
       expectMsg(State(Vector("A", "B", "C")))
     }
-
   }
-
 }

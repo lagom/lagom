@@ -18,7 +18,6 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 
 class SlickOffsetStoreSpec extends ActorSystemSpec(Configuration.load(Environment.simple()).underlying) {
-
   import system.dispatcher
 
   private lazy val applicationLifecycle: ApplicationLifecycle = new DefaultApplicationLifecycle
@@ -43,9 +42,7 @@ class SlickOffsetStoreSpec extends ActorSystemSpec(Configuration.load(Environmen
   }
 
   "SlickOffsetStoreSpec" when {
-
     "auto-creating tables is enabled" should {
-
       // Regression test for https://github.com/lagom/lagom/issues/1336
       "allow prepare to be retried after a failure" in {
         val exception = Await.result(offsetStore.prepare("test_read_side", "TestTag").failed, 10.seconds)
@@ -80,7 +77,6 @@ class SlickOffsetStoreSpec extends ActorSystemSpec(Configuration.load(Environmen
     }
 
     "auto-creating tables is disabled" in pending
-
   }
 
   private case class TestOffsetStoreConfiguration(
@@ -96,5 +92,4 @@ class SlickOffsetStoreSpec extends ActorSystemSpec(Configuration.load(Environmen
       globalPrepareTimeout: FiniteDuration = 5.seconds,
       role: Option[String] = None
   ) extends SlickOffsetStoreConfiguration
-
 }

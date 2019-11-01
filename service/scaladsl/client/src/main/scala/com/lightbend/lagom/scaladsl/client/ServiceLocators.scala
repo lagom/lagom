@@ -35,7 +35,6 @@ import scala.concurrent.Future
  */
 abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext)
     extends ServiceLocator {
-
   /**
    * Do the given block with the given service looked up.
    *
@@ -84,7 +83,6 @@ abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakersPan
  * Components required for circuit breakers.
  */
 trait CircuitBreakerComponents extends LagomConfigComponent {
-
   def actorSystem: ActorSystem
   def executionContext: ExecutionContext
   def circuitBreakerMetricsProvider: CircuitBreakerMetricsProvider
@@ -108,7 +106,6 @@ trait ConfigurationServiceLocatorComponents extends CircuitBreakerComponents {
  */
 class ConfigurationServiceLocator(config: Config, circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext)
     extends CircuitBreakingServiceLocator(circuitBreakers) {
-
   private val LagomServicesKey: String = "lagom.services"
 
   private val services = {
@@ -123,7 +120,6 @@ class ConfigurationServiceLocator(config: Config, circuitBreakers: CircuitBreake
           val uris = ConfigExtensions.getStringList(lagomServicesConfig, key).asScala
           key -> uris.map(URI.create).toList
         } catch {
-
           case e: ConfigException.WrongType =>
             throw new IllegalStateException(
               "Error loading configuration for ConfigurationServiceLocator. " +
@@ -166,7 +162,6 @@ trait StaticServiceLocatorComponents extends CircuitBreakerComponents {
  */
 class StaticServiceLocator(uri: URI, circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext)
     extends CircuitBreakingServiceLocator(circuitBreakers) {
-
   override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] = Future.successful(Some(uri))
 }
 
@@ -186,7 +181,6 @@ trait RoundRobinServiceLocatorComponents extends CircuitBreakerComponents {
 class RoundRobinServiceLocator(uris: immutable.Seq[URI], circuitBreakers: CircuitBreakersPanel)(
     implicit ec: ExecutionContext
 ) extends CircuitBreakingServiceLocator(circuitBreakers) {
-
   private val counter = new AtomicInteger(0)
 
   override def locate(name: String, serviceCall: Call[_, _]): Future[Option[URI]] = {

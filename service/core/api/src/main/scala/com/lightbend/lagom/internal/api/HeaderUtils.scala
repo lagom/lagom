@@ -7,7 +7,6 @@ package com.lightbend.lagom.internal.api
 import java.util.Locale
 
 object HeaderUtils {
-
   /**
    * Normalize an HTTP header name.
    *
@@ -16,5 +15,4 @@ object HeaderUtils {
    */
   @inline
   def normalize(name: String): String = name.toLowerCase(Locale.ENGLISH)
-
 }

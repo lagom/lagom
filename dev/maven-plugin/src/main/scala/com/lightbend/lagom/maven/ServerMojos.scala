@@ -31,7 +31,6 @@ class StartCassandraMojo @Inject() (
     mavenLoggerManager: LoggerManager,
     scalaClassLoaderManager: ScalaClassLoaderManager
 ) extends AbstractMojo {
-
   @BeanProperty
   var cassandraMaxBootWaitingSeconds: Int = _
   @BeanProperty
@@ -87,7 +86,6 @@ class StartKafkaMojo @Inject() (
     mavenLoggerManager: LoggerManager,
     session: MavenSession
 ) extends AbstractMojo {
-
   @BeanProperty
   var kafkaPort: Int = _
   @BeanProperty
@@ -102,9 +100,7 @@ class StartKafkaMojo @Inject() (
   var kafkaJvmOptions: JList[String] = Seq("-Xms256m", "-Xmx1024m").asJava
 
   override def execute(): Unit = {
-
     if (kafkaEnabled) {
-
       val dependency = {
         val artifact =
           new DefaultArtifact("com.lightbend.lagom", "lagom-kafka-server_2.12", "jar", LagomVersion.current)
@@ -165,7 +161,6 @@ class StartServiceLocatorMojo @Inject() (
     facade: MavenFacade,
     scalaClassLoaderManager: ScalaClassLoaderManager
 ) extends AbstractMojo {
-
   @BeanProperty
   var serviceLocatorEnabled: Boolean = _
   @BeanProperty
@@ -193,7 +188,6 @@ class StartServiceLocatorMojo @Inject() (
   var kafkaEnabled: Boolean = _
 
   override def execute(): Unit = {
-
     if (serviceLocatorEnabled) {
       val cp = facade.resolveArtifact(
         new DefaultArtifact("com.lightbend.lagom", "lagom-service-locator_2.12", "jar", LagomVersion.current)
@@ -222,7 +216,6 @@ class StartServiceLocatorMojo @Inject() (
 }
 
 class StopServiceLocatorMojo @Inject() (logger: MavenLoggerProxy) extends AbstractMojo {
-
   @BeanProperty
   var serviceLocatorEnabled: Boolean = _
 

@@ -18,7 +18,6 @@ import com.google.inject.TypeLiteral
  * InitServiceLocatorHolder, since Guice doesn't support @PostConstruct.
  */
 class CassandraPersistenceGuiceModule extends AbstractModule {
-
   override def configure(): Unit = {
     initServiceLocatorHolder()
   }

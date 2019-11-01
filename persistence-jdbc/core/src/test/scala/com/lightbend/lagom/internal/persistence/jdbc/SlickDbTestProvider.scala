@@ -11,7 +11,6 @@ import scala.concurrent.Future
 import scala.util.Random
 
 object SlickDbTestProvider {
-
   private val JNDIName   = "DefaultDS"
   private val JNDIDBName = "DefaultDB"
 
@@ -31,5 +30,4 @@ object SlickDbTestProvider {
 
     SlickDbProvider.buildAndBindSlickDatabase(db, AsyncExecConfig, JNDIDBName, lifecycle)
   }
-
 }

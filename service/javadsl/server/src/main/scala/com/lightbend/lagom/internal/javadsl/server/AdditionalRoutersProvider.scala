@@ -24,7 +24,6 @@ private[lagom] class AdditionalRoutersProvider @Inject() (
     injector: Injector,
     additionalRouters: util.List[AdditionalRouter]
 ) extends Provider[util.List[Router]] {
-
   override def get(): util.List[Router] =
     AdditionalRouter.wireRouters(injector, additionalRouters)
 }
