@@ -34,16 +34,14 @@ import scala.reflect.ClassTag
  *
  * Akka persistence plugins can extend this to implement a custom registry.
  */
-class AbstractPersistentEntityRegistry(
-    system: ActorSystem,
-    queryPluginId: String,
-) extends PersistentEntityRegistry {
-  protected val name: Option[String]     = None
-  protected val journalPluginId: String  = ""
-  protected val snapshotPluginId: String = ""
+class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEntityRegistry {
+  protected val name: Option[String]          = None
+  protected val journalPluginId: String       = ""
+  protected val snapshotPluginId: String      = ""
+  protected val queryPluginId: Option[String] = None
 
-  private val persistenceQuery: PersistenceQuery = PersistenceQuery(system)
-  private val eventsByTagQuery: EventsByTagQuery = persistenceQuery.readJournalFor(queryPluginId)
+  private lazy val eventsByTagQuery: Option[EventsByTagQuery] =
+    queryPluginId.map(id => PersistenceQuery(system).readJournalFor[EventsByTagQuery](id))
 
   private val sharding = ClusterSharding(system)
   private val conf     = system.settings.config.getConfig("lagom.persistence")
@@ -131,17 +129,24 @@ class AbstractPersistentEntityRegistry(
       aggregateTag: AggregateEventTag[Event],
       fromOffset: Offset
   ): scaladsl.Source[EventStreamElement[Event], NotUsed] = {
-    val tag = aggregateTag.tag
+    eventsByTagQuery match {
+      case Some(queries) =>
+        val tag = aggregateTag.tag
 
-    eventsByTagQuery
-      .eventsByTag(tag, fromOffset)
-      .map(
-        env =>
-          new EventStreamElement[Event](
-            PersistentEntityActor.extractEntityId(env.persistenceId),
-            env.event.asInstanceOf[Event],
-            env.offset
+        queries
+          .eventsByTag(tag, fromOffset)
+          .map(
+            env =>
+              new EventStreamElement[Event](
+                PersistentEntityActor.extractEntityId(env.persistenceId),
+                env.event.asInstanceOf[Event],
+                env.offset
+              )
           )
-      )
+      case None =>
+        throw new UnsupportedOperationException(
+          s"The Lagom persistence plugin does not support streaming events by tag"
+        )
+    }
   }
 }

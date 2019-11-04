@@ -39,14 +39,14 @@ import scala.compat.java8.OptionConverters._
 class AbstractPersistentEntityRegistry(
     system: ActorSystem,
     injector: Injector,
-    queryPluginId: String,
 ) extends PersistentEntityRegistry {
-  protected val name: Optional[String]   = Optional.empty()
-  protected val journalPluginId: String  = ""
-  protected val snapshotPluginId: String = ""
+  protected val name: Optional[String]          = Optional.empty()
+  protected val journalPluginId: String         = ""
+  protected val snapshotPluginId: String        = ""
+  protected val queryPluginId: Optional[String] = Optional.empty()
 
-  private val persistenceQuery: PersistenceQuery = PersistenceQuery(system)
-  private val eventsByTagQuery: EventsByTagQuery = persistenceQuery.readJournalFor(queryPluginId)
+  private lazy val eventsByTagQuery: Option[EventsByTagQuery] =
+    queryPluginId.asScala.map(id => PersistenceQuery(system).readJournalFor[EventsByTagQuery](id))
 
   private val sharding = ClusterSharding(system)
   private val conf     = system.settings.config.getConfig("lagom.persistence")
@@ -144,16 +144,24 @@ class AbstractPersistentEntityRegistry(
       aggregateTag: AggregateEventTag[Event],
       fromOffset: Offset
   ): javadsl.Source[Pair[Event, Offset], NotUsed] = {
-    val tag = aggregateTag.tag
+    eventsByTagQuery match {
+      case Some(queries) =>
+        val tag = aggregateTag.tag
 
-    val startingOffset = mapStartingOffset(fromOffset)
+        val startingOffset = mapStartingOffset(fromOffset)
 
-    eventsByTagQuery
-      .eventsByTag(tag, startingOffset)
-      .map { env =>
-        Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset))
-      }
-      .asJava
+        queries
+          .eventsByTag(tag, startingOffset)
+          .map { env =>
+            Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset))
+          }
+          .asJava
+
+      case None =>
+        throw new UnsupportedOperationException(
+          s"The Lagom persistence plugin does not support streaming events by tag"
+        )
+    }
   }
 
   /**
