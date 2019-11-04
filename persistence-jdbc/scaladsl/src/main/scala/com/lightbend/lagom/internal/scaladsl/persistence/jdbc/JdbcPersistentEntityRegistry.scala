@@ -19,11 +19,13 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
  * INTERNAL API
  */
 private[lagom] final class JdbcPersistentEntityRegistry(system: ActorSystem, slickProvider: SlickProvider)
-    extends AbstractPersistentEntityRegistry(system, JdbcReadJournal.Identifier) {
+    extends AbstractPersistentEntityRegistry(system) {
   private lazy val ensureTablesCreated = slickProvider.ensureTablesCreated()
 
   override def register(entityFactory: => PersistentEntity): Unit = {
     ensureTablesCreated
     super.register(entityFactory)
   }
+
+  protected override val queryPluginId = Some(JdbcReadJournal.Identifier)
 }
