@@ -376,7 +376,7 @@ Akka supports both programmatic passivation and [automatic passivation](https://
 
 ## Data Serialization
 
-The messages (commands, replies) and the durable classes (events, state snapshots) need to be serializable to be sent over the wire across the cluster or be stored on the database. Akka recommends [Jackson-based serializers](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html) --preferably JSON, but CBOR is also supported-- as a good default in most cases. On top of Akka serializers, Lagom makes it easy to add [[Play-JSON serialization|SerializationPlayJson]] support, which may be more familiar to some scala developers.
+The messages (commands, replies) and the durable classes (events, state snapshots) need to be serializable to be sent over the wire across the cluster or be stored on the database. Akka recommends [Jackson-based serializers](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html) --preferably JSON, but CBOR is also supported-- as a good default in most cases. On top of Akka serializers, Lagom makes it easy to add [[Play-JSON serialization|SerializationPlayJson]] support, which may be more familiar to some Scala developers.
 
 In [Akka Persistence Typed](https://doc.akka.io/docs/akka/2.6/typed/persistence.html), in particular, and when you adopt CQRS/ES practices, commands will include a `replyTo: ActorRef[Reply]` field. This `replyTo` field will be used on your code to send a `Reply` back, as shown in the examples above. Serializing an `ActorRef[T]` requires using the Akka Jackson serializer, meaning you cannot use Play-JSON to serialize commands.
 
