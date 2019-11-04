@@ -283,7 +283,7 @@ Lagom uses [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/clust
 
 In order to use the Aggregate, first it needs to be initialized on the `ClusterSharding`. That process won't create any specific Aggregate instance, it will only create the Shard Regions and prepare it to be used (read more about Shard Regions in the [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html) docs).
 
->  Note: In Akka Cluster, the term to refer to a sharded actor is _entity_ so an Aggregate that's sharded is can also be referred to as an Aggregate Entity.
+>  Note: In Akka Cluster, the term to refer to a sharded actor is _entity_ so an Aggregate that's sharded can also be referred to as an Aggregate Entity.
 
 In the companion object of `ShoppingCart`, define an `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate. The `EntityTypeKey`  has as name to uniquely identify this model in the cluster. It's also typed on `ShoppingCartCommand` which is the type of the messages that the Aggregate can receive.
 
