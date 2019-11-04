@@ -343,7 +343,7 @@ The `entityRef` is similar to an `actorRef` but denotes the actor is sharded. In
 
 #### Considerations on using ask pattern
 
-Since we want to send commands to the Aggregate and these commands declare a replay we will need to use the `ask` pattern.
+Since we want to send commands to the Aggregate and these commands declare a reply we will need to use the `ask` pattern.
 
 The code we introduced above creates an `EntityRef` from the `ShoppingCartServiceImpl`. This means it is code outside an actor (the `ServiceImpl`) trying to interact with an actor (the `EntityRef`). `EntityRef` provides an `ask()` overload out of the box meant to be used from outside actors which is the situation we're in.
 
