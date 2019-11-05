@@ -1,6 +1,6 @@
 # Serialization
 
-Persisteng events and exchanging messages between the nodes of the cluster requires serialization. Lagom uses Akka serialization mechanisms to bind serializers for each of the message sent over the wire. Akka recommends [Jackson-based serializers](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html) --preferably JSON but CBOR is also supported-- as a good default in most cases. On top of Akka serializers, Lagom makes it easy to add [[Play-JSON serialization|SerializationPlayJson]] support which may be more familiar to some scala developers.
+Persisteng events and exchanging messages between the nodes of the cluster requires serialization. Lagom uses Akka serialization mechanisms to bind serializers for each of the message sent over the wire. Akka recommends [Jackson-based serializers](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html) --preferably JSON but CBOR is also supported-- as a good default in most cases. On top of Akka serializers, Lagom makes it easy to add [[Play-JSON serialization|SerializationPlayJson]] support which may be more familiar to some Scala developers.
 
 Runtime overhead is avoided by not basing the serialization on reflection. Transformations to and from JSON are defined either manually or by using a built in macro - essentially doing what reflection would do, but at compile time instead of during runtime. This comes with one caveat, each top level class that can be serialized needs an explicit serializer defined.
 
