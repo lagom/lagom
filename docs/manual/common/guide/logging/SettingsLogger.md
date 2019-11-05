@@ -16,7 +16,7 @@ A few things to note:
 
 * The logger logs full exception stack traces and full-qualified logger names.
 * Lagom uses ANSI color codes by default in level messages.
-* In production, Lagom puts the logger behind the logback [AsyncAppender](http://logback.qos.ch/manual/appenders.html#AsyncAppender).  For details on the performance implications on this, see this [blog post](https://blog.takipi.com/how-to-instantly-improve-your-java-logging-with-7-logback-tweaks/).
+* In production, Lagom puts the logger behind the logback [AsyncAppender](http://logback.qos.ch/manual/appenders.html#AsyncAppender).  For details on the performance implications on this, see this [blog post](https://blog.overops.com/how-to-instantly-improve-your-java-logging-with-7-logback-tweaks/).
 
 ## Custom configuration
 
