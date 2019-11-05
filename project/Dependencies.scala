@@ -604,6 +604,8 @@ object Dependencies {
     scalaTest  % Test,
     // Upgrades needed to match whitelist versions
     scalaCollectionCompat,
+    // update to enforce using snapshots in nightly jobs
+    akkaActorTyped % Test,
   )
 
   val server = libraryDependencies ++= Nil
