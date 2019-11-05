@@ -96,7 +96,7 @@ In order to be able to read existing events from Akka Persistence Typed you must
 
 @[akka-persistence-behavior-definition](../../../../../dev/sbt-plugin/src/sbt-test/sbt-plugin/akka-persistence-typed-migration-scala/shopping-cart-akka-persistence-typed/src/main/scala/com/example/shoppingcart/impl/ShoppingCartEntity.scala)
 
-The code above uses `PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId)`. There are three imoprtant pieces on that statement that we must review: 
+The code above uses `PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId)`. There are three important pieces on that statement that we must review:
 
 1. the first argument of `PersistenceId.apply()` must be the same value you used in Lagom Persistence (classic). This first argument is known as the `typeHint` and is used by the journal as a mechanism to avoid ID collision between different types. In Lagom Persistence (classic) the type hint defaults to the classname of your `PersistentEntity` but it can be [[overwriten|PersistentEntity#Refactoring-Consideration]] (review your code or the persisted data on your database). In our case, we are using `entityContext.entityTypeKey.name` because we defined `EntityTypeKey[ShoppingCartCommand]("ShoppingCartEntity")` were `"ShoppingCartEntity"` is the classname of the code we had in the implementation based on Lagom Persistence Classic.
 2. the second argument must be the business id of your Aggregate. In this case, we can use `entityContext.entityId` because we're using that same business id for the sharded actor.
