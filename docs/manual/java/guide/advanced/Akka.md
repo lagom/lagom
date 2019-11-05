@@ -41,7 +41,7 @@ In your Guice module you add `AkkaGuiceSupport` and use the `bindActor` method, 
 
 That allows the actor itself to receive injected objects. It also allows the actor ref for the actor to be injected into other components. This actor is named `worker` and is also qualified with the `worker` name for injection.
 
-You can read more about this and how to use dependency injection for child actors in the [Play documentation](https://playframework.com/documentation/2.6.x/JavaAkka#Dependency-injecting-actors).
+You can read more about this and how to use dependency injection for child actors in the [Play documentation](https://playframework.com/documentation/2.7.x/JavaAkka#Dependency-injecting-actors).
 
 Adjusting the `Worker` actor from the previous section to allow injection of the `PubSubRegistry`:
 

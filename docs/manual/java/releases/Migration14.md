@@ -2,7 +2,7 @@
 
 This guide explains how to migrate from Lagom 1.3 to Lagom 1.4. If you are upgrading from an earlier version, be sure to review previous migration guides.
 
-Lagom 1.4 also updates to the latest major versions of Play (2.6) and Akka (2.5). We have highlighted the changes that are relevant to most Lagom users, but you may need to change code in your services that uses the Play and Akka APIs directly. You'll also need to update any Play services in your Lagom project repositories to be compatible with Play 2.6. Please refer to the [Play 2.6 migration guide](https://www.playframework.com/documentation/2.6.x/Migration26) and the [Akka 2.5 migration guide](https://doc.akka.io/docs/akka/current/project/migration-guide-2.4.x-2.5.x.html?language=java) for more details.
+Lagom 1.4 also updates to the latest major versions of Play (2.6) and Akka (2.5). We have highlighted the changes that are relevant to most Lagom users, but you may need to change code in your services that uses the Play and Akka APIs directly. You'll also need to update any Play services in your Lagom project repositories to be compatible with Play 2.6. Please refer to the [Play 2.6 migration guide](https://www.playframework.com/documentation/2.7.x/Migration26) and the [Akka 2.5 migration guide](https://doc.akka.io/docs/akka/current/project/migration-guide-2.4.x-2.5.x.html?language=java) for more details.
 
 
 ## Build changes
@@ -66,7 +66,7 @@ scalaVersion in ThisBuild := "2.12.10"
 
 Play 2.6 introduces a new default server engine implemented using [Akka HTTP](https://doc.akka.io/docs/akka-http/current/?language=java) instead of Netty.
 
-You can read more in the Play documentation at [Akka HTTP Server Backend](https://www.playframework.com/documentation/2.6.x/AkkaHttpServer).
+You can read more in the Play documentation at [Akka HTTP Server Backend](https://www.playframework.com/documentation/2.7.x/AkkaHttpServer).
 
 ### Selecting the server engine in sbt
 
@@ -99,7 +99,7 @@ Maven users will need to explicitly migrate each service to the new Akka HTTP se
 
 ### Configuration API
 
-The class `play.Configuration` was deprecated in favor of using Typesafe Config directly. So, instead of using `play.Configuration` you must now use [`com.typesafe.config.Config`](https://lightbend.github.io/config/latest/api/com/typesafe/config/Config.html). For more details, see the Play documentation: [Java Configuration API Migration](https://www.playframework.com/documentation/2.6.x/JavaConfigMigration26).
+The class `play.Configuration` was deprecated in favor of using Typesafe Config directly. So, instead of using `play.Configuration` you must now use [`com.typesafe.config.Config`](https://lightbend.github.io/config/latest/api/com/typesafe/config/Config.html). For more details, see the Play documentation: [Java Configuration API Migration](https://www.playframework.com/documentation/2.7.x/JavaConfigMigration26).
 
 ### Binding services
 

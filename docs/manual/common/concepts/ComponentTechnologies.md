@@ -26,5 +26,5 @@ As a complete microservices platform, Lagom assembles a collection of technologi
 
 * Typesafe Config Library --- Lagom and many of its component technologies are configured using the [Typesafe Config](https://github.com/typesafehub/config) library.  The configuration file format is [HOCON](https://github.com/typesafehub/config/blob/master/HOCON.md), a powerful and expressive superset of JSON.
 
-* Serialization --- Lagom's recommended serialization format is JSON.  The default engine used for JSON serialization and deserialization used for Java is [Jackson](https://github.com/FasterXML/jackson) and for Scala, [Play JSON](https://www.playframework.com/documentation/2.6.x/ScalaJson). Other serialization formats are also supported.
+* Serialization --- Lagom's recommended serialization format is JSON.  The default engine used for JSON serialization and deserialization used for Java is [Jackson](https://github.com/FasterXML/jackson) and for Scala, [Play JSON](https://www.playframework.com/documentation/2.7.x/ScalaJson). Other serialization formats are also supported.
 
