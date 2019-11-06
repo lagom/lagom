@@ -1,8 +1,8 @@
-# Domain Modelling
+# Domain Modelling with Akka Persistence Typed
 
-This section presents all the steps to model an [Aggregate](https://martinfowler.com/bliki/DDD_Aggregate.html), as defined in Domain-Driven Design, using [Akka Persistence Typed](https://doc.akka.io/docs/akka/2.6/typed/persistence.html) and following the [[CQRS|ES_CQRS]] principles embraced by Lagom. While Akka Persistence Typed provides an API for building event-sourced actors, the same does not necessarily apply for CQRS Aggregates. To build CQRS applications, we need to applying a few rules to our design.
+This section presents all the steps to model an [Aggregate](https://martinfowler.com/bliki/DDD_Aggregate.html), as defined in Domain-Driven Design, using [Akka Persistence Typed](https://doc.akka.io/docs/akka/2.6/typed/persistence.html) and following the [[CQRS|ES_CQRS]] principles embraced by Lagom. While Akka Persistence Typed provides an API for building event-sourced actors, the same does not necessarily apply for CQRS Aggregates. To build CQRS applications, we need to apply a few rules to our design.
 
-A simplified shopping cart example is used to guide you through the process. You can find a full-fledge shopping cart sample on our [samples repository](https://github.com/lagom/lagom-samples/tree/1.6.x/shopping-cart/shopping-cart-scala).
+We use a simplified shopping cart example to guide you through the process. You can find a full-fledged shopping cart sample on our [samples repository](https://github.com/lagom/lagom-samples/tree/1.6.x/shopping-cart/shopping-cart-scala).
 
 ## Encoding the model
 
@@ -12,16 +12,11 @@ Start by defining your model in terms of Commands, Events, and State.
 
 The state of the shopping cart is defined as following:
 
-```scala
-/** Common Shopping Cart trait */
-sealed trait ShoppingCart
-/** Once we add new items it becomes an open shopping cart */
-case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart
-/** Once checked-out it reaches end-of-life and can't be used anymore */
-case class CheckedOutShoppingCart(items: Map[String, Int]) extends ShoppingCart
-```
+@[shopping-cart-state](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
-Note that we are modelling it using a common trait `ShoppingCart` and two possible states modelled as extensions of `ShoppingCart`. This is a recommended technique whenever your model go through different state transitions. As we will see later, each state encodes which commands it can handle, which events it can persist and to which other states it can transition.
+Note that we are modelling it using a case class `ShoppingCart` and there is a `checkedOutTime` that can be set when transitioning from one state (open shopping cart) to another (checked-out shopping cart). As we will see later, each state encodes the commands it can handle, which events it can persist and to which other states it can transition.
+
+> **Note**: This is not the recommended technique though. Whenever your model go through different state transitions, the recommendation is to have a trait and extensions of it for each state. See examples in the [style guide for Akka Persistence Typed](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html).
 
 ### Modelling Commands and Replies
 
@@ -29,137 +24,33 @@ Next we define the commands that we can send to it.
 
 Each command defines a [reply](https://doc.akka.io/docs/akka/2.6/typed/persistence.html#replies) through a `replyTo: ActorRef[R]` field where `R` is the reply that will be sent back to the caller. Replies are used to communicate back if a command was accepted or rejected or to read the aggregate data (ie: read-only commands). It's also possible to have a mix of both, for example, if the command succeeds it returns some updated data; if it fails it returns a rejected message. Or you can have commands without replies (ie: fire-and-forget). This is a less common pattern in CQRS Aggregate modeling though and not covered in this example.
 
+@[shopping-cart-commands](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
+
 In Akka Typed, it's not possible to return an exception to the caller. All communication between the actor and the caller must be done via the `replyTo:ActorRef[R]` passed in the command. Therefore, if you want to signal a rejection, you most have it encoded in your reply protocol.
 
-```scala
-// Replies
-sealed trait Confirmation
-case object Accepted extends Confirmation
-final case class Rejected(reason: String) extends Confirmation
-final case class ShoppingCartSummary(items: Map[String, Int], checkedOut: Boolean)
+The replies used by the commands above are define like this:
 
-// Commands
-sealed trait ShoppingCartCommand
+@[shopping-cart-replies](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
-final case class AddItem(itemId: String,
-                         quantity: Int,
-                         replyTo: ActorRef[Confirmation])
-  extends ShoppingCartCommand
+Here there are two different kinds of replies: `Confirmation` used when we want to modify the state. A modification request can be `Accepted` or `Rejected`. And `Summary` used when we want to read the state of the shopping cart.
 
-final case class RemoveItem(itemId: String,
-                            replyTo: ActorRef[Confirmation])
-  extends ShoppingCartCommand
-
-final case class AdjustItemQuantity(itemId: String,
-                                    quantity: Int,
-                                    replyTo: ActorRef[Confirmation])
-  extends ShoppingCartCommand
-
-final case class Checkout(replyTo: ActorRef[Confirmation])
-  extends ShoppingCartCommand
-
-final case class Get(replyTo: ActorRef[ShoppingCartSummary]) extends ShoppingCartCommand
-```
-
-Note that we have different kinds of replies: `Confirmation` used when we want to modify the state. A modification request can be `Accepted` or `Rejected`. And `ShoppingCartSummary` used when we want to read the state of the shopping cart. Keep in mind that `ShoppingCartSummary` is not the shopping cart itself, but the representation we want to expose to the external world. It's a good practice to keep the internal state of the aggregate private because it allows the internal state, and the exposed API to evolve independently.
+> **Note**: Keep in mind that `Summary` is not the shopping cart itself, but the representation we want to expose to the external world. It's a good practice to keep the internal state of the aggregate private because it allows the internal state, and the exposed API to evolve independently.
 
 ### Modelling Events
 
-Next, we define the events that our model will persist. The events must extend Lagom's `AggregateEvent`. This is important for tagging events. We will cover this topic a little further.
+Next, we define the events that our model will persist. The events must extend Lagom's [`AggregateEvent`](api/com/lightbend/lagom/scaladsl/persistence/AggregateEvent.html). This is important for tagging events. We will cover this topic a little further.
 
-```scala
-sealed trait ShoppingCartEvent extends AggregateEvent[ShoppingCartEvent] {
-  def aggregateTag = ShoppingCartEvent.Tag
-}
-
-final case class ItemAdded(itemId: String, quantity: Int)
-  extends ShoppingCartEvent
-
-final case class ItemRemoved(itemId: String)
-  extends ShoppingCartEvent
-
-final case class ItemQuantityAdjusted(itemId: String, newQuantity: Int)
-  extends ShoppingCartEvent
-
-final case object CartCheckedOut extends ShoppingCartEvent
-```
+@[shopping-cart-events](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
 ### Defining Commands Handlers
 
 Once you define your protocol in terms of Commands, Replies, Events and State, you need to specify the business rules of your model. The command handlers define how to handle each incoming command, which validations must be applied, and finally, which events will be persisted, if any.
 
-You can encode it in different ways. The [recommended style](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html#command-handlers-in-the-state) is to add the command handlers in your state classes. Since `ShoppingCart` has two state class extensions, it makes sense to add the respective business rule validations on each state class. Each possible state will define how each command should be handled.
+You can encode it in different ways. The [recommended style](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html#command-handlers-in-the-state) is to add the command handlers in your state classes. For `ShoppingCart`, we can define the command handlers based on the two possible states:
 
-```scala
-sealed trait ShoppingCart {
-  def applyCommand(cmd: ShoppingCartCommnad): ReplyEffect[ShoppingCartEvent, ShoppingCart]
-}
+@[shopping-cart-command-handlers](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
-case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
-  def applyCommand(cmd: ShoppingCartCommnad) =
-    cmd match {
-
-      case AddItem(itemId, quantity, replyTo) =>
-        if (items.contains(itemId))
-          Effect.reply(replyTo)(Rejected(s"Item '$itemId' was already added to this shopping cart"))
-        else if (quantity <= 0)
-          Effect.reply(replyTo)(Rejected("Quantity must be greater than zero"))
-        else
-          Effect
-            .persist(ItemAdded(itemId, quantity))
-            .thenReply(replyTo) { updatedCart => // updatedCart is the state updated after applying ItemUpdated
-              Accepted
-            }
-
-      case RemoveItem(itemId, replyTo) =>
-        if (items.contains(itemId))
-          Effect
-            .persist(ItemRemoved(itemId))
-            .thenReply(replyTo)(_ => Accepted)
-        else
-          Effect.reply(replyTo)(Accepted) // removing an item is idempotent
-
-      case AdjustItemQuantity(itemId, quantity, replyTo) =>
-        if(items.contains(itemId))
-          Effect
-            .persist(ItemQuantityAdjusted(itemId, quantity))
-            .thenReply(replyTo)(_ => Accepted)
-        else
-          Effect.reply(replyTo)(Rejected(s"Cannot adjust quantity for item '$itemId'. Item not present on cart"))
-
-      // check it out
-      case Checkout(replyTo) =>
-        Effect
-          .persist(CartCheckedOut)
-          .thenReply(replyTo){ updatedCart => // updated cart is state updated after applying CartCheckedOut
-            Accepted
-          }
-
-      case Get(replyTo) =>
-        Effect.reply(replyTo)(ShoppingCartSummary(items, checkedOut = true))
-  }
-}
-
-case class CheckedOutShoppingCart(items: Map[String, Int]) extends ShoppingCart {
-  def applyCommand(cmd: ShoppingCartCommnad) =
-    cmd match {
-      // CheckedOut is a final state, no mutations allowed
-      case AddItem(_, _, replyTo) =>
-        Effect.reply(replyTo)(Rejected("Cannot add an item to a checked-out cart"))
-      case RemoveItem(_, replyTo) =>
-        Effect.reply(replyTo)(Rejected("Cannot remove an item from a checked-out cart"))
-      case AdjustItemQuantity(_, _, replyTo) =>
-        Effect.reply(replyTo)(Rejected("Cannot adjust an item quantity on a checked-out cart"))
-      case Checkout(replyTo) =>
-        Effect.reply(replyTo)(Rejected("Cannot checkout a checked-out cart"))
-
-      // it is allowed to read it's state though
-      case Get(replyTo) =>
-        Effect.reply(replyTo)(ShoppingCartSummary(items, checkedOut = false))
-    }
-
-}
-```
+> **Note**: of course, it is possible to organize the command handlers in a way that you consider more convenient for your use case, but we recommend the `onCommand` pattern since it can help to keep the logic for each command well isolated.
 
 Command handlers are the meat of the model. They encode the business rules of your model and act as a guardian of the model consistency. The command handler must first validate that the incoming command can be applied to the current model state. In case of successful validation, one or more event expressing the mutations are persisted. Once the events are persisted, they are applied to the state producing a new valid state.
 
@@ -173,54 +64,23 @@ You may run side-effects inside the command handler. Please refer to [Akka docum
 
 The event handlers are used to mutate the state of the aggregate by applying the events to it. Event handlers must be pure functions as they will be used when instantiating the aggregate and replaying the event journal. Similar to the command handlers, a [recommended style](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html#command-handlers-in-the-state) is to add them in the state classes.
 
-```scala
-sealed trait ShoppingCart {
-  def applyEvent(evt: ShoppingCartEvent): ShoppingCart
-}
-
-case class OpenShoppingCart(items: Map[String, Int]) extends ShoppingCart {
-
-  def applyEvent(evt: ShoppingCartEvent): ShoppingCart =
-    evt match {
-      case ItemAdded(itemId, quantity) => addOrUpdateItem(itemId, quantity)
-      case ItemRemoved(itemId) => removeItem(itemId)
-      case ItemQuantityAdjusted(itemId, quantity) => addOrUpdateItem(itemId, quantity)
-      case CartCheckedOut => CheckedOutShoppingCart(items)
-    }
-
-    private def removeItem(itemId: String) = copy(items = items - itemId)
-    private def addOrUpdateItem(itemId: String, quantity: Int) =
-      copy(items = items + (itemId -> quantity))
-
-}
-
-// CheckedOut is a final state, there can't be any event after it's checked out
-case class CheckedOutShoppingCart(items: Map[String, Int]) extends ShoppingCart {
-  def applyEvent(evt: ShoppingCartEvent): ShoppingCart = this
-}
-```
+@[shopping-cart-state-event-handlers](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
 ### EventSourcingBehaviour - glueing the bits together
 
 With all the model encoded, the next step is to glue all the pieces together so we can let it run as an Actor. To do that define an `EventSourcedBehavior`. It's recommend to define an `EventSourcedBehavior` using `withEnforcedReplies` when modelling a CQRS Aggregate. Using [enforced replies](https://doc.akka.io/docs/akka/2.6/typed/persistence.html#replies) requires command handlers to return a `ReplyEffect` forcing the developers to be explicit about replies.
 
-```scala
-EventSourcedBehavior
-  .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
-    persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
-    emptyState = OpenShoppingCart(Map.empty),
-    commandHandler = (cart, cmd) => cart.applyCommand(cmd),
-    eventHandler = (cart, evt) => cart.applyEvent(evt)
-  )
-```
+@[shopping-cart-create-behavior](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
-The `EventSourcedBehavior` has four fields to be defined: `persistenceId`, `emptyState`, `commandHandler` and `eventHandler`.
+The `EventSourcedBehavior.withEnforcedReplies` has four fields to be defined: `persistenceId`, `emptyState`, `commandHandler` and `eventHandler`.
 
-The `persistenceId` defines the id that will be used in the event journal. The id is composed of a name (eg: `entityContext.entityTypeKey.name`) and a business id (eg: `entityContext.entityId`). These two values will be concatenated using a `"|"` by default, eg: `"ShoppingCart|123456"`. See [Akka's documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence.html#persistenceid) for more details.
+The `persistenceId` defines the id that will be used in the event journal. The id is composed of a name (for example, `entityContext.entityTypeKey.name`) and a business id (for example, `entityContext.entityId`). These two values will be concatenated using a `"|"` by default (for example, `"ShoppingCart|123456"`). See [Akka's documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence.html#persistenceid) for more details.
 
-> The `entityContext` that appears in scope here will be introduced when covering `ClusterSharding` later in this guide.
+> **Note**: The `entityContext` that appears in scope here will be introduced when covering `ClusterSharding` later in this guide.
 
-The `emptyState` is the state that will be used to when the journal is empty. It's the initial state.
+The `emptyState` is the state that will be used to when the journal is empty. It's the initial state:
+
+@[shopping-cart-empty-state](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
 The `commandHandler` is a function `(State, Command) => ReplyEffect[Event, State]`. In this example it's being defined using the `applyCommand` on the passed state. Equally, the `eventHandler` is a function `(State, Event) => Event` and also defined in the passed state.
 
@@ -235,27 +95,13 @@ Events are persisted in the event journal and are primarily used to replay the s
 To be able to consume the events on the read-side, the events must be tagged. This is done using the `AggregateEventTag` utility. It's recommended to shard the tags so they can be consumed in a distributed fashion by Lagom's [Read-Side Processor](https://www.lagomframework.com/documentation/current/scala/ReadSide.html) and [Topic Producers](https://www.lagomframework.com/documentation/current/scala/MessageBrokerApi.html#Implementing-a-topic).
 Although not recommended, it's also possible to not shard the events as explained [here](https://www.lagomframework.com/documentation/current/scala/ReadSide.html#Event-tags).
 
-This example splits the tags into 10 shards and defines the event tagger in the companion object of `ShoppingCartEvent`. Note that the tag name must be stable as well as the number of shards. These two values can't be changed later without migrating the journal.
+This example splits the tags into 10 shards and defines the event tagger in the companion object of `ShoppingCart.Event`. Note that the tag name must be stable as well as the number of shards. These two values can't be changed later without migrating the journal.
 
-```scala
-object ShoppingCartEvent {
-  val Tag = AggregateEventTag.sharded[ShoppingCartEvent](numShards = 10)
-}
-```
+@[shopping-cart-events-object](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
 The `AggregateEventTag` is a Lagom class used by Lagom's [Read-Side Processor](https://www.lagomframework.com/documentation/current/scala/ReadSide.html) and [Topic Producers](https://www.lagomframework.com/documentation/current/scala/MessageBrokerApi.html#Implementing-a-topic), however Akka Persistence Typed expects a function `Event => Set[String]`. Therefore, we need to use an adapter to transform Lagom's `AggregateEventTag` to the required Akka tagger function.
 
-```scala
-EventSourcedBehavior
-  .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
-    persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
-    emptyState = OpenShoppingCart(Map.empty),
-    commandHandler = (cart, cmd) => cart.applyCommand(cmd),
-    eventHandler = (cart, evt) => cart.applyEvent(evt)
-  ).withTagger(AkkaTaggerAdapter.fromLagom(entityContext, ShoppingCartEvent.Tag))
-```
-
-> `entityContext` will be introduced on the next section.
+@[shopping-cart-create-behavior-with-tagger](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
 ### Configuring snapshots
 
@@ -263,17 +109,7 @@ Snapshotting is a common optimization to avoid replaying all the events since th
 
 You can define snapshot rules in two ways: by predicate and by counter. Both can be combined. The example below uses a counter to illustrate the APIs. You can find more details on the [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence-snapshot.html).
 
-```scala
-EventSourcedBehavior
-  .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
-    persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
-    emptyState = OpenShoppingCart(Map.empty),
-    commandHandler = (cart, cmd) => cart.applyCommand(cmd),
-    eventHandler = (cart, evt) => cart.applyEvent(evt)
-  )
-  // snapshot every 100 events and keep at most 2 snapshots on db
-  .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2)
-```
+@[shopping-cart-create-behavior-with-snapshots](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
 ## Akka Cluster Sharding
 
@@ -283,92 +119,61 @@ Lagom uses [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/clust
 
 In order to use the Aggregate, first it needs to be initialized on the `ClusterSharding`. That process won't create any specific Aggregate instance, it will only create the Shard Regions and prepare it to be used (read more about Shard Regions in the [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html) docs).
 
-> Note: In Akka Cluster, the term to refer to a sharded actor is _entity_ so an Aggregate that's sharded can also be referred to as an Aggregate Entity.
+> **Note**: In Akka Cluster, the term to refer to a sharded actor is _entity_ so an Aggregate that's sharded can also be referred to as an Aggregate Entity.
 
-You must define an `EntityTypeKey` and a function of `EntityContext[Command] => Behavior[Command]` to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate.
+In the companion object of `ShoppingCart`, define an `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate. The `EntityTypeKey` has as name to uniquely identify this model in the cluster. It's also typed on `ShoppingCart.Command` which is the type of the messages that the Aggregate can receive:
+
+@[shopping-cart-entity-type-key](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
 The `EntityTypeKey` has as name to uniquely identify this model in the cluster. It should be typed on `ShoppingCartCommand` which is the type of the messages that the Shopping Cart can receive.
 
 In the companion object of `ShoppingCart`, define the `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate.
 
-```scala
-object ShoppingCart {
+@[shopping-cart-apply-behavior-creation](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
-  val typeKey = EntityTypeKey[ShoppingCartCommand]("ShoppingCart")
-
-  def behavior(entityContext: EntityContext[ShoppingCartCommand]): Behavior[ShoppingCartCommand] = {
-    EventSourcedBehavior
-      .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
-        persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
-        emptyState = OpenShoppingCart(Map.empty),
-        commandHandler = (cart, cmd) => cart.applyCommand(cmd),
-        eventHandler = (cart, evt) => cart.applyEvent(evt)
-      )
-      .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, ShoppingCartEvent.Tag))
-      .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2)
-  }
-}
-```
+> **Note**: Having an `apply` factory method in the companion object and making the constructor private is recommended by [Akka style guide](https://doc.akka.io/docs/akka/2.6/typed/style-guide.html).
 
 Finally, initialize the Aggregate on the `ClusterSharding` using the `typedKey` and the `behavior`. Lagom provides an instance of the `clusterSharding` extension through dependency injection for your convenience. Initializing an entity should be done only once and, in the case of Lagom Aggregates, it is tipically done in the `LagomApplication`:
 
-```scala
-abstract class ShoppingCartApplication(context: LagomApplicationContext)
-    extends LagomApplication(context)
-    with SlickPersistenceComponents
-    with HikariCPComponents
-    with AhcWSComponents {
-
-  override lazy val lagomServer = serverFor[ShoppingCartService](wire[ShoppingCartServiceImpl])
-  override lazy val jsonSerializerRegistry = ShoppingCartSerializerRegistry
-
-  clusterSharding.init(
-    Entity(ShoppingCartState.typeKey) {
-      ctx => ShoppingCartState.behavior(ctx)
-    }
-  )
-}
-```
+@[shopping-cart-loader](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
 ### Getting instances of the Aggregate Entity
 
-To access instances of the Aggregate (which may be running locally or remotely on the cluster), you should inject the `ClusterSharding` on your service. You can then instantiate an `EntityRef` using the method `entityRefFor`. In our case, the `EntityRef` is typed to only accept `ShoppingCartCommand`s.
+To access instances of the Aggregate (which may be running locally or remotely on the cluster), you should inject the `ClusterSharding` on your service:
 
-```scala
-val shoppingCartRef: EntityRef[ShoppingCartCommand] =
-    clusterSharding.entityRefFor(ShoppingCart.typeKey, "abc-123")
-```
+@[shopping-cart-service-impl](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
-To locate the correct actor across the cluster you need to specify the `entityTypeKey` we used to initialize the entity and the `id` for the instance we need. Akka Cluster will create the required actor in one node on the cluster or reuse the existing instance if the actor has already been created and is still alive.
+And then you can instantiate an `EntityRef` using the method `entityRef`. In our case, the `EntityRef` is typed to only accept `ShoppingCart.Command`s.
 
-The `entityRef` is similar to an `actorRef` but denotes the actor is sharded. Interacting with an `entityRef` implies the messages exchanged with the actor may need to travel over the wire to another node.
+@[shopping-cart-entity-ref](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
-#### Considerations on using ask pattern
+To locate the correct actor across the cluster you need to specify the `EntityTypeKey` we used to initialize the entity and the `id` for the instance we need. Akka Cluster will create the required actor in one node on the cluster or reuse the existing instance if the actor has already been created and is still alive.
+
+The `EntityRef` is similar to an `ActorRef` but denotes the actor is sharded. Interacting with an `EntityRef` implies the messages exchanged with the actor may need to travel over the wire to another node.
+
+#### Considerations on using `ask` pattern
 
 Since we want to send commands to the Aggregate and these commands declare a reply we will need to use the [`ask` pattern](https://doc.akka.io/docs/akka/2.6/typed/interaction-patterns.html#request-response).
 
 The code we introduced above creates an `EntityRef` from inside the `ShoppingCartServiceImpl` meaning we are calling the actor (the `EntityRef`) from outside the `ActorSystem`. `EntityRef` provides an `ask()` overload out of the box meant to be used from outside actors which is the situation we're in.
 
-```scala
-implicit val askTimeout = Timeout(5.seconds)
+@[shopping-cart-service-call](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
-val futureSummary: Future[ShoppingCartSummary] =
-  shoppingCartRef
-    .ask(replyTo => Get(replyTo))
-futureSummary.map(cartSummary => convertToApi(id, cartSummary))
-```
+So we declare an implicit `timeout` and then invoke `ask` (which uses the timeout implicitly). The `ask` method accepts a function of `ActorRef[Res] => M` in which `Res` is the expected response type and `M` is the message being sent to the actor. The `ask` method will create an instance of `ActorRef[Res]` that can be use to build the outgoing message (command). Once the response is sent to `ActorRef[Res]`, Akka will complete the returned `Future[Res]` with the response (in this case `Future[ShoppingCartSummary]`).
 
-So we declare an implicit `timeout` and then invoke `ask()` (which uses the timeout implicitly). The `ask()` method accepts a function of `ActorRef[Res] => M` in which `Res` is the expected response type and `M` is the message being sent to the actor. The `ask()` method will create an instance of `ActorRef[Res]` that can be use to build the outgoing message (command). Once the response is sent to `ActorRef[Res]`, Akka will complete the returned `Future[Res]` with the response (in this case `Future[ShoppingCartSummary]`).
+@[shopping-cart-service-view](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
-Finally, we operate over the `futureSummary` normallly (in this case, we map it to a different type).
+Finally, we operate over the `cartSummary` normally (in this case, we map it to a different type). The `convertShoppingCart` is like:
+
+@[shopping-cart-service-map](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
+
+> **Note**: Again, we are keeping the internal state of the aggregate isolated from the exposed service API so they can evolve independently.
 
 ### Configuring number of shards
 
-As detailed in the [Akka Cluster Sharding docs](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#shard-allocation):
+Akka recommends, as a rule of thumb, that the number of shards should be a factor ten greater than the planned maximum number of cluster nodes. It doesn’t have to be exact. Fewer shards than number of nodes will result in that some nodes will not host any shards. Too many shards will result in less efficient management of the shards, e.g. rebalancing overhead, and increased latency because the coordinator is involved in the routing of the first message for each shard.
 
-> As a rule of thumb, the number of shards should be a factor ten greater than the planned maximum number of cluster nodes. It doesn’t have to be exact. Fewer shards than number of nodes will result in that some nodes will not host any shards. Too many shards will result in less efficient management of the shards
-
-See the Akka docs for details on how to configure the number of shards.
+See the [Akka Cluster Sharding documentation](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#shard-allocation) for details on how to configure the number of shards.
 
 ### Configuring Entity passivation
 
