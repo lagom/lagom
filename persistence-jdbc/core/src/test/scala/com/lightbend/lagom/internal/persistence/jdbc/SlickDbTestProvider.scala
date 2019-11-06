@@ -31,13 +31,6 @@ object SlickDbTestProvider {
     val dbName = s"${baseName}_${Random.alphanumeric.take(8).mkString}"
     val db     = Databases.inMemory(dbName, config = Map("jndiName" -> JNDIName))
 
-    coordinatedShutdown.addTask(
-      CoordinatedShutdown.PhaseBeforeActorSystemTerminate,
-      s"shutdown-managed-test-slick"
-    ) { () =>
-      Future.successful(db.shutdown()).map(_ => Done)
-    }
-
     SlickDbProvider.buildAndBindSlickDatabase(db, AsyncExecConfig, JNDIDBName, coordinatedShutdown)
   }
 }
