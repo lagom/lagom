@@ -1256,6 +1256,7 @@ def sharedBuildToolSupportSetup(p: Project): Project =
         Generators.version(
           version.value,
           Dependencies.Versions.Akka,
+          Dependencies.Versions.AkkaHttp,
           Dependencies.Versions.Play,
           (sourceManaged in Compile).value
         )
