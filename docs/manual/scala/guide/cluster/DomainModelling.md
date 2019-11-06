@@ -91,7 +91,7 @@ Once you define your protocol in terms of Commands, Replies, Events and State, y
 You can encode it in different ways. The [recommended style](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html#command-handlers-in-the-state) is to add the command handlers in your state classes. Since `ShoppingCart` has two state class extensions, it makes sense to add the respective business rule validations on each state class. Each possible state will define how each command should be handled.
 
 ```scala
-sealed trait ShoppingCart  {
+sealed trait ShoppingCart {
   def applyCommand(cmd: ShoppingCartCommnad): ReplyEffect[ShoppingCartEvent, ShoppingCart]
 }
 
@@ -174,7 +174,7 @@ You may run side-effects inside the command handler. Please refer to [Akka docum
 The event handlers are used to mutate the state of the aggregate by applying the events to it. Event handlers must be pure functions as they will be used when instantiating the aggregate and replaying the event journal. Similar to the command handlers, a [recommended style](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html#command-handlers-in-the-state) is to add them in the state classes.
 
 ```scala
-sealed trait ShoppingCart  {
+sealed trait ShoppingCart {
   def applyEvent(evt: ShoppingCartEvent): ShoppingCart
 }
 
@@ -255,7 +255,7 @@ EventSourcedBehavior
   ).withTagger(AkkaTaggerAdapter.fromLagom(entityContext, ShoppingCartEvent.Tag))
 ```
 
->  `entityContext` will be introduced on the next section.
+> `entityContext` will be introduced on the next section.
 
 ### Configuring snapshots
 
@@ -353,8 +353,8 @@ The code we introduced above creates an `EntityRef` from inside the `ShoppingCar
 implicit val askTimeout = Timeout(5.seconds)
 
 val futureSummary: Future[ShoppingCartSummary] =
-   shoppingCartRef
-      .ask(replyTo => Get(replyTo))
+  shoppingCartRef
+    .ask(replyTo => Get(replyTo))
 futureSummary.map(cartSummary => convertToApi(id, cartSummary))
 ```
 
@@ -366,7 +366,7 @@ Finally, we operate over the `futureSummary` normallly (in this case, we map it 
 
 As detailed in the [Akka Cluster Sharding docs](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#shard-allocation):
 
-> As a rule of thumb, the number of shards should be a factor ten greater  than the planned maximum number of cluster nodes. It doesn’t have to be  exact. Fewer shards than number of nodes will result in that some nodes  will not host any shards. Too many shards will result in less efficient  management of the shards
+> As a rule of thumb, the number of shards should be a factor ten greater than the planned maximum number of cluster nodes. It doesn’t have to be exact. Fewer shards than number of nodes will result in that some nodes will not host any shards. Too many shards will result in less efficient management of the shards
 
 See the Akka docs for details on how to configure the number of shards.
 
