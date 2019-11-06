@@ -1,7 +1,7 @@
 DomainModelling:Domain Modelling with Akka Persistence Typed;next=MigratingToAkkaPersistenceTyped,ChoosingADatabase,ReadSide
 MigratingToAkkaPersistenceTyped: Migrating to Akka Persistence Typed
 PersistentEntity:Persistent Entity (classic);next=ChoosingADatabase
-ChoosingADatabase:Choosing A Database;next=PersistentEntityCassandra,PersistentEntityRDBMS
+ChoosingADatabase:Choosing a Database;next=PersistentEntityCassandra,PersistentEntityRDBMS
 PersistentEntityCassandra:Cassandra Setup;next=ReadSide
 PersistentEntityRDBMS:Relational Database Setup;next=ReadSide
 ReadSide:Persistent Read-Side;next=ReadSideCassandra,ReadSideRDBMS

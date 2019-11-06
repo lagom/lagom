@@ -1,5 +1,5 @@
 PersistentEntity:Persistent Entity;next=ChoosingADatabase,PersistentEntityCassandra,PersistentEntityRDBMS
-ChoosingADatabase:Choosing A Database
+ChoosingADatabase:Choosing a Database
 PersistentEntityCassandra:Cassandra Setup
 PersistentEntityRDBMS:Relational Database Setup
 ReadSide:Persistent Read-Side;next=ReadSideCassandra,ReadSideRDBMS

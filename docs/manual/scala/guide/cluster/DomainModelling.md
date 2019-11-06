@@ -91,7 +91,7 @@ Once you define your protocol in terms of Commands, Replies, Events and State, y
 You can encode it in different ways. The [recommended style](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html#command-handlers-in-the-state) is to add the command handlers in your state classes. Since `ShoppingCart` has two state class extensions, it makes sense to add the respective business rule validations on each state class. Each possible state will define how each command should be handled.
 
 ```scala
-sealed trait ShoppingCart  {
+sealed trait ShoppingCart {
   def applyCommand(cmd: ShoppingCartCommnad): ReplyEffect[ShoppingCartEvent, ShoppingCart]
 }
 
@@ -174,7 +174,7 @@ You may run side-effects inside the command handler. Please refer to [Akka docum
 The event handlers are used to mutate the state of the aggregate by applying the events to it. Event handlers must be pure functions as they will be used when instantiating the aggregate and replaying the event journal. Similar to the command handlers, a [recommended style](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html#command-handlers-in-the-state) is to add them in the state classes.
 
 ```scala
-sealed trait ShoppingCart  {
+sealed trait ShoppingCart {
   def applyEvent(evt: ShoppingCartEvent): ShoppingCart
 }
 
@@ -255,7 +255,7 @@ EventSourcedBehavior
   ).withTagger(AkkaTaggerAdapter.fromLagom(entityContext, ShoppingCartEvent.Tag))
 ```
 
->  `entityContext` will be introduced on the next section.
+> `entityContext` will be introduced on the next section.
 
 ### Configuring snapshots
 
@@ -283,11 +283,13 @@ Lagom uses [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/clust
 
 In order to use the Aggregate, first it needs to be initialized on the `ClusterSharding`. That process won't create any specific Aggregate instance, it will only create the Shard Regions and prepare it to be used (read more about Shard Regions in the [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html) docs).
 
->  Note: In Akka Cluster, the term to refer to a sharded actor is _entity_ so an Aggregate that's sharded can also be referred to as an Aggregate Entity.
+> Note: In Akka Cluster, the term to refer to a sharded actor is _entity_ so an Aggregate that's sharded can also be referred to as an Aggregate Entity.
 
-In the companion object of `ShoppingCart`, define an `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate. The `EntityTypeKey`  has as name to uniquely identify this model in the cluster. It's also typed on `ShoppingCartCommand` which is the type of the messages that the Aggregate can receive.
+You must define an `EntityTypeKey` and a function of `EntityContext[Command] => Behavior[Command]` to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate.
 
-Then, you must also define a function of `EntityContext[Command] => Behavior[Command]`. This can also be defined as a method in the companion object.
+The `EntityTypeKey` has as name to uniquely identify this model in the cluster. It should be typed on `ShoppingCartCommand` which is the type of the messages that the Shopping Cart can receive.
+
+In the companion object of `ShoppingCart`, define the `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate.
 
 ```scala
 object ShoppingCart {
@@ -308,7 +310,7 @@ object ShoppingCart {
 }
 ```
 
-Finally, initialize the Aggregate on the `ClusterSharding` using the `typedKey` and the `behavior`. Lagom provides an instance of the `clusterSharding` extension through dependency injection for you convenience. Initializing an entity should be done only once and, in the case of Lagom Aggregates it is tipically done in the `LagomApplication`:
+Finally, initialize the Aggregate on the `ClusterSharding` using the `typedKey` and the `behavior`. Lagom provides an instance of the `clusterSharding` extension through dependency injection for your convenience. Initializing an entity should be done only once and, in the case of Lagom Aggregates, it is tipically done in the `LagomApplication`:
 
 ```scala
 abstract class ShoppingCartApplication(context: LagomApplicationContext)
@@ -330,7 +332,7 @@ abstract class ShoppingCartApplication(context: LagomApplicationContext)
 
 ### Getting instances of the Aggregate Entity
 
-To access instances of the Aggregate (which may be running locally or remotely on the cluster), you should inject the `ClusterSharding` on your service can instantiate an `EntityRef` using the method `entityRefFor`.
+To access instances of the Aggregate (which may be running locally or remotely on the cluster), you should inject the `ClusterSharding` on your service. You can then instantiate an `EntityRef` using the method `entityRefFor`. In our case, the `EntityRef` is typed to only accept `ShoppingCartCommand`s.
 
 ```scala
 val shoppingCartRef: EntityRef[ShoppingCartCommand] =
@@ -339,32 +341,32 @@ val shoppingCartRef: EntityRef[ShoppingCartCommand] =
 
 To locate the correct actor across the cluster you need to specify the `entityTypeKey` we used to initialize the entity and the `id` for the instance we need. Akka Cluster will create the required actor in one node on the cluster or reuse the existing instance if the actor has already been created and is still alive.
 
-The `entityRef` is similar to an `actorRef` but denotes the actor is sharded. Interacting with an `entityRef` implies the messages exchanged with the actor may need to travel over the wire to a separate node. In our case, the `EntityRef` is typed to only accept `ShoppingCartCommand`s.
+The `entityRef` is similar to an `actorRef` but denotes the actor is sharded. Interacting with an `entityRef` implies the messages exchanged with the actor may need to travel over the wire to another node.
 
 #### Considerations on using ask pattern
 
-Since we want to send commands to the Aggregate and these commands declare a reply we will need to use the `ask` pattern.
+Since we want to send commands to the Aggregate and these commands declare a reply we will need to use the [`ask` pattern](https://doc.akka.io/docs/akka/2.6/typed/interaction-patterns.html#request-response).
 
-The code we introduced above creates an `EntityRef` from the `ShoppingCartServiceImpl`. This means it is code outside an actor (the `ServiceImpl`) trying to interact with an actor (the `EntityRef`). `EntityRef` provides an `ask()` overload out of the box meant to be used from outside actors which is the situation we're in.
+The code we introduced above creates an `EntityRef` from inside the `ShoppingCartServiceImpl` meaning we are calling the actor (the `EntityRef`) from outside the `ActorSystem`. `EntityRef` provides an `ask()` overload out of the box meant to be used from outside actors which is the situation we're in.
 
 ```scala
 implicit val askTimeout = Timeout(5.seconds)
 
 val futureSummary: Future[ShoppingCartSummary] =
-   shoppingCartRef
-      .ask(replyTo => Get(replyTo))
+  shoppingCartRef
+    .ask(replyTo => Get(replyTo))
 futureSummary.map(cartSummary => convertToApi(id, cartSummary))
 ```
 
-So we declare an implicit `timeout` and then invoke `ask(f)` (which uses the timeout implicitly). The `f` argument in the `ask()` method is a function in which we create the command using the `replyTo` provided. Internally, Akka Typed will use that `replyTo` as a receiver of the response message and then extract that message and provide it as as `Future[Reply]` (in this case `Future[ShoppingCartSummary]`).
+So we declare an implicit `timeout` and then invoke `ask()` (which uses the timeout implicitly). The `ask()` method accepts a function of `ActorRef[Res] => M` in which `Res` is the expected response type and `M` is the message being sent to the actor. The `ask()` method will create an instance of `ActorRef[Res]` that can be use to build the outgoing message (command). Once the response is sent to `ActorRef[Res]`, Akka will complete the returned `Future[Res]` with the response (in this case `Future[ShoppingCartSummary]`).
 
-Finally, we operate over the `futureSummary`normallly (in this case, we map it to a different type).
+Finally, we operate over the `futureSummary` normallly (in this case, we map it to a different type).
 
 ### Configuring number of shards
 
 As detailed in the [Akka Cluster Sharding docs](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#shard-allocation):
 
-> As a rule of thumb, the number of shards should be a factor ten greater  than the planned maximum number of cluster nodes. It doesn’t have to be  exact. Fewer shards than number of nodes will result in that some nodes  will not host any shards. Too many shards will result in less efficient  management of the shards
+> As a rule of thumb, the number of shards should be a factor ten greater than the planned maximum number of cluster nodes. It doesn’t have to be exact. Fewer shards than number of nodes will result in that some nodes will not host any shards. Too many shards will result in less efficient management of the shards
 
 See the Akka docs for details on how to configure the number of shards.
 
@@ -372,7 +374,7 @@ See the Akka docs for details on how to configure the number of shards.
 
 Keeping all the Aggregates in memory all the time is inefficient. Instead, use the Entity passivation feature so sharded entities (the Aggregates) are removed from the cluster when they've been unused for some time.
 
-Akka supports both programmatic passivation and [automatic passivation](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#automatic-passivation). The default values for automatic passivation are generally good enough.
+Akka supports both [programmatic passivation](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#passivation) and [automatic passivation](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#automatic-passivation). The default values for automatic passivation are generally good enough.
 
 ## Data Serialization
 
