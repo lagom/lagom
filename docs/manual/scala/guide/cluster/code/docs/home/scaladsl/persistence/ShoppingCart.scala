@@ -169,21 +169,22 @@ final case class ShoppingCart(
 {
   import ShoppingCart._
 
-  def checkedOut: Boolean = checkedOutTime.nonEmpty
+  def isOpen: Boolean     = checkedOutTime.isEmpty
+  def checkedOut: Boolean = !isOpen
 
   // #shopping-cart-command-handlers
   def applyCommand(cmd: Command): ReplyEffect[Event, ShoppingCart] =
-    if (checkedOut) {
-      cmd match {
-        case AddItem(_, _, replyTo) => Effect.reply(replyTo)(Rejected("Cannot add an item to a checked-out cart"))
-        case Checkout(replyTo)      => Effect.reply(replyTo)(Rejected("Cannot checkout a checked-out cart"))
-        case Get(replyTo)           => onGet(replyTo)
-      }
-    } else {
+    if (isOpen) {
       cmd match {
         case AddItem(itemId, quantity, replyTo) => onAddItem(itemId, quantity, replyTo)
         case Checkout(replyTo)                  => onCheckout(replyTo)
         case Get(replyTo)                       => onGet(replyTo)
+      }
+    } else {
+      cmd match {
+        case AddItem(_, _, replyTo) => Effect.reply(replyTo)(Rejected("Cannot add an item to a checked-out cart"))
+        case Checkout(replyTo)      => Effect.reply(replyTo)(Rejected("Cannot checkout a checked-out cart"))
+        case Get(replyTo)           => onGet(replyTo)
       }
     }
 
