@@ -155,14 +155,7 @@ object ShoppingCart {
   }
   // #shopping-cart-apply-behavior-creation
 
-  /**
-   * The aggregate get snapshoted every configured number of events. This
-   * means the state gets stored to the database, so that when the entity gets
-   * loaded, you don't need to replay all the events, just the ones since the
-   * snapshot. Hence, a JSON format needs to be declared so that it can be
-   * serialized and deserialized when storing to and from the database.
-   */
-  implicit val format: Format[ShoppingCart] = Json.format
+  implicit val shoppingCartFormat: Format[ShoppingCart] = Json.format
 }
 
 // #shopping-cart-state
@@ -226,7 +219,6 @@ final case class ShoppingCart(
   private def toSummary(shoppingCart: ShoppingCart): Summary = {
     Summary(shoppingCart.items, shoppingCart.checkedOut)
   }
-
   // #shopping-cart-command-handlers
 
   // #shopping-cart-state-event-handlers
@@ -247,13 +239,10 @@ final case class ShoppingCart(
 
 object ShoppingCartSerializerRegistry extends JsonSerializerRegistry {
   import ShoppingCart._
-
   override def serializers: Seq[JsonSerializer[_]] = Seq(
-    // state and events can use play-json, but commands should use jackson because of ActorRef[T] (see application.conf)
     JsonSerializer[ShoppingCart],
     JsonSerializer[ItemAdded],
     JsonSerializer[CartCheckedOut],
-    // the replies use play-json as well
     JsonSerializer[Summary],
     JsonSerializer[Confirmation],
     JsonSerializer[Accepted],
