@@ -26,7 +26,9 @@ object SlickDbTestProvider {
   }
 
   /** Builds Slick Database (with AsyncExecutor) and bind it as JNDI resource for test purposes  */
-  def buildAndBindSlickDb(baseName: String, lifecycle: ApplicationLifecycle, coordinatedShutdown: CoordinatedShutdown)(implicit executionContext: ExecutionContext): Unit = {
+  def buildAndBindSlickDb(baseName: String, lifecycle: ApplicationLifecycle, coordinatedShutdown: CoordinatedShutdown)(
+      implicit executionContext: ExecutionContext
+  ): Unit = {
     val dbName = s"${baseName}_${Random.alphanumeric.take(8).mkString}"
     val db     = Databases.inMemory(dbName, config = Map("jndiName" -> JNDIName))
 
@@ -37,6 +39,8 @@ object SlickDbTestProvider {
       Future.successful(db.shutdown()).map(_ => Done)
     }
 
-    SlickDbProvider.buildAndBindSlickDatabase(db, AsyncExecConfig, JNDIDBName, lifecycle, coordinatedShutdown)(executionContext)
+    SlickDbProvider.buildAndBindSlickDatabase(db, AsyncExecConfig, JNDIDBName, lifecycle, coordinatedShutdown)(
+      executionContext
+    )
   }
 }

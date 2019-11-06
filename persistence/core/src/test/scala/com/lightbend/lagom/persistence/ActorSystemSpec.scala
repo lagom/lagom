@@ -54,7 +54,7 @@ abstract class ActorSystemSpec(system: ActorSystem)
     super.afterAll()
   }
 
-  val log: LoggingAdapter = Logging(system, this.getClass)
+  val log: LoggingAdapter                      = Logging(system, this.getClass)
   val coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(system)
 
   // for ScalaTest === compare of Class objects
