@@ -1253,7 +1253,13 @@ def sharedBuildToolSupportSetup(p: Project): Project =
     .settings(
       name := s"lagom-${thisProject.value.id}",
       sourceGenerators in Compile += Def.task {
-        Generators.version(version.value, (sourceManaged in Compile).value)
+        Generators.version(
+          version.value,
+          Dependencies.Versions.Akka,
+          Dependencies.Versions.AkkaHttp,
+          Dependencies.Versions.Play,
+          (sourceManaged in Compile).value
+        )
       }.taskValue,
       Dependencies.`build-tool-support`,
     )

@@ -382,7 +382,6 @@ object Dependencies {
       "akka-persistence-typed",
       "akka-actor-testkit-typed", // remove this when https://github.com/akka/akka/pull/27830 is fixed
       "akka-persistence-query",
-      "akka-protobuf",
       "akka-protobuf-v3",
       "akka-remote",
       "akka-slf4j",
