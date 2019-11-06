@@ -40,7 +40,6 @@ private[lagom] trait SlickProviderComponents extends DBComponents {
     SlickDbProvider.buildAndBindSlickDatabases(
       dbApi,
       actorSystem.settings.config,
-      applicationLifecycle,
       coordinatedShutdown
     )(executionContext)
     new SlickProvider(actorSystem, coordinatedShutdown)(executionContext)

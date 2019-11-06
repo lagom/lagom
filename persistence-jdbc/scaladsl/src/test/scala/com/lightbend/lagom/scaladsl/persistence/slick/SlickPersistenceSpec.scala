@@ -20,8 +20,6 @@ import com.lightbend.lagom.persistence.PersistenceSpec
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
-import play.api.inject.ApplicationLifecycle
-import play.api.inject.DefaultApplicationLifecycle
 import play.api.Configuration
 import play.api.Environment
 
@@ -61,8 +59,6 @@ abstract class SlickPersistenceSpec private (_system: ActorSystem) extends Actor
     new SlickReadSideImpl(slick, offsetStore)
   }
 
-  private lazy val applicationLifecycle: ApplicationLifecycle = new DefaultApplicationLifecycle
-
   override def beforeAll(): Unit = {
     super.beforeAll()
 
@@ -71,16 +67,11 @@ abstract class SlickPersistenceSpec private (_system: ActorSystem) extends Actor
     cluster.join(cluster.selfAddress)
 
     // Trigger database to be loaded and registered to JNDI
-    SlickDbTestProvider.buildAndBindSlickDb(system.name, applicationLifecycle, coordinatedShutdown)
+    SlickDbTestProvider.buildAndBindSlickDb(system.name, coordinatedShutdown)
 
     // Trigger tables to be created
     Await.ready(slick.ensureTablesCreated(), 20.seconds)
 
     awaitPersistenceInit(system)
-  }
-
-  override def afterAll(): Unit = {
-    applicationLifecycle.stop()
-    super.afterAll()
   }
 }

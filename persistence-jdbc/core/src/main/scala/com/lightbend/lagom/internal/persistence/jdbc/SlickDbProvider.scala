@@ -11,7 +11,6 @@ import javax.sql.DataSource
 import com.typesafe.config.Config
 import play.api.db.DBApi
 import play.api.db.Database
-import play.api.inject.ApplicationLifecycle
 import slick.jdbc.JdbcBackend.DatabaseDef
 import slick.jdbc.JdbcBackend.{ Database => SlickDatabase }
 import slick.util.AsyncExecutor
@@ -24,7 +23,6 @@ private[lagom] object SlickDbProvider {
   def buildAndBindSlickDatabases(
       dbApi: DBApi,
       config: Config,
-      lifecycle: ApplicationLifecycle,
       coordinatedShutdown: CoordinatedShutdown
   )(implicit executionContext: ExecutionContext): Unit = {
     dbApi.databases().foreach { playDb =>
@@ -40,7 +38,7 @@ private[lagom] object SlickDbProvider {
         // failing to do so will raise an exception
         val jndiDbName = dbConfig.getString("jndiDbName")
 
-        buildAndBindSlickDatabase(playDb, asyncExecConfig, jndiDbName, lifecycle, coordinatedShutdown)
+        buildAndBindSlickDatabase(playDb, asyncExecConfig, jndiDbName, coordinatedShutdown)
       }
     }
   }
@@ -49,7 +47,6 @@ private[lagom] object SlickDbProvider {
       playDb: Database,
       asyncExecConfig: AsyncExecutorConfig,
       jndiDbName: String,
-      lifecycle: ApplicationLifecycle,
       coordinatedShutdown: CoordinatedShutdown
   )(implicit executionContext: ExecutionContext): Unit = {
     val slickDb =
@@ -59,7 +56,7 @@ private[lagom] object SlickDbProvider {
         asyncExecConfig
       )
 
-    bindSlickDatabase(jndiDbName, slickDb, lifecycle, coordinatedShutdown)
+    bindSlickDatabase(jndiDbName, slickDb, coordinatedShutdown)
   }
 
   private def buildSlickDatabase(dataSource: DataSource, asyncExecConfig: AsyncExecutorConfig): DatabaseDef = {
@@ -80,7 +77,6 @@ private[lagom] object SlickDbProvider {
   private def bindSlickDatabase(
       jndiDbName: String,
       slickDb: DatabaseDef,
-      lifecycle: ApplicationLifecycle,
       coordinatedShutdown: CoordinatedShutdown
   )(implicit executionContext: ExecutionContext): Unit = {
     val namingContext = new InitialContext()
@@ -89,7 +85,10 @@ private[lagom] object SlickDbProvider {
     // if name is already in use, bind() method throws NameAlreadyBoundException
     namingContext.bind(jndiDbName, slickDb)
 
-    lifecycle.addStopHook { () =>
+    coordinatedShutdown.addTask(
+      CoordinatedShutdown.PhaseServiceUnbind,
+      s"unbind-slick-db-from-JNDI"
+    ) { () =>
       namingContext.unbind(jndiDbName)
       Future.successful(Done)
     }

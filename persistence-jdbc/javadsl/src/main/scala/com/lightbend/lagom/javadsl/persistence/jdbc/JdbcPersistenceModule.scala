@@ -17,7 +17,6 @@ import com.lightbend.lagom.spi.persistence.OffsetStore
 import play.api.Configuration
 import play.api.Environment
 import play.api.db.DBApi
-import play.api.inject.ApplicationLifecycle
 import play.api.inject.Binding
 import play.api.inject.Module
 
@@ -38,7 +37,6 @@ class JdbcPersistenceModule extends Module {
 class GuiceSlickProvider @Inject() (
     dbApi: DBApi,
     actorSystem: ActorSystem,
-    applicationLifecycle: ApplicationLifecycle,
     coordinatedShutdown: CoordinatedShutdown
 )(
     implicit ec: ExecutionContext
@@ -48,7 +46,6 @@ class GuiceSlickProvider @Inject() (
     SlickDbProvider.buildAndBindSlickDatabases(
       dbApi,
       actorSystem.settings.config,
-      applicationLifecycle,
       coordinatedShutdown
     )
     new SlickProvider(actorSystem, coordinatedShutdown)
