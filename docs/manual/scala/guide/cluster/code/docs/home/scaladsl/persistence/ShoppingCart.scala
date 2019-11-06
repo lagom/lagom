@@ -12,7 +12,6 @@ import akka.cluster.sharding.typed.scaladsl._
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.RetentionCriteria
 import akka.persistence.typed.scaladsl.Effect
-import akka.persistence.typed.scaladsl.Effect.reply
 import akka.persistence.typed.scaladsl.EventSourcedBehavior
 import akka.persistence.typed.scaladsl.ReplyEffect
 
@@ -176,8 +175,8 @@ final case class ShoppingCart(
   def applyCommand(cmd: Command): ReplyEffect[Event, ShoppingCart] =
     if (checkedOut) {
       cmd match {
-        case AddItem(_, _, replyTo) => reply(replyTo)(Rejected("Cannot add an item to a checked-out cart"))
-        case Checkout(replyTo)      => reply(replyTo)(Rejected("Cannot checkout a checked-out cart"))
+        case AddItem(_, _, replyTo) => Effect.reply(replyTo)(Rejected("Cannot add an item to a checked-out cart"))
+        case Checkout(replyTo)      => Effect.reply(replyTo)(Rejected("Cannot checkout a checked-out cart"))
         case Get(replyTo)           => onGet(replyTo)
       }
     } else {
@@ -213,7 +212,7 @@ final case class ShoppingCart(
   }
 
   private def onGet(replyTo: ActorRef[Summary]): ReplyEffect[Event, ShoppingCart] = {
-    reply(replyTo)(toSummary(shoppingCart = this))
+    Effect.reply(replyTo)(toSummary(shoppingCart = this))
   }
 
   private def toSummary(shoppingCart: ShoppingCart): Summary = {
