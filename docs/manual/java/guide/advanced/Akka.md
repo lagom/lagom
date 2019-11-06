@@ -52,3 +52,21 @@ With the `PubSubRegistry` we can publish updates of the progress of the jobs to 
 To make the example complete, an adjusted service implementation follows. Worker actors are created not by the service implementation, but by the `WorkerModule`. We have also added a `status` method that provides a stream of `JobStatus` values that clients can listen to.
 
 @[service-impl](code/docs/home/actor/WorkerService2Impl.java)
+
+## Updating Akka version
+
+If you want to use a newer version of Akka, one that is not used by Lagom yet, you can add the following to your `build.sbt` file:
+
+@[akka-update](code/build-update-akka.sbt)
+
+Of course, other Akka artifacts can be added transitively. Use [sbt-dependency-graph](https://github.com/jrudolph/sbt-dependency-graph) to better inspect your build and check which ones you need to add explicitly.
+
+> **Note:** When doing such updates, keep in mind that you need to follow Akka's [Binary Compatibility Rules](https://doc.akka.io/docs/akka/2.6/common/binary-compatibility-rules.html). And if you are manually adding other Akka artifacts, remember to keep the version of all the Akka artifacts consistent since [mixed versioning is not allowed](https://doc.akka.io/docs/akka/2.6/common/binary-compatibility-rules.html#mixed-versioning-is-not-allowed).
+
+### Adding other Akka dependencies
+
+If you want to use Akka artifacts that are not added transtively by Lagom, you can use `com.lightbend.lagom.core.LagomVersions.akka` to ensure all the artifacts will use a consistent version. For example:
+
+@[akka-other-artifacts](code/build-update-akka.sbt)
+
+> **Note:** When resolving dependencies, sbt will get the newest one declared for this project or added transitively. It means that if Play depends on a newer Akka (or Akka HTTP) version than the one you are declaring, Play version wins. See more details about [how sbt does evictions here](https://www.scala-sbt.org/1.x/docs/Library-Management.html#Eviction+warning).
