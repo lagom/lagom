@@ -1,6 +1,6 @@
 # Persistent Entity
 
-> If you are developping a new Lagom application, we recommend you to follow the guide [[Domain Modelling|DomainModelling]]. If you already have an application using Lagom's `PersistenceEntity`, we recommend the guide [[Migrating to Akka Persistence Typed|MigratingToAkkaPersistenceTyped]] instead.
+> If you are developing a new Lagom application, we recommend you to follow the guide [[Domain Modelling with Akka Persistence Typed|UsingAkkaPersistenceTyped]]. If you already have an application using Lagom's `PersistenceEntity`, we recommend the guide [[Migrating to Akka Persistence Typed|MigratingToAkkaPersistenceTyped]] instead.
 
 We recommend reading [[Event Sourcing and CQRS|ES_CQRS]] as a prerequisite to this section.
 
