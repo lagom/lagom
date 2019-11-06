@@ -4,30 +4,31 @@
 
 package com.example.shoppingcart.impl
 
-import akka.Done
+import java.time.Instant
+
 import akka.actor.typed.ActorRef
-import akka.actor.typed.ActorSystem
 import akka.actor.typed.Behavior
 import akka.cluster.sharding.typed.scaladsl._
-import akka.persistence.journal.Tagged
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.Effect
 import akka.persistence.typed.scaladsl.EventSourcedBehavior
 import akka.persistence.typed.scaladsl.ReplyEffect
 import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
-import com.lightbend.lagom.scaladsl.persistence.AggregateEventShards
 import com.lightbend.lagom.scaladsl.persistence.AggregateEventTag
 import com.lightbend.lagom.scaladsl.persistence.AkkaTaggerAdapter
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializer
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import play.api.libs.json.Format
 import play.api.libs.json._
+
 import scala.collection.immutable.Seq
 
 /**
  * The current state held by the persistent entity.
  */
-case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
+case class ShoppingCartState(items: Map[String, Int], checkedOutTime: Option[Instant] = None) {
+
+  def checkedOut: Boolean = checkedOutTime.nonEmpty
 
   //#akka-persistence-command-handler
   def applyCommand(cmd: ShoppingCartCommand): ReplyEffect[ShoppingCartEvent, ShoppingCartState] =
@@ -76,14 +77,14 @@ case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
     }
   }
 
-  private def updateItem(productId: String, quantity: Int) = {
+  private def updateItem(productId: String, quantity: Int): ShoppingCartState = {
     quantity match {
       case 0 => copy(items = items - productId)
       case _ => copy(items = items + (productId -> quantity))
     }
   }
 
-  private def checkout = copy(checkedOut = true)
+  private def checkout: ShoppingCartState = copy(checkedOutTime = Some(Instant.now()))
 }
 
 object ShoppingCartState {
@@ -92,7 +93,7 @@ object ShoppingCartState {
   val typeKey = EntityTypeKey[ShoppingCartCommand]("ShoppingCartEntity")
   //#akka-persistence-declare-entity-type-key
 
-  def empty: ShoppingCartState = ShoppingCartState(Map.empty, checkedOut = false)
+  def empty: ShoppingCartState = ShoppingCartState(items = Map.empty)
 
   //#akka-persistence-typed-lagom-tagger-adapter
   def behavior(entityContext: EntityContext[ShoppingCartCommand]): Behavior[ShoppingCartCommand] = {

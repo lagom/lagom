@@ -4,7 +4,7 @@
 
 package com.example.shoppingcart.impl
 
-import java.time.{Instant, OffsetDateTime}
+import java.time.Instant
 
 import akka.Done
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, PersistentEntity}
@@ -14,25 +14,28 @@ import play.api.libs.json._
 
 import scala.collection.immutable.Seq
 
-
-class ShoppingCartEntity extends PersistentEntity {
+object ShoppingCartEntity {
 
   import play.api.libs.functional.syntax._
-  def naStringSerializer: Format[Option[String]] =
+  val naStringSerializer: Format[Option[String]] = {
     implicitly[Format[String]].inmap(
       str => Some(str).filterNot(_ == "N/A"),
       maybeStr => maybeStr.getOrElse("N/A")
     )
+  }
+}
+
+class ShoppingCartEntity extends PersistentEntity {
 
   override type Command = ShoppingCartCommand[_]
   override type Event = ShoppingCartEvent
   override type State = ShoppingCartState
 
-  override def initialState: ShoppingCartState = ShoppingCartState(Map.empty, checkedOut = false)
+  override def initialState: ShoppingCartState = ShoppingCartState(items = Map.empty)
 
   override def behavior: Behavior = {
-    case ShoppingCartState(_, false) => openShoppingCart
-    case ShoppingCartState(_, true) => checkedOut
+    case ShoppingCartState(_, None) => openShoppingCart
+    case ShoppingCartState(_, Some(_)) => checkedOut
   }
 
   def openShoppingCart = {
@@ -114,16 +117,18 @@ class ShoppingCartEntity extends PersistentEntity {
   }
 }
 
-case class ShoppingCartState(items: Map[String, Int], checkedOut: Boolean) {
+case class ShoppingCartState(items: Map[String, Int], checkedOutTime: Option[Instant] = None) {
 
-  def updateItem(productId: String, quantity: Int) = {
+  def updateItem(productId: String, quantity: Int): ShoppingCartState = {
     quantity match {
       case 0 => copy(items = items - productId)
       case _ => copy(items = items + (productId -> quantity))
     }
   }
 
-  def checkout = copy(checkedOut = true)
+  def checkedOut: Boolean = checkedOutTime.nonEmpty
+
+  def checkout: ShoppingCartState = copy(checkedOutTime = Some(Instant.now()))
 }
 
 object ShoppingCartState {
