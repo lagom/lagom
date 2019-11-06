@@ -167,11 +167,11 @@ object ShoppingCart {
 
 // #shopping-cart-state
 final case class ShoppingCart(
-  items: Map[String, Int],
-  // checkedOutTime defines if cart was checked-out or not:
-  // case None, cart is open
-  // case Some, cart is checked-out
-  checkedOutTime: Option[Instant] = None
+    items: Map[String, Int],
+    // checkedOutTime defines if cart was checked-out or not:
+    // case None, cart is open
+    // case Some, cart is checked-out
+    checkedOutTime: Option[Instant] = None
 )
 // #shopping-cart-state
 {

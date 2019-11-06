@@ -50,7 +50,6 @@ trait ShoppingCartComponents
     with SlickPersistenceComponents
     with HikariCPComponents
     with AhcWSComponents {
-
   implicit def executionContext: ExecutionContext
 
   override lazy val lagomServer: LagomServer                       = serverFor[ShoppingCartService](wire[ShoppingCartServiceImpl])
@@ -72,7 +71,6 @@ abstract class ShoppingCartApplication(context: LagomApplicationContext)
 // #shopping-cart-loader
 
 trait ShoppingCartService extends Service {
-
   def get(id: String): ServiceCall[NotUsed, ShoppingCartView]
 
   final override def descriptor: Descriptor = {
@@ -91,7 +89,7 @@ class ShoppingCartServiceImpl(
 )(implicit ec: ExecutionContext)
     extends ShoppingCartService // class body follows
 // #shopping-cart-service-impl
-{
+    {
   // #shopping-cart-entity-ref
   def entityRef(id: String): EntityRef[ShoppingCart.Command] = {
     clusterSharding.entityRefFor(ShoppingCart.typeKey, id)
