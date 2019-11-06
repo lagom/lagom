@@ -345,9 +345,9 @@ The `entityRef` is similar to an `actorRef` but denotes the actor is sharded. In
 
 #### Considerations on using ask pattern
 
-Since we want to send commands to the Aggregate and these commands declare a reply we will need to use the `ask` pattern.
+Since we want to send commands to the Aggregate and these commands declare a reply we will need to use the [`ask` pattern](https://doc.akka.io/docs/akka/2.6/typed/interaction-patterns.html#request-response).
 
-The code we introduced above creates an `EntityRef` from the `ShoppingCartServiceImpl`. This means it is code outside an actor (the `ServiceImpl`) trying to interact with an actor (the `EntityRef`). `EntityRef` provides an `ask()` overload out of the box meant to be used from outside actors which is the situation we're in.
+The code we introduced above creates an `EntityRef` from inside the `ShoppingCartServiceImpl` meaning we are calling the actor (the `EntityRef`) from outside the `ActorSystem`. `EntityRef` provides an `ask()` overload out of the box meant to be used from outside actors which is the situation we're in.
 
 ```scala
 implicit val askTimeout = Timeout(5.seconds)
@@ -358,9 +358,9 @@ val futureSummary: Future[ShoppingCartSummary] =
 futureSummary.map(cartSummary => convertToApi(id, cartSummary))
 ```
 
-So we declare an implicit `timeout` and then invoke `ask(f)` (which uses the timeout implicitly). The `f` argument in the `ask()` method is a function in which we create the command using the `replyTo` provided. Internally, Akka Typed will use that `replyTo` as a receiver of the response message and then extract that message and provide it as as `Future[Reply]` (in this case `Future[ShoppingCartSummary]`).
+So we declare an implicit `timeout` and then invoke `ask()` (which uses the timeout implicitly). The `ask()` method accepts a function of `ActorRef[Res] => M` in which `Res` is the expected response type and `M` is the message being sent to the actor. The `ask()` method will create an instance of `ActorRef[Res]` that can be use to build the outgoing message (command). Once the response is sent to `ActorRef[Res]`, Akka will complete the returned `Future[Res]` with the response (in this case `Future[ShoppingCartSummary]`).
 
-Finally, we operate over the `futureSummary`normallly (in this case, we map it to a different type).
+Finally, we operate over the `futureSummary` normallly (in this case, we map it to a different type).
 
 ### Configuring number of shards
 
