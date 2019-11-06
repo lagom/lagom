@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.internal.persistence.jdbc
 
+import akka.actor.CoordinatedShutdown
 import akka.cluster.Cluster
 import akka.pattern.AskTimeoutException
 import com.lightbend.lagom.persistence.ActorSystemSpec
@@ -21,7 +22,7 @@ class SlickOffsetStoreSpec extends ActorSystemSpec(Configuration.load(Environmen
   import system.dispatcher
 
   private lazy val applicationLifecycle: ApplicationLifecycle = new DefaultApplicationLifecycle
-  private lazy val slick                                      = new SlickProvider(system)
+  private lazy val slick                                      = new SlickProvider(system, coordinatedShutdown)
 
   private lazy val offsetStore = new SlickOffsetStore(
     system,
@@ -32,7 +33,7 @@ class SlickOffsetStoreSpec extends ActorSystemSpec(Configuration.load(Environmen
   protected override def beforeAll(): Unit = {
     super.beforeAll()
     // Trigger database to be loaded and registered to JNDI
-    SlickDbTestProvider.buildAndBindSlickDb(system.name, applicationLifecycle)
+    SlickDbTestProvider.buildAndBindSlickDb(system.name, applicationLifecycle, coordinatedShutdown)
   }
 
   override def afterAll(): Unit = {

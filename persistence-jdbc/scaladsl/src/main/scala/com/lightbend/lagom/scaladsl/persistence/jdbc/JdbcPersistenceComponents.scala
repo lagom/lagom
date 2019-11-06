@@ -5,6 +5,7 @@
 package com.lightbend.lagom.scaladsl.persistence.jdbc
 
 import akka.actor.ActorSystem
+import akka.actor.CoordinatedShutdown
 import com.lightbend.lagom.internal.persistence.jdbc.SlickDbProvider
 import com.lightbend.lagom.internal.persistence.jdbc.SlickOffsetStore
 import com.lightbend.lagom.internal.persistence.jdbc.SlickProvider
@@ -31,12 +32,18 @@ trait JdbcPersistenceComponents
 
 private[lagom] trait SlickProviderComponents extends DBComponents {
   def actorSystem: ActorSystem
+  def coordinatedShutdown: CoordinatedShutdown
   def executionContext: ExecutionContext
 
   lazy val slickProvider: SlickProvider = {
     // Ensures JNDI bindings are made before we build the SlickProvider
-    SlickDbProvider.buildAndBindSlickDatabases(dbApi, actorSystem.settings.config, applicationLifecycle)
-    new SlickProvider(actorSystem)(executionContext)
+    SlickDbProvider.buildAndBindSlickDatabases(
+      dbApi,
+      actorSystem.settings.config,
+      applicationLifecycle,
+      coordinatedShutdown
+    )(executionContext)
+    new SlickProvider(actorSystem, coordinatedShutdown)(executionContext)
   }
 }
 

@@ -33,7 +33,7 @@ abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorS
 
   import system.dispatcher
 
-  protected lazy val slick = new SlickProvider(system)
+  protected lazy val slick = new SlickProvider(system, coordinatedShutdown)
 
   protected lazy val offsetStore =
     new JavadslJdbcOffsetStore(
@@ -57,7 +57,7 @@ abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorS
     cluster.join(cluster.selfAddress)
 
     // Trigger database to be loaded and registered to JNDI
-    SlickDbTestProvider.buildAndBindSlickDb(system.name, applicationLifecycle)
+    SlickDbTestProvider.buildAndBindSlickDb(system.name, applicationLifecycle, coordinatedShutdown)
 
     // Trigger tables to be created
     Await.ready(slick.ensureTablesCreated(), 20.seconds)
