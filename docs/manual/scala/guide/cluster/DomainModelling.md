@@ -332,7 +332,7 @@ abstract class ShoppingCartApplication(context: LagomApplicationContext)
 
 ### Getting instances of the Aggregate Entity
 
-To access instances of the Aggregate (which may be running locally or remotely on the cluster), you should inject the `ClusterSharding` on your service can instantiate an `EntityRef` using the method `entityRefFor`.
+To access instances of the Aggregate (which may be running locally or remotely on the cluster), you should inject the `ClusterSharding` on your service. You can then instantiate an `EntityRef` using the method `entityRefFor`. In our case, the `EntityRef` is typed to only accept `ShoppingCartCommand`s.
 
 ```scala
 val shoppingCartRef: EntityRef[ShoppingCartCommand] =
@@ -341,7 +341,7 @@ val shoppingCartRef: EntityRef[ShoppingCartCommand] =
 
 To locate the correct actor across the cluster you need to specify the `entityTypeKey` we used to initialize the entity and the `id` for the instance we need. Akka Cluster will create the required actor in one node on the cluster or reuse the existing instance if the actor has already been created and is still alive.
 
-The `entityRef` is similar to an `actorRef` but denotes the actor is sharded. Interacting with an `entityRef` implies the messages exchanged with the actor may need to travel over the wire to a separate node. In our case, the `EntityRef` is typed to only accept `ShoppingCartCommand`s.
+The `entityRef` is similar to an `actorRef` but denotes the actor is sharded. Interacting with an `entityRef` implies the messages exchanged with the actor may need to travel over the wire to another node.
 
 #### Considerations on using ask pattern
 
