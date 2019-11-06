@@ -7,7 +7,6 @@ package com.lightbend.lagom.internal.persistence.jdbc
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import play.api.db.Databases
-import play.api.inject.ApplicationLifecycle
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -26,7 +25,7 @@ object SlickDbTestProvider {
   }
 
   /** Builds Slick Database (with AsyncExecutor) and bind it as JNDI resource for test purposes  */
-  def buildAndBindSlickDb(baseName: String, lifecycle: ApplicationLifecycle, coordinatedShutdown: CoordinatedShutdown)(
+  def buildAndBindSlickDb(baseName: String, coordinatedShutdown: CoordinatedShutdown)(
       implicit executionContext: ExecutionContext
   ): Unit = {
     val dbName = s"${baseName}_${Random.alphanumeric.take(8).mkString}"
@@ -39,8 +38,6 @@ object SlickDbTestProvider {
       Future.successful(db.shutdown()).map(_ => Done)
     }
 
-    SlickDbProvider.buildAndBindSlickDatabase(db, AsyncExecConfig, JNDIDBName, lifecycle, coordinatedShutdown)(
-      executionContext
-    )
+    SlickDbProvider.buildAndBindSlickDatabase(db, AsyncExecConfig, JNDIDBName, coordinatedShutdown)
   }
 }

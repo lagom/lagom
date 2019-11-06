@@ -4,14 +4,11 @@
 
 package com.lightbend.lagom.internal.persistence.jdbc
 
-import akka.actor.CoordinatedShutdown
 import akka.cluster.Cluster
 import akka.pattern.AskTimeoutException
 import com.lightbend.lagom.persistence.ActorSystemSpec
 import play.api.Configuration
 import play.api.Environment
-import play.api.inject.ApplicationLifecycle
-import play.api.inject.DefaultApplicationLifecycle
 import slick.jdbc.meta.MTable
 
 import scala.concurrent.Await
@@ -21,8 +18,7 @@ import scala.concurrent.duration._
 class SlickOffsetStoreSpec extends ActorSystemSpec(Configuration.load(Environment.simple()).underlying) {
   import system.dispatcher
 
-  private lazy val applicationLifecycle: ApplicationLifecycle = new DefaultApplicationLifecycle
-  private lazy val slick                                      = new SlickProvider(system, coordinatedShutdown)
+  private lazy val slick = new SlickProvider(system, coordinatedShutdown)
 
   private lazy val offsetStore = new SlickOffsetStore(
     system,
@@ -33,13 +29,7 @@ class SlickOffsetStoreSpec extends ActorSystemSpec(Configuration.load(Environmen
   protected override def beforeAll(): Unit = {
     super.beforeAll()
     // Trigger database to be loaded and registered to JNDI
-    SlickDbTestProvider.buildAndBindSlickDb(system.name, applicationLifecycle, coordinatedShutdown)
-  }
-
-  override def afterAll(): Unit = {
-    Await.ready(applicationLifecycle.stop(), 20.seconds)
-
-    super.afterAll()
+    SlickDbTestProvider.buildAndBindSlickDb(system.name, coordinatedShutdown)
   }
 
   "SlickOffsetStoreSpec" when {
