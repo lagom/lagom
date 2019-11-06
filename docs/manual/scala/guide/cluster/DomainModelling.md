@@ -283,11 +283,13 @@ Lagom uses [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/clust
 
 In order to use the Aggregate, first it needs to be initialized on the `ClusterSharding`. That process won't create any specific Aggregate instance, it will only create the Shard Regions and prepare it to be used (read more about Shard Regions in the [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html) docs).
 
->  Note: In Akka Cluster, the term to refer to a sharded actor is _entity_ so an Aggregate that's sharded can also be referred to as an Aggregate Entity.
+> Note: In Akka Cluster, the term to refer to a sharded actor is _entity_ so an Aggregate that's sharded can also be referred to as an Aggregate Entity.
 
-In the companion object of `ShoppingCart`, define an `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate. The `EntityTypeKey`  has as name to uniquely identify this model in the cluster. It's also typed on `ShoppingCartCommand` which is the type of the messages that the Aggregate can receive.
+You must define an `EntityTypeKey` and a function of `EntityContext[Command] => Behavior[Command]` to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate.
 
-Then, you must also define a function of `EntityContext[Command] => Behavior[Command]`. This can also be defined as a method in the companion object.
+The `EntityTypeKey` has as name to uniquely identify this model in the cluster. It should be typed on `ShoppingCartCommand` which is the type of the messages that the Shopping Cart can receive.
+
+In the companion object of `ShoppingCart`, define the `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate.
 
 ```scala
 object ShoppingCart {
@@ -308,7 +310,7 @@ object ShoppingCart {
 }
 ```
 
-Finally, initialize the Aggregate on the `ClusterSharding` using the `typedKey` and the `behavior`. Lagom provides an instance of the `clusterSharding` extension through dependency injection for you convenience. Initializing an entity should be done only once and, in the case of Lagom Aggregates it is tipically done in the `LagomApplication`:
+Finally, initialize the Aggregate on the `ClusterSharding` using the `typedKey` and the `behavior`. Lagom provides an instance of the `clusterSharding` extension through dependency injection for your convenience. Initializing an entity should be done only once and, in the case of Lagom Aggregates, it is tipically done in the `LagomApplication`:
 
 ```scala
 abstract class ShoppingCartApplication(context: LagomApplicationContext)
@@ -372,7 +374,7 @@ See the Akka docs for details on how to configure the number of shards.
 
 Keeping all the Aggregates in memory all the time is inefficient. Instead, use the Entity passivation feature so sharded entities (the Aggregates) are removed from the cluster when they've been unused for some time.
 
-Akka supports both programmatic passivation and [automatic passivation](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#automatic-passivation). The default values for automatic passivation are generally good enough.
+Akka supports both [programmatic passivation](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#passivation) and [automatic passivation](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#automatic-passivation). The default values for automatic passivation are generally good enough.
 
 ## Data Serialization
 
