@@ -28,7 +28,7 @@ import play.api.libs.json._
 
 import scala.collection.immutable.Seq
 
-object ShoppingCart {
+object ShoppingCartExamples {
   // #shopping-cart-commands
   trait CommandSerializable
 
@@ -97,9 +97,6 @@ object ShoppingCart {
   val empty: ShoppingCart = ShoppingCart(items = Map.empty)
   // #shopping-cart-empty-state
 
-  // #shopping-cart-entity-type-key
-  val typeKey: EntityTypeKey[Command] = EntityTypeKey[Command]("ShoppingCart")
-  // #shopping-cart-entity-type-key
 
   def createSimple(entityContext: EntityContext[Command]): EventSourcedBehavior[Command, Event, ShoppingCart] = {
     // #shopping-cart-create-behavior
@@ -140,19 +137,23 @@ object ShoppingCart {
     // #shopping-cart-create-behavior-with-snapshots
   }
 
-  // #shopping-cart-apply-behavior-creation
-  def apply(entityContext: EntityContext[Command]): Behavior[Command] = {
-    EventSourcedBehavior
-      .withEnforcedReplies[Command, Event, ShoppingCart](
-        persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
-        emptyState = ShoppingCart.empty,
-        commandHandler = (cart, cmd) => cart.applyCommand(cmd),
-        eventHandler = (cart, evt) => cart.applyEvent(evt)
-      )
-      .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, Event.Tag))
-      .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2))
+  // #companion-with-type-key-and-factory
+  object ShoppingCart {
+    val typeKey: EntityTypeKey[Command] = EntityTypeKey[Command]("ShoppingCart")
+
+    def apply(entityContext: EntityContext[Command]): Behavior[Command] = {
+      EventSourcedBehavior
+        .withEnforcedReplies[Command, Event, ShoppingCart](
+          persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
+          emptyState = ShoppingCart.empty,
+          commandHandler = (cart, cmd) => cart.applyCommand(cmd),
+          eventHandler = (cart, evt) => cart.applyEvent(evt)
+        )
+        .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, Event.Tag))
+        .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2))
+    }
   }
-  // #shopping-cart-apply-behavior-creation
+  // #companion-with-type-key-and-factory
 
   implicit val shoppingCartFormat: Format[ShoppingCart] = Json.format
 }

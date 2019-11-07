@@ -98,7 +98,7 @@ This example splits the tags into 10 shards and defines the event tagger in the 
 
 @[shopping-cart-events-object](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
-The `AggregateEventTag` is a Lagom class used by Lagom's [Read-Side Processor|ReadSide]] and [[Topic Producers|MessageBrokerApi#Implementing-a-topic]], however Akka Persistence Typed expects a function `Event => Set[String]`. Therefore, we need to use an adapter to transform Lagom's `AggregateEventTag` to the required Akka tagger function.
+The `AggregateEventTag` is a Lagom class used by Lagom's [[Read-Side Processor|ReadSide]] and [[Topic Producers|MessageBrokerApi#Implementing-a-topic]], however Akka Persistence Typed expects a function `Event => Set[String]`. Therefore, we need to use an adapter to transform Lagom's `AggregateEventTag` to the required Akka tagger function.
 
 @[shopping-cart-create-behavior-with-tagger](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
@@ -116,23 +116,21 @@ Lagom uses [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/clust
 
 ### Creating the Aggregate instance
 
-The Aggregate needs to be initialized on the `ClusterSharding` before its use. That process won't create any specific Aggregate instance, and it will only create the Shard Regions and prepare it to be used (read more about Shard Regions in the [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html) docs).
+The Aggregate needs to be initialized on the `ClusterSharding` before it's used. That process won't create any specific Aggregate instance, and it will only create the Shard Regions and prepare it to be used (read more about Shard Regions in the [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html) docs).
 
 > **Note**: In Akka Cluster, the term to refer to a sharded actor is _entity_, so a sharded Aggregate can also be referred to as an Aggregate Entity.
 
-In the companion object of `ShoppingCart`, define an `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate. The `EntityTypeKey` has a name to identify this model in the cluster uniquely. It's also typed on `ShoppingCart.Command` which is the type of messages that the Aggregate can receive:
-
-@[shopping-cart-entity-type-key](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
+You must define an `EntityTypeKey` and a function of `EntityContext[Command] => Behavior[Command]` to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate.
 
 The `EntityTypeKey` has as name to uniquely identify this model in the cluster. It should be typed on `ShoppingCartCommand` which is the type of the messages that the Shopping Cart can receive.
 
 In the companion object of `ShoppingCart`, define the `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate.
 
-@[shopping-cart-apply-behavior-creation](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
+@[companion-with-type-key-and-factory](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
-> **Note**: [Akka style guide](https://doc.akka.io/docs/akka/2.6/typed/style-guide.html) recommends having an `apply` factory method in the companion object and making the constructor private.
+> **Note**: [Akka style guide](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html) recommends having an `apply` factory method in the companion object.
 
-Finally, initialize the Aggregate on the `ClusterSharding` using the `typedKey` and the `behavior`. Lagom provides an instance of the `clusterSharding` extension through dependency injection for your convenience. Initializing an entity should be done only once and, in the case of Lagom Aggregates it is typically done in the `LagomApplication`:
+Finally, initialize the Aggregate on the `ClusterSharding` using the `typedKey` and the `behavior`. Lagom provides an instance of the `clusterSharding` extension through dependency injection for your convenience. Initializing an entity should be done only once and, in the case of Lagom Aggregates, it is typically done in the `LagomApplication`:
 
 @[shopping-cart-loader](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
@@ -142,7 +140,7 @@ To access instances of the Aggregate (which may be running locally or remotely o
 
 @[shopping-cart-service-impl](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
-And then you can instantiate an `EntityRef` using the method `entityRef`. In our case, the `EntityRef` is typed to only accept `ShoppingCart.Command`s.
+And then you can instantiate an `EntityRef` using the method `entityRefFor`. In our case, the `EntityRef` is typed to only accept `ShoppingCart.Command`s.
 
 @[shopping-cart-entity-ref](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
@@ -150,23 +148,25 @@ To locate the correct actor across the cluster, you need to specify the `EntityT
 
 The `EntityRef` is similar to an `ActorRef` but denotes the actor is sharded. Interacting with an `EntityRef` implies the messages exchanged with the actor may need to travel over the wire to another node.
 
-#### Considerations on using `ask` pattern
+#### Considerations on using the ask pattern
 
-Since we want to send commands to the Aggregate and these commands declare a reply we will need to use the [`ask` pattern](https://doc.akka.io/docs/akka/2.6/typed/interaction-patterns.html#request-response).
+Since we want to send commands to the Aggregate and these commands declare a reply we will need to use the [ask pattern](https://doc.akka.io/docs/akka/2.6/typed/interaction-patterns.html#request-response).
 
-The code we introduced above creates an `EntityRef` from inside the `ShoppingCartServiceImpl` meaning we are calling the actor (the `EntityRef`) from outside the `ActorSystem`. `EntityRef` provides an `ask()` overload out of the box meant to be used from outside actors which is the situation we're in.
+The code we introduced below creates an `EntityRef` from inside the `ShoppingCartServiceImpl` meaning we are calling the actor (the `EntityRef`) from outside the `ActorSystem`. `EntityRef` provides an `ask()` overload out of the box meant to be used from outside actors.
 
 @[shopping-cart-service-call](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
-So we declare an implicit `timeout` and then invoke `ask` (which uses the timeout implicitly). The `ask` method accepts a function of `ActorRef[Res] => M` in which `Res` is the expected response type and `M` is the message being sent to the actor. The `ask` method will create an instance of `ActorRef[Res]` that can be use to build the outgoing message (command). Once the response is sent to `ActorRef[Res]`, Akka will complete the returned `Future[Res]` with the response (in this case `Future[ShoppingCartSummary]`).
+So we declare an implicit `timeout` and then invoke `ask` (which uses the timeout implicitly). The `ask` method accepts a function of `ActorRef[Res] => M` in which `Res` is the expected response type and `M` is the message being sent to the actor. The `ask` method will create an instance of `ActorRef[Res]` that can be used to build the outgoing message (command). Once the response is sent to `ActorRef[Res]`, Akka will complete the returned `Future[Res]` with the response (in this case `Future[Summary]`).
+
+Finally, we operate over the `cartSummary` (in this case, we map it to a different type, ie: `ShoppingCartView`).
+
+The `ShoppingCartView` and `asShoppingCartView` are defined as:
 
 @[shopping-cart-service-view](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
-Finally, we operate over the `cartSummary` normally (in this case, we map it to a different type). The `convertShoppingCart` is like:
-
 @[shopping-cart-service-map](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
-> **Note**: Again, we are keeping the internal state of the Aggregate isolated from the exposed service API so they can evolve independently.
+> **Note**: We are keeping the internal state of the Aggregate isolated from the exposed service API so they can evolve independently.
 
 ### Configuring number of shards
 
