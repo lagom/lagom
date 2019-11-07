@@ -156,7 +156,7 @@ The code we introduced above creates an `EntityRef` from inside the `ShoppingCar
 
 @[shopping-cart-service-call](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
-So we declare an implicit `timeout` and then invoke `ask` (which uses the timeout implicitly). The `ask` method accepts a function of `ActorRef[Res] => M` in which `Res` is the expected response type and `M` is the message being sent to the actor. The `ask` method will create an instance of `ActorRef[Res]` that can be used to build the outgoing message (command). Once the response is sent to `ActorRef[Res]`, Akka will complete the returned `Future[Res]` with the response (in this case `Future[ShoppingCartSummary]`).
+So we declare an implicit `timeout` and then invoke `ask` (which uses the timeout implicitly). The `ask` method accepts a function of `ActorRef[Res] => M` in which `Res` is the expected response type and `M` is the message being sent to the actor. The `ask` method will create an instance of `ActorRef[Res]` that can be used to build the outgoing message (command). Once the response is sent to `ActorRef[Res]`, Akka will complete the returned `Future[Res]` with the response (in this case `Future[Summary]`).
 
 Finally, we operate over the `cartSummary` (in this case, we map it to a different type, ie: `ShoppingCartView`).
 
