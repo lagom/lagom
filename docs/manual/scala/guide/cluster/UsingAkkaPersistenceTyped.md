@@ -148,9 +148,9 @@ To locate the correct actor across the cluster, you need to specify the `EntityT
 
 The `EntityRef` is similar to an `ActorRef` but denotes the actor is sharded. Interacting with an `EntityRef` implies the messages exchanged with the actor may need to travel over the wire to another node.
 
-#### Considerations on using `ask` pattern
+#### Considerations on using the ask pattern
 
-Since we want to send commands to the Aggregate and these commands declare a reply we will need to use the [`ask` pattern](https://doc.akka.io/docs/akka/2.6/typed/interaction-patterns.html#request-response).
+Since we want to send commands to the Aggregate and these commands declare a reply we will need to use the [ask pattern](https://doc.akka.io/docs/akka/2.6/typed/interaction-patterns.html#request-response).
 
 The code we introduced above creates an `EntityRef` from inside the `ShoppingCartServiceImpl` meaning we are calling the actor (the `EntityRef`) from outside the `ActorSystem`. `EntityRef` provides an `ask()` overload out of the box meant to be used from outside actors which is the situation we're in.
 
