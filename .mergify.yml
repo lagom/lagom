@@ -14,13 +14,13 @@ pull_request_rules:
   - name: backport patches to 1.5.x branch
     conditions:
       - merged
-      - label=status:needs-backport
+      - label=status:needs-backport-1.5
     actions:
       backport:
         branches:
           - 1.5.x
       label:
-        remove: [status:needs-backport]
+        remove: [status:needs-backport-1.5]
 
   - name: backport patches to 1.4.x branch
     conditions:
