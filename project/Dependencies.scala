@@ -891,6 +891,7 @@ object Dependencies {
     scalaXml,
     akkaStream,
     akkaActor,
+    akkaActorTyped,
     akkaSlf4j,
     akkaProtobuf
   )
@@ -939,7 +940,13 @@ object Dependencies {
   val `service-locator` = libraryDependencies ++= Seq(
     playAkkaHttpServer,
     akkaHttpCore,
+<<<<<<< HEAD
     scalaTest % Test
+=======
+    scalaTest % Test,
+    // update to enforce using snapshots in nightly jobs
+    akkaActorTyped,
+>>>>>>> 5ec31a849... Adds explicit deps to use snapshot artifacts on nightly jobs
   )
 
   val `dev-mode-ssl-support` = libraryDependencies ++= Seq(
@@ -947,6 +954,7 @@ object Dependencies {
     akkaHttpCore,
     // updates to match whitelist
     akkaActor,
+    akkaActorTyped,
     akkaStream,
     akkaProtobuf,
     akkaSlf4j,
@@ -963,7 +971,14 @@ object Dependencies {
       scalaTest   % Test,
       // updates to match whitelist
       akkaActor,
+<<<<<<< HEAD
       scalaJava8Compat
+=======
+      akkaActorTyped,
+      scalaJava8Compat,
+      // update to enforce using snapshots in nightly jobs
+      akkaActorTyped % Test,
+>>>>>>> 5ec31a849... Adds explicit deps to use snapshot artifacts on nightly jobs
     )
 
   val `service-registry-client-javadsl` =
