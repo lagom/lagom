@@ -62,6 +62,8 @@ labels:
   - color: 0e8a16
     name: "status:merge-when-green"
   - color: fbca04
+    name: "status:needs-backport-1.5"
+  - color: fbca04
     name: "status:needs-backport-1.4"
   - color: fbca04
     name: "status:needs-backport"
