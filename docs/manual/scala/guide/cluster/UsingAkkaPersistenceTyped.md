@@ -120,19 +120,17 @@ The Aggregate needs to be initialized on the `ClusterSharding` before its use. T
 
 > **Note**: In Akka Cluster, the term to refer to a sharded actor is _entity_, so a sharded Aggregate can also be referred to as an Aggregate Entity.
 
-In the companion object of `ShoppingCart`, define an `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate. The `EntityTypeKey` has a name to identify this model in the cluster uniquely. It's also typed on `ShoppingCart.Command` which is the type of messages that the Aggregate can receive:
-
-@[shopping-cart-entity-type-key](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
+You must define an `EntityTypeKey` and a function of `EntityContext[Command] => Behavior[Command]` to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate.
 
 The `EntityTypeKey` has as name to uniquely identify this model in the cluster. It should be typed on `ShoppingCartCommand` which is the type of the messages that the Shopping Cart can receive.
 
 In the companion object of `ShoppingCart`, define the `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate.
 
-@[shopping-cart-apply-behavior-creation](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
+@[companion-with-type-key-and-factory](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
-> **Note**: [Akka style guide](https://doc.akka.io/docs/akka/2.6/typed/style-guide.html) recommends having an `apply` factory method in the companion object and making the constructor private.
+> **Note**: [Akka style guide](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html) recommends having an `apply` factory method in the companion object.
 
-Finally, initialize the Aggregate on the `ClusterSharding` using the `typedKey` and the `behavior`. Lagom provides an instance of the `clusterSharding` extension through dependency injection for your convenience. Initializing an entity should be done only once and, in the case of Lagom Aggregates it is typically done in the `LagomApplication`:
+Finally, initialize the Aggregate on the `ClusterSharding` using the `typedKey` and the `behavior`. Lagom provides an instance of the `clusterSharding` extension through dependency injection for your convenience. Initializing an entity should be done only once and, in the case of Lagom Aggregates, it is typically done in the `LagomApplication`:
 
 @[shopping-cart-loader](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
