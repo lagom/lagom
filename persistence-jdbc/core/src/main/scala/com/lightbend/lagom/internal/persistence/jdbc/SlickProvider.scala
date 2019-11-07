@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit
 
 import akka.Done
 import akka.actor.ActorSystem
+import akka.actor.CoordinatedShutdown
 import akka.persistence.jdbc.config.JournalTableConfiguration
 import akka.persistence.jdbc.config.SnapshotTableConfiguration
 import akka.persistence.jdbc.journal.dao.JournalTables
@@ -18,9 +19,11 @@ import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import javax.naming.InitialContext
 import org.slf4j.LoggerFactory
 import slick.basic.DatabaseConfig
+import slick.jdbc
 import slick.jdbc.JdbcBackend.Database
 import slick.jdbc.meta.MTable
 import slick.jdbc.H2Profile
+import slick.jdbc.JdbcBackend
 import slick.jdbc.JdbcProfile
 import slick.jdbc.MySQLProfile
 import slick.jdbc.PostgresProfile
@@ -32,7 +35,9 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
-private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionContext) {
+private[lagom] class SlickProvider(system: ActorSystem, coordinatedShutdown: CoordinatedShutdown)(
+    implicit ec: ExecutionContext
+) {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val readSideConfig    = system.settings.config.getConfig("lagom.persistence.read-side.jdbc")
@@ -43,13 +48,21 @@ private[lagom] class SlickProvider(system: ActorSystem)(implicit ec: ExecutionCo
   // users can disable the usage of jndiDbName for userland read-side operations by
   // setting the jndiDbName to null. In which case we fallback to slick.db.
   // slick.db must be defined otherwise the application will fail to start
-  val db = {
+  val db: JdbcBackend.Database = {
     if (readSideConfig.hasPath("slick.jndiDbName")) {
+      // when the DB is obtained via JNDI we trust the creator will handle the shutdown
       new InitialContext()
         .lookup(readSideConfig.getString("slick.jndiDbName"))
         .asInstanceOf[Database]
     } else if (readSideConfig.hasPath("slick.db")) {
-      Database.forConfig("slick.db", readSideConfig)
+      val unmanaged: jdbc.JdbcBackend.Database = Database.forConfig("slick.db", readSideConfig)
+      coordinatedShutdown.addTask(
+        CoordinatedShutdown.PhaseBeforeActorSystemTerminate,
+        s"shutdown-unmanaged-read-side-slick"
+      ) { () =>
+        unmanaged.shutdown.map(_ => Done)
+      }
+      unmanaged
     } else {
       throw new RuntimeException(
         "Cannot start because read-side database configuration is missing. " +

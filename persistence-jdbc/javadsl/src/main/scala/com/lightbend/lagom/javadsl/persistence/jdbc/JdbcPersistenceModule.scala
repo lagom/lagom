@@ -8,6 +8,7 @@ import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
 import akka.actor.ActorSystem
+import akka.actor.CoordinatedShutdown
 import com.lightbend.lagom.internal.javadsl.persistence.jdbc._
 import com.lightbend.lagom.internal.persistence.jdbc.SlickDbProvider
 import com.lightbend.lagom.internal.persistence.jdbc.SlickOffsetStore
@@ -16,7 +17,6 @@ import com.lightbend.lagom.spi.persistence.OffsetStore
 import play.api.Configuration
 import play.api.Environment
 import play.api.db.DBApi
-import play.api.inject.ApplicationLifecycle
 import play.api.inject.Binding
 import play.api.inject.Module
 
@@ -34,12 +34,20 @@ class JdbcPersistenceModule extends Module {
 }
 
 @Singleton
-class GuiceSlickProvider @Inject() (dbApi: DBApi, actorSystem: ActorSystem, applicationLifecycle: ApplicationLifecycle)(
+class GuiceSlickProvider @Inject() (
+    dbApi: DBApi,
+    actorSystem: ActorSystem,
+    coordinatedShutdown: CoordinatedShutdown
+)(
     implicit ec: ExecutionContext
 ) extends Provider[SlickProvider] {
   lazy val get = {
     // Ensures JNDI bindings are made before we build the SlickProvider
-    SlickDbProvider.buildAndBindSlickDatabases(dbApi, actorSystem.settings.config, applicationLifecycle)
-    new SlickProvider(actorSystem)
+    SlickDbProvider.buildAndBindSlickDatabases(
+      dbApi,
+      actorSystem.settings.config,
+      coordinatedShutdown
+    )
+    new SlickProvider(actorSystem, coordinatedShutdown)
   }
 }

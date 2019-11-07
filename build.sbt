@@ -374,6 +374,11 @@ def mimaSettings(since: String = version150): Seq[Setting[_]] = {
       exclude[MissingClassProblem]("*.lagom.dev.Servers*"),
       // PubSub module extending SimpleModule instead of Module
       ProblemFilters.exclude[DirectAbstractMethodProblem]("play.api.inject.Module.bindings"),
+      // Fix shutdown ordering for Slick and JPA
+      ProblemFilters
+        .exclude[DirectMissingMethodProblem]("com.lightbend.lagom.javadsl.persistence.jdbc.GuiceSlickProvider.this"),
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.javadsl.persistence.jdbc.GuiceSlickProvider.this"),
     )
   )
 }

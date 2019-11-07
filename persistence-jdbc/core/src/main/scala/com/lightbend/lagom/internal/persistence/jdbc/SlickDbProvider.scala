@@ -4,21 +4,27 @@
 
 package com.lightbend.lagom.internal.persistence.jdbc
 
+import akka.Done
+import akka.actor.CoordinatedShutdown
 import javax.naming.InitialContext
 import javax.sql.DataSource
-
 import com.typesafe.config.Config
 import play.api.db.DBApi
 import play.api.db.Database
-import play.api.inject.ApplicationLifecycle
 import slick.jdbc.JdbcBackend.DatabaseDef
 import slick.jdbc.JdbcBackend.{ Database => SlickDatabase }
 import slick.util.AsyncExecutor
 
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import scala.util.Try
 
 private[lagom] object SlickDbProvider {
-  def buildAndBindSlickDatabases(dbApi: DBApi, config: Config, lifecycle: ApplicationLifecycle): Unit = {
+  def buildAndBindSlickDatabases(
+      dbApi: DBApi,
+      config: Config,
+      coordinatedShutdown: CoordinatedShutdown
+  )(implicit executionContext: ExecutionContext): Unit = {
     dbApi.databases().foreach { playDb =>
       val dbName = playDb.name
 
@@ -32,7 +38,7 @@ private[lagom] object SlickDbProvider {
         // failing to do so will raise an exception
         val jndiDbName = dbConfig.getString("jndiDbName")
 
-        buildAndBindSlickDatabase(playDb, asyncExecConfig, jndiDbName, lifecycle)
+        buildAndBindSlickDatabase(playDb, asyncExecConfig, jndiDbName, coordinatedShutdown)
       }
     }
   }
@@ -41,8 +47,8 @@ private[lagom] object SlickDbProvider {
       playDb: Database,
       asyncExecConfig: AsyncExecutorConfig,
       jndiDbName: String,
-      lifecycle: ApplicationLifecycle
-  ): Unit = {
+      coordinatedShutdown: CoordinatedShutdown
+  )(implicit executionContext: ExecutionContext): Unit = {
     val slickDb =
       buildSlickDatabase(
         // the data source as configured by Play
@@ -50,7 +56,7 @@ private[lagom] object SlickDbProvider {
         asyncExecConfig
       )
 
-    bindSlickDatabase(jndiDbName, slickDb, lifecycle)
+    bindSlickDatabase(jndiDbName, slickDb, coordinatedShutdown)
   }
 
   private def buildSlickDatabase(dataSource: DataSource, asyncExecConfig: AsyncExecutorConfig): DatabaseDef = {
@@ -68,16 +74,30 @@ private[lagom] object SlickDbProvider {
     )
   }
 
-  private def bindSlickDatabase(jndiDbName: String, slickDb: DatabaseDef, lifecycle: ApplicationLifecycle): Unit = {
+  private def bindSlickDatabase(
+      jndiDbName: String,
+      slickDb: DatabaseDef,
+      coordinatedShutdown: CoordinatedShutdown
+  )(implicit executionContext: ExecutionContext): Unit = {
     val namingContext = new InitialContext()
 
     // we don't simply override a previously configured DB resource
     // if name is already in use, bind() method throws NameAlreadyBoundException
     namingContext.bind(jndiDbName, slickDb)
 
-    lifecycle.addStopHook { () =>
+    coordinatedShutdown.addTask(
+      CoordinatedShutdown.PhaseServiceUnbind,
+      s"unbind-slick-db-from-JNDI"
+    ) { () =>
       namingContext.unbind(jndiDbName)
-      slickDb.shutdown
+      Future.successful(Done)
+    }
+
+    coordinatedShutdown.addTask(
+      CoordinatedShutdown.PhaseBeforeActorSystemTerminate,
+      s"shutdown-managed-read-side-slick"
+    ) { () =>
+      slickDb.shutdown.map(_ => Done)
     }
   }
 }

@@ -4,9 +4,11 @@
 
 package com.lightbend.lagom.internal.persistence.jdbc
 
+import akka.Done
+import akka.actor.CoordinatedShutdown
 import play.api.db.Databases
-import play.api.inject.ApplicationLifecycle
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.util.Random
 
@@ -23,11 +25,12 @@ object SlickDbTestProvider {
   }
 
   /** Builds Slick Database (with AsyncExecutor) and bind it as JNDI resource for test purposes  */
-  def buildAndBindSlickDb(baseName: String, lifecycle: ApplicationLifecycle): Unit = {
+  def buildAndBindSlickDb(baseName: String, coordinatedShutdown: CoordinatedShutdown)(
+      implicit executionContext: ExecutionContext
+  ): Unit = {
     val dbName = s"${baseName}_${Random.alphanumeric.take(8).mkString}"
     val db     = Databases.inMemory(dbName, config = Map("jndiName" -> JNDIName))
-    lifecycle.addStopHook(() => Future.successful(db.shutdown()))
 
-    SlickDbProvider.buildAndBindSlickDatabase(db, AsyncExecConfig, JNDIDBName, lifecycle)
+    SlickDbProvider.buildAndBindSlickDatabase(db, AsyncExecConfig, JNDIDBName, coordinatedShutdown)
   }
 }
