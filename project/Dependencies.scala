@@ -1048,6 +1048,7 @@ object Dependencies {
     scalaXml,
     akkaStream,
     akkaActor,
+    akkaActorTyped,
     akkaSlf4j,
     akkaProtobuf_v3,
     jnrFfi,
@@ -1093,7 +1094,7 @@ object Dependencies {
     akkaHttpCore,
     scalaTest % Test,
     // update to enforce using snapshots in nightly jobs
-    akkaActorTyped % Test,
+    akkaActorTyped,
   )
 
   val `dev-mode-ssl-support` = libraryDependencies ++= Seq(
@@ -1101,6 +1102,7 @@ object Dependencies {
     akkaHttpCore,
     // updates to match whitelist
     akkaActor,
+    akkaActorTyped,
     akkaStream,
     akkaProtobuf_v3,
     akkaSlf4j,
@@ -1119,6 +1121,7 @@ object Dependencies {
       scalaTest   % Test,
       // updates to match whitelist
       akkaActor,
+      akkaActorTyped,
       scalaJava8Compat,
       // update to enforce using snapshots in nightly jobs
       akkaActorTyped % Test,
