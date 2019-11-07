@@ -14,8 +14,6 @@ import com.lightbend.lagom.persistence.ActorSystemSpec
 import com.lightbend.lagom.persistence.PersistenceSpec
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
-import play.api.inject.ApplicationLifecycle
-import play.api.inject.DefaultApplicationLifecycle
 import play.api.Configuration
 import play.api.Environment
 
@@ -33,7 +31,7 @@ abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorS
 
   import system.dispatcher
 
-  protected lazy val slick = new SlickProvider(system)
+  protected lazy val slick = new SlickProvider(system, coordinatedShutdown)
 
   protected lazy val offsetStore =
     new JavadslJdbcOffsetStore(
@@ -47,8 +45,6 @@ abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorS
     )
   protected lazy val jdbcReadSide: JdbcReadSide = new JdbcReadSideImpl(slick, offsetStore)
 
-  private lazy val applicationLifecycle: ApplicationLifecycle = new DefaultApplicationLifecycle
-
   override def beforeAll(): Unit = {
     super.beforeAll()
 
@@ -57,16 +53,11 @@ abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorS
     cluster.join(cluster.selfAddress)
 
     // Trigger database to be loaded and registered to JNDI
-    SlickDbTestProvider.buildAndBindSlickDb(system.name, applicationLifecycle)
+    SlickDbTestProvider.buildAndBindSlickDb(system.name, coordinatedShutdown)
 
     // Trigger tables to be created
     Await.ready(slick.ensureTablesCreated(), 20.seconds)
 
     awaitPersistenceInit(system)
-  }
-
-  override def afterAll(): Unit = {
-    Await.ready(applicationLifecycle.stop(), 20.seconds)
-    super.afterAll()
   }
 }

@@ -5,6 +5,7 @@
 package com.lightbend.lagom.persistence
 
 import akka.actor.ActorSystem
+import akka.actor.CoordinatedShutdown
 import akka.actor.setup.ActorSystemSetup
 import akka.event.Logging
 import akka.event.LoggingAdapter
@@ -53,7 +54,8 @@ abstract class ActorSystemSpec(system: ActorSystem)
     super.afterAll()
   }
 
-  val log: LoggingAdapter = Logging(system, this.getClass)
+  val log: LoggingAdapter                      = Logging(system, this.getClass)
+  val coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(system)
 
   // for ScalaTest === compare of Class objects
   implicit def classEqualityConstraint[A, B]: CanEqual[Class[A], Class[B]] =

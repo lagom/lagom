@@ -6,6 +6,7 @@ package com.lightbend.lagom.internal.javadsl.persistence.jpa;
 
 import akka.Done;
 import akka.actor.ActorSystem;
+import akka.actor.CoordinatedShutdown;
 import com.lightbend.lagom.internal.javadsl.persistence.jdbc.SlickProvider;
 import com.lightbend.lagom.javadsl.persistence.jpa.JpaSession;
 import com.typesafe.config.Config;
@@ -26,6 +27,7 @@ import javax.persistence.Persistence;
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static play.utils.Threads.withContextClassLoader;
 
@@ -44,7 +46,10 @@ public class JpaSessionImpl implements JpaSession {
 
   @Inject
   public JpaSessionImpl(
-      Config config, SlickProvider slick, ActorSystem actorSystem, ApplicationLifecycle lifecycle) {
+      Config config,
+      SlickProvider slick,
+      ActorSystem actorSystem,
+      CoordinatedShutdown coordinatedShutdown) {
     Config jpaConfig = config.getConfig("lagom.persistence.jpa");
     this.persistenceUnitName = jpaConfig.getString("persistence-unit");
     this.initRetryIntervalMin =
@@ -54,7 +59,12 @@ public class JpaSessionImpl implements JpaSession {
 
     this.slickDb = slick.db();
     this.factoryCompletionStage = createEntityManagerFactory(actorSystem);
-    lifecycle.addStopHook(this::close);
+
+    Supplier<CompletionStage<Done>> closeSupplier = this::close;
+    coordinatedShutdown.addTask(
+        CoordinatedShutdown.PhaseBeforeActorSystemTerminate(),
+        "shutdown-read-side-jpa",
+        closeSupplier);
   }
 
   @Override
