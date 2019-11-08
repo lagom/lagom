@@ -52,7 +52,7 @@ You can encode it in different ways. The [recommended style](https://doc.akka.io
 
 > **Note**: of course, it is possible to organize the command handlers in a way that you consider more convenient for your use case, but we recommend the `onCommand` pattern since it can help to keep the logic for each command well isolated.
 
-Command handlers are the meat of the model. They encode the business rules of your model and act as a guardian of the model consistency. The command handler must first validate that the incoming command can be applied to the current model state. In case of successful validation, one or mores event expressing the mutations are persisted. Once the events are persisted, they are applied to the state producing a new valid state.
+Command handlers are the meat of the model. They encode the business rules of your model and act as a guardian of the model consistency. The command handler must first validate that the incoming command can be applied to the current model state. In case of successful validation, one or more events expressing the mutations are persisted. Once the events are persisted, they are applied to the state producing a new valid state.
 
 Because an Aggregate is intended to model a consistency boundary, it's not recommended validating commands using data that is not available in scope. Any decision should be solely based on the data passed in the commands and the state of the Aggregate. Any external call should be considered a smell because it means that the Aggregate is not in full control of the invariants it's supposed to be protecting.
 
