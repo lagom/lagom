@@ -98,7 +98,7 @@ This example splits the tags into 10 shards and defines the event tagger in the 
 
 @[shopping-cart-events-object](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
-The `AggregateEventTag` is a Lagom class used by Lagom's [Read-Side Processor|ReadSide]] and [[Topic Producers|MessageBrokerApi#Implementing-a-topic]], however Akka Persistence Typed expects a function `Event => Set[String]`. Therefore, we need to use an adapter to transform Lagom's `AggregateEventTag` to the required Akka tagger function.
+The `AggregateEventTag` is a Lagom class used by Lagom's [[Read-Side Processor|ReadSide]] and [[Topic Producers|MessageBrokerApi#Implementing-a-topic]], however Akka Persistence Typed expects a function `Event => Set[String]`. Therefore, we need to use an adapter to transform Lagom's `AggregateEventTag` to the required Akka tagger function.
 
 @[shopping-cart-create-behavior-with-tagger](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 

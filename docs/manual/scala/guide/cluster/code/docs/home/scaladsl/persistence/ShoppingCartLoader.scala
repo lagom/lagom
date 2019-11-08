@@ -33,6 +33,7 @@ import akka.util.Timeout
 import akka.cluster.sharding.typed.scaladsl.Entity
 import akka.cluster.sharding.typed.scaladsl.EntityRef
 import akka.cluster.sharding.typed.scaladsl.ClusterSharding
+import ShoppingCartExamples._
 
 // #shopping-cart-loader
 class ShoppingCartLoader extends LagomApplicationLoader {
@@ -91,7 +92,7 @@ class ShoppingCartServiceImpl(
 // #shopping-cart-service-impl
     {
   // #shopping-cart-entity-ref
-  def entityRef(id: String): EntityRef[ShoppingCart.Command] = {
+  def entityRef(id: String): EntityRef[Command] = {
     clusterSharding.entityRefFor(ShoppingCart.typeKey, id)
   }
   // #shopping-cart-entity-ref
@@ -101,13 +102,13 @@ class ShoppingCartServiceImpl(
 
   override def get(id: String): ServiceCall[NotUsed, ShoppingCartView] = ServiceCall { _ =>
     entityRef(id)
-      .ask(reply => ShoppingCart.Get(reply))
+      .ask(reply => Get(reply))
       .map(cartSummary => convertShoppingCart(id, cartSummary))
   }
   // #shopping-cart-service-call
 
   // #shopping-cart-service-map
-  private def convertShoppingCart(id: String, cartSummary: ShoppingCart.Summary): ShoppingCartView = {
+  private def convertShoppingCart(id: String, cartSummary: Summary): ShoppingCartView = {
     ShoppingCartView(
       id,
       cartSummary.items.map((ShoppingCartItem.apply _).tupled).toSeq,
