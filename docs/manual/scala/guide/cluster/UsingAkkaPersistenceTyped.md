@@ -86,7 +86,7 @@ The `commandHandler` is a function `(State, Command) => ReplyEffect[Event, State
 
 ### Changing behavior -- Finite State Machines
 
-If you are familiar with general Akka Actors, you are probably aware that after processing a message, you should return the next behavior to be used. With Akka Persistence Typed this happens differently. Command handlers and event handlers are all dependent on the current state, therefore can you change behavior by returning a new state in the event handler. Consult the [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence.html?language=Scala#changing-behavior) for more insight on this topic.
+If you are familiar with general Akka Actors, you are probably aware that after processing a message, you should return the next behavior to be used. With Akka Persistence Typed this happens differently. Command handlers and event handlers are all dependent on the current state, therefore you can change behavior by returning a new state in the event handler. Consult the [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence.html?language=Scala#changing-behavior) for more insight on this topic.
 
 ### Tagging the events -- Akka Persistence Query considerations
 
