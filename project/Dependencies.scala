@@ -892,6 +892,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaActorTyped,
+    slf4jApi,
     akkaSlf4j,
     akkaProtobuf
   )
@@ -955,6 +956,7 @@ object Dependencies {
     // updates to match whitelist
     akkaActor,
     akkaActorTyped,
+    slf4jApi,
     akkaStream,
     akkaProtobuf,
     akkaSlf4j,
