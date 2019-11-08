@@ -1049,6 +1049,7 @@ object Dependencies {
     akkaStream,
     akkaActor,
     akkaActorTyped,
+    slf4jApi,
     akkaSlf4j,
     akkaProtobuf_v3,
     jnrFfi,
@@ -1103,6 +1104,7 @@ object Dependencies {
     // updates to match whitelist
     akkaActor,
     akkaActorTyped,
+    slf4jApi,
     akkaStream,
     akkaProtobuf_v3,
     akkaSlf4j,
