@@ -68,8 +68,6 @@ labels:
   - color: fbca04
     name: "status:needs-backport"
   - color: fbca04
-    name: "status:needs-forwardport"
-  - color: fbca04
     name: "status:needs-info"
   - color: fbca04
     name: "status:needs-verification"
