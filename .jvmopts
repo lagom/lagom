@@ -3,3 +3,4 @@
 -Xss2M
 -XX:MaxInlineLevel=18
 -XX:MaxMetaspaceSize=1G
+-Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2

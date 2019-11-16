@@ -2,7 +2,7 @@
 
 This page is specifically about Lagom's support for relational database read-sides.  Before reading this, you should familiarize yourself with Lagom's general [[read-side support|ReadSide]].
 
-Lagom supports two options for accessing relational databases in read-sides: using the JDBC API directly, or using the [Slick](http://slick.lightbend.com/).
+Lagom supports two options for accessing relational databases in read-sides: using the JDBC API directly, or using the [Slick](https://scala-slick.org/).
 
 ## Choosing between JDBC and Slick
 
