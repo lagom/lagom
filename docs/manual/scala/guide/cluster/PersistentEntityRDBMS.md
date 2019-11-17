@@ -38,7 +38,7 @@ We advise against using H2 in production, however, it is suitable for use in dev
 
 In Lagom's default configuration, Lagom will use Play's JDBC support to configure and create a connection pool. Details on how to configure it can be found [here](https://www.playframework.com/documentation/2.6.x/ScalaDatabase). Play should be configured to provide a JNDI binding for the datasource, by default Lagom binds it to `DefaultDS`.
 
-Lagom then configures a [Slick](http://slick.lightbend.com/) Database to use that datasource in combination with a [AsyncExecutor](http://slick.lightbend.com/doc/3.2.1/api/index.html#slick.util.AsyncExecutor) that manages the thread pool for asynchronous execution of Database I/O Actions. Lagom will also take care that the connection pool is configured correctly according to the AsyncExecutor settings. The Slick Database is then bound to the JNDI name `DefaultDB` and it's used to configure the `akka-persistence-jdbc` plugin.
+Lagom then configures a [Slick](https://scala-slick.org/) Database to use that datasource in combination with a [AsyncExecutor](https://scala-slick.org/doc/3.2.1/api/index.html#slick.util.AsyncExecutor) that manages the thread pool for asynchronous execution of Database I/O Actions. Lagom will also take care that the connection pool is configured correctly according to the AsyncExecutor settings. The Slick Database is then bound to the JNDI name `DefaultDB` and it's used to configure the `akka-persistence-jdbc` plugin.
 
 The `akka-persistence-jdbc` plugin uses Slick to map tables and manage asynchronous execution of JDBC calls. This means Lagom internally configures it to use the right Slick profile for your database.
 

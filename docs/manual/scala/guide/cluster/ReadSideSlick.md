@@ -19,7 +19,7 @@ Let us first look at how a service implementation can retrieve data from a relat
 @[service-impl](code/docs/home/scaladsl/persistence/SlickReadSideQuery.scala)
 
 
-Note that a Slick [Database](http://slick.lightbend.com/doc/3.2.1/api/#slick.jdbc.JdbcBackend$DatabaseDef) is injected in the constructor together with the previously defined `PostSummaryRepository`. Slick's [Database](http://slick.lightbend.com/doc/3.2.1/api/#slick.jdbc.JdbcBackend$DatabaseDef) allows the execution of the Slick `DBIOAciton` returned by `selectPostSummaries()`. Importantly, it also manages execution of the blocking JDBC calls in a thread pool designed to handle it, which is why it returns a `Future`.
+Note that a Slick [Database](https://scala-slick.org/doc/3.2.1/api/#slick.jdbc.JdbcBackend$DatabaseDef) is injected in the constructor together with the previously defined `PostSummaryRepository`. Slick's [Database](https://scala-slick.org/doc/3.2.1/api/#slick.jdbc.JdbcBackend$DatabaseDef) allows the execution of the Slick `DBIOAciton` returned by `selectPostSummaries()`. Importantly, it also manages execution of the blocking JDBC calls in a thread pool designed to handle it, which is why it returns a `Future`.
 
 ## Update the Read-Side
 
