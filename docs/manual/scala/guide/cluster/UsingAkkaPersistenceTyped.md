@@ -16,35 +16,36 @@ The state of the shopping cart is defined as following:
 
 Note that we are modeling it using a case class `ShoppingCart`, and there is a `checkedOutTime` that can be set when transitioning from one state (open shopping cart) to another (checked-out shopping cart). As we will see later, each state encodes the commands it can handle, which events it can persist, and to which other states it can transition.
 
-> **Note**: This is not the recommended technique, though. Whenever your model goes through different state transitions, the recommendation is to have a trait and extensions of it for each state. See examples in the [style guide for Akka Persistence Typed](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html?language=Scala).
+> **Note**: The sample shown above is a simplified case. Whenever your model goes through different state transitions, a better approach is to have a trait and extensions of it for each state. See examples in the [style guide for Akka Persistence Typed](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html?language=Scala).
 
 ### Modelling Commands and Replies
 
 Next, we define the commands that we can send to it.
 
-Each command defines a [reply](https://doc.akka.io/docs/akka/2.6/typed/persistence.html?language=Scala#replies) through a `replyTo: ActorRef[R]` field where `R` is the reply that will be sent back to the caller. Replies are used to communicate back if a command was accepted or rejected or to read the aggregate data (ie: read-only commands). It is also possible to have a mix of both. For example, if the command succeeds, it returns some updated data; if it fails, it returns a rejected message. Or you can have commands without replies (ie: fire-and-forget). This is a less common pattern in CQRS Aggregate modeling though and not covered in this example.
+Each command defines a [reply](https://doc.akka.io/docs/akka/2.6/typed/persistence.html?language=Scala#replies) through a `replyTo: ActorRef[R]` field where `R` is the reply *type* that will be sent back to the caller. Replies are used to communicate back if a command was accepted or rejected or to read the aggregate data (ie: read-only commands). It is also possible to have a mix of both. For example, if the command succeeds, it returns some updated data; if it fails, it returns a rejected message. Or you can have commands without replies (ie: fire-and-forget). This is a less common pattern in CQRS Aggregate modeling though and not covered in this example.
 
 @[shopping-cart-commands](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
-In Akka Typed, it's not possible to return an exception to the caller. All communication between the actor and the caller must be done via the `replyTo:ActorRef[R]` passed in the command. Therefore, if you want to signal a rejection, you most have it encoded in your reply protocol.
+In Akka Typed, unlike Akka classic and Lagom Persistence, it's not possible to return an exception to the caller. All communication between the actor and the caller must be done via the `replyTo:ActorRef[R]` passed in the command. Therefore, if you want to signal a rejection, you most have it encoded in your reply protocol.
 
-The replies used by the commands above are define like this:
+The replies used by the commands above are defined like this:
 
 @[shopping-cart-replies](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
-Here there are two different kinds of replies: `Confirmation` used when we want to modify the state. A modification request can be `Accepted` or `Rejected`. The `Summary` is used when we want to read the state of the shopping cart.
+
+Here there are two different kinds of replies: `Confirmation` and `Summary`. `Confirmation` is used when we want to modify the state. A modification request can be `Accepted` or `Rejected`. Then, the `Summary` is used when we want to read the state of the shopping cart.
 
 > **Note**: Keep in mind that `Summary` is not the shopping cart itself, but the representation we want to expose to the external world. It's a good practice to keep the internal state of the aggregate private because it allows the internal state, and the exposed API to evolve independently.
 
 ### Modelling Events
 
-Next, we define the events that our model will persist. The events must extend Lagom's [`AggregateEvent`](api/com/lightbend/lagom/scaladsl/persistence/AggregateEvent.html). This is important for tagging events. We will cover this topic a little further.
+Next, we define the events that our model will persist. The events must extend Lagom's [`AggregateEvent`](api/com/lightbend/lagom/scaladsl/persistence/AggregateEvent.html). This is important for tagging events. We will cover it soon in the [[tagging events|UsingAkkaPersistenceTyped#Tagging-the-events--Akka-Persistence-Query-considerations]] section.
 
 @[shopping-cart-events](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
 ### Defining Commands Handlers
 
-Once you define your protocol in terms of Commands, Replies, Events, and State, you need to specify the business rules of your model. The command handlers define how to handle each incoming command, which validations must be applied, and finally, which events will be persisted if any.
+Once you've defined your model in terms of Commands, Replies, Events, and State, you need to specify the business rules. The command handlers define how to handle each incoming command, which validations must be applied, and finally, which events will be persisted if any.
 
 You can encode it in different ways. The [recommended style](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html?language=Scala#command-handlers-in-the-state) is to add the command handlers in your state classes. For `ShoppingCart`, we can define the command handlers based on the two possible states:
 

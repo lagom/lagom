@@ -22,35 +22,35 @@ The state of the shopping cart is defined as following:
 
 The `ShoppingCart` has a `checkedOutTime` that can be set when transitioning from one state (open shopping cart) to another (checked-out shopping cart). As we will see later, each state encodes the commands it can handle, which events it can persist, and to which other states it can transition.
 
-> **Note**: This is not the recommended technique, though. Whenever your model goes through different state transitions, the recommendation is to have a trait and extensions of it for each state. See examples in the [style guide for Akka Persistence Typed](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html?language=Java).
+> **Note**: The sample shown above is a simplified case. Whenever your model goes through different state transitions, a better approach is to have an interface and implementations of it for each state. See examples in the [style guide for Akka Persistence Typed](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html?language=Java).
 
 ### Modelling Commands and Replies
 
 Next, we define the commands that we can send to it.
 
-Each command defines a [reply](https://doc.akka.io/docs/akka/2.6/typed/persistence.html?language=Java#replies) through a `ActorRef<R> replyTo` field where `R` is the reply that will be sent back to the caller. Replies are used to communicate back if a command was accepted or rejected or to read the aggregate data (ie: read-only commands). It is also possible to have a mix of both. For example, if the command succeeds, it returns some updated data; if it fails, it returns a rejected message. Or you can have commands without replies (ie: fire-and-forget). This is a less common pattern in CQRS Aggregate modeling though and not covered in this example.
+Each command defines a [reply](https://doc.akka.io/docs/akka/2.6/typed/persistence.html?language=Java#replies) through a `ActorRef<R> replyTo` field where `R` is the reply *type* that will be sent back to the caller. Replies are used to communicate back if a command was accepted or rejected or to read the aggregate data (ie: read-only commands). It is also possible to have a mix of both. For example, if the command succeeds, it returns some updated data; if it fails, it returns a rejected message. Or you can have commands without replies (ie: `fire-and-forget`). This is a less common pattern in CQRS Aggregate modeling though and not covered in this example.
 
 @[shopping-cart-commands](code/docs/home/persistence/ShoppingCartEntity.java)
 
-In Akka Typed, it's not possible to return an exception to the caller. All communication between the actor and the caller must be done via the `ActorRef<R> replyTo` passed in the command. Therefore, if you want to signal a rejection, you most have it encoded in your reply protocol.
+In Akka Typed, unlike Akka classic and Lagom Persistence, it's not possible to return an exception to the caller. All communication between the actor and the caller must be done via the `ActorRef<R> replyTo` passed in the command. Therefore, if you want to signal a rejection, you most have it encoded in your reply protocol.
 
-The replies used by the commands above are define like this:
+The replies used by the commands above are defined like this:
 
 @[shopping-cart-replies](code/docs/home/persistence/ShoppingCartEntity.java)
 
-Here there are two different kinds of replies: `Confirmation` used when we want to modify the state. A modification request can be `Accepted` or `Rejected`. The `Summary` is used when we want to read the state of the shopping cart.
+Here there are two different kinds of replies: `Confirmation` and `Summary`. `Confirmation` is used when we want to modify the state. A modification request can be `Accepted` or `Rejected`. Then, the `Summary` is used when we want to read the state of the shopping cart.
 
 > **Note**: Keep in mind that `Summary` is not the shopping cart itself, but the representation we want to expose to the external world. It's a good practice to keep the internal state of the aggregate private because it allows the internal state, and the exposed API to evolve independently.
 
 ### Modelling Events
 
-Next, we define the events that our model will persist. The events must extend Lagom's [`AggregateEvent`](api/com/lightbend/lagom/javadsl/persistence/AggregateEvent.html). This is important for tagging events. We will cover this topic a little further.
+Next, we define the events that our model will persist. The events must extend Lagom's [`AggregateEvent`](api/com/lightbend/lagom/javadsl/persistence/AggregateEvent.html). This is important for tagging events. We will cover it soon in the [[tagging events|UsingAkkaPersistenceTyped#Tagging-the-events--Akka-Persistence-Query-considerations]] section.
 
 @[shopping-cart-events](code/docs/home/persistence/ShoppingCartEntity.java)
 
 ### Defining Commands Handlers
 
-Once you define your protocol in terms of Commands, Replies, Events, and State, you need to specify the business rules of your model. The command handlers define how to handle each incoming command, which validations must be applied, and finally, which events will be persisted if any.
+Once you've defined your model in terms of Commands, Replies, Events, and State, you need to specify the business rules. The command handlers define how to handle each incoming command, which validations must be applied, and finally, which events will be persisted if any.
 
 You can encode it in different ways. The [recommended style](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html#command-handlers-in-the-state?language=Java) is to add the command handlers in your state classes. For `ShoppingCart`, we can define the command handlers based on the two possible states:
 
@@ -62,7 +62,7 @@ Command handlers are the meat of the model. They encode the business rules of yo
 
 Because an Aggregate is intended to model a consistency boundary, it's not recommended validating commands using data that is not available in scope. Any decision should be solely based on the data passed in the commands and the state of the Aggregate. Any external call should be considered a smell because it means that the Aggregate is not in full control of the invariants it's supposed to be protecting.
 
-There are two ways of sending back a reply: using `Effect.reply` and `Effect.persist(...).thenReply`. The first one is available directly on `Effect` and should be used when you reply without persisting any event. In this case, you can use the available state in scope because it's guaranteed not to have changed. The second variant should be used when you have persisted one or more events. The updated state is then available to you on the function used to define the reply.
+There are two ways of sending back a reply: using `Effect().reply` and `Effect().persist(...).thenReply`. The first one is available directly on `Effect` and should be used when you reply without persisting any event. In this case, you can use the available state in scope because it's guaranteed not to have changed. The second variant should be used when you have persisted one or more events. The updated state is then available to you on the function used to define the reply.
 
 You may run side effects inside the command handler. Please refer to [Akka documentation](https://doc.akka.io/docs/akka/2.6/typed/persistence.html?language=Java#effects-and-side-effects) for detailed information.
 
@@ -154,9 +154,9 @@ The code we introduced below creates an `EntityRef` from inside the `ShoppingCar
 
 @[shopping-cart-service-call](code/docs/home/persistence/ShoppingCartServiceImpl.java)
 
-So we declare an implicit `timeout` and then invoke `ask` (which uses the timeout implicitly). The `ask` method accepts a function of `ActorRef[Res] => M` in which `Res` is the expected response type and `M` is the message being sent to the actor. The `ask` method will create an instance of `ActorRef[Res]` that can be used to build the outgoing message (command). Once the response is sent to `ActorRef[Res]`, Akka will complete the returned `CompletionStage<Res>` with the response (in this case `CompletionStage[ShoppingCartSummary]`).
+So we declare an `askTimeout` and then invoke `ask`. The `ask` method accepts a function of `ActorRef<Res> -> M` in which `Res` is the expected response type and `M` is the message being sent to the actor. The `ask` method will create an instance of `ActorRef<Res>` that can be used to build the outgoing message (command). Once the response is sent to `ActorRef<Res>`, Akka will complete the returned `CompletionStage<Res>` with the response (in this case `CompletionStage<ShoppingCartSummary>`).
 
-Finally, we operate over the `cartSummary` (in this case, we map it to a different type, ie: `ShoppingCartView`, using the `thenApply` method).
+Finally, we operate over the `summary` (in this case, we map it to a different type, ie: `ShoppingCartView`, using the `thenApply` method).
 
 The `ShoppingCartView` and `asShoppingCartView` are defined as:
 
@@ -180,6 +180,6 @@ Akka supports both [programmatic passivation](https://doc.akka.io/docs/akka/2.6/
 
 ## Data Serialization
 
-The messages (commands, replies) and the durable classes (events, state snapshots) need to be serializable to be sent over the wire across the cluster or be stored on the database. Akka recommends [Jackson-based serializers](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html?language=Java) --preferably JSON, but CBOR is also supported-- as a good default in most cases. On top of Akka serializers, Lagom makes it easy to add [[Play-JSON serialization|SerializationPlayJson]] support, which may be more familiar to some Scala developers.
+The messages (commands, replies) and the durable classes (events, state snapshots) need to be serializable to be sent over the wire across the cluster or be stored on the database. Akka recommends [Jackson-based serializers](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html?language=Java) --preferably JSON, but CBOR is also supported-- as a good default in most cases.
 
 Read more about the serialization setup and configuration in the [[serialization|Serialization]] section.

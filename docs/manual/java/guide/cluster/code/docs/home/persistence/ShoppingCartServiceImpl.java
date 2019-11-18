@@ -71,15 +71,15 @@ interface ShoppingCartService extends Service {
     public final boolean checkedOut;
 
     /** When this cart was checked out. */
-    public final Optional<Instant> checkoutDate;
+    public final Optional<Instant> checkedOutTime;
 
     @JsonCreator
     public ShoppingCartView(
-        String id, List<ShoppingCartItem> items, Optional<Instant> checkoutDate) {
+        String id, List<ShoppingCartItem> items, Optional<Instant> checkedOutTime) {
       this.id = Preconditions.checkNotNull(id, "id");
       this.items = Preconditions.checkNotNull(items, "items");
-      this.checkoutDate = checkoutDate;
-      this.checkedOut = checkoutDate.isPresent();
+      this.checkedOutTime = checkedOutTime;
+      this.checkedOut = checkedOutTime.isPresent();
     }
 
     public boolean hasItem(String itemId) {
