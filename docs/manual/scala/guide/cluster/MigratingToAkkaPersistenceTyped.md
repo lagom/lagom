@@ -2,7 +2,7 @@
 
 With the support for Akka Persistence Typed in Lagom it is possible to migrate existing code from Lagom Persistence (classic) to Akka Persistence Typed. There's a few steps to consider and limitations to keep existing data still accessible.
 
-> NOTE: the only limitation when migratin from from Lagom Persistence (classic) to Akka Persistence Typed is that a full cluster shutdown is required. Even though all durable data is compatible, Lagom Persistence (classic) and Akka Persistence Typed can't coexist.
+> NOTE: the only limitation when migrating from from Lagom Persistence (classic) to Akka Persistence Typed is that a full cluster shutdown is required. Even though all durable data is compatible, Lagom Persistence (classic) and Akka Persistence Typed can't coexist.
 
 ## Migrating the model
 
@@ -19,7 +19,7 @@ So, instead of using a build and adding multiple command and event handlers, a s
 
 @[akka-persistence-command-handler](../../../../../dev/sbt-plugin/src/sbt-test/sbt-plugin/akka-persistence-typed-migration-scala/shopping-cart-akka-persistence-typed/src/main/scala/com/example/shoppingcart/impl/ShoppingCartEntity.scala)
 
-This migration guide will not go into more details related to writing command and event handlers. Refer to the [Akka Persistence Typed docs](https://doc.akka.io/docs/akka/2.6/typed/index-persistence.html?language=Scala) or the section on [[domain modelling with Akka Persistence Typed|UsingAkkaPersistenceTyped]] for more information.
+This migration guide will not go into more details related to writing command and event handlers. Refer to the [Akka Persistence Typed docs](https://doc.akka.io/docs/akka/2.6/typed/index-persistence.html?language=Scala) or the section on [[domain modeling with Akka Persistence Typed|UsingAkkaPersistenceTyped]] for more information.
 
 ### Commands
 
@@ -84,7 +84,7 @@ That is, instead of injecting a `persistentEntityRegistry`, use a `clusterShardi
 
 ### Registration: caveats
 
-Even though there is no longer a `PersistentEntity` instance to register, the `persistentEntityRegistry` is still necessary to build `TopicProducer`'s. When writing a `Service` implementation that includes a [[Topic Implementation|MessageBrokerApi#Implementing-a-topic]] the `TopicProducer` API requires an `eventStream` that is provided by the `persistentEntityRegistry`. This means in some cases you can't get rid of the `persistentEntityRegistry` wyou were injecting in your `Service` implementation even if you use the `clusterSharding` to obtaing a reference to your persistent behavior.
+Even though there is no longer a `PersistentEntity` instance to register, the `persistentEntityRegistry` is still necessary to build `TopicProducer`'s. When writing a `Service` implementation that includes a [[Topic Implementation|MessageBrokerApi#Implementing-a-topic]] the `TopicProducer` API requires an `eventStream` that is provided by the `persistentEntityRegistry`. This means in some cases you can't get rid of the `persistentEntityRegistry` you were injecting in your `Service` implementation even if you use the `clusterSharding` to obtain a reference to your persistent behavior.
 
 That is, even if you don't register a `PersistentEntity`, the events produced by Akka Persistence Typed are still compatible with `PersistentEntityRegistry.eventStream` as long as they are properly [[tagged|ReadSide#Event-tags]] so the projections ([[Read Sides|ReadSide]] and [[Topic Producers|MessageBrokerApi]]) don't change.
 
@@ -98,9 +98,9 @@ In order to be able to read existing events from Akka Persistence Typed you must
 
 The code above uses `PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId)`. There are three important pieces on that statement that we must review:
 
-1. the first argument of `PersistenceId.apply()` must be the same value you used in Lagom Persistence (classic). This first argument is known as the `typeHint` and is used by the journal as a mechanism to avoid ID collision between different types. In Lagom Persistence (classic) the type hint defaults to the classname of your `PersistentEntity` but it can be [[overwriten|PersistentEntity#Refactoring-Consideration]] (review your code or the persisted data on your database). In our case, we are using `entityContext.entityTypeKey.name` because we defined `EntityTypeKey[ShoppingCartCommand]("ShoppingCartEntity")` were `"ShoppingCartEntity"` is the classname of the code we had in the implementation based on Lagom Persistence Classic.
-2. the second argument must be the business id of your Aggregate. In this case, we can use `entityContext.entityId` because we're using that same business id for the sharded actor.
-3. an (optional) third argument specifying a `separator`. Lagom uses the `"|"` as a separator and, since `PersistenceId` also uses `"|"` as a default we're not specifying a separator.
+1. The first argument of `PersistenceId.apply()` must be the same value you used in Lagom Persistence (classic). This first argument is known as the `typeHint` and is used by the journal as a mechanism to avoid ID collision between different types. In Lagom Persistence (classic) the type hint defaults to the classname of your `PersistentEntity` but it can be [[overwritten|PersistentEntity#Refactoring-Consideration]] (review your code or the persisted data on your database). In our case, we are using `entityContext.entityTypeKey.name` because we defined `EntityTypeKey[ShoppingCartCommand]("ShoppingCartEntity")` were `"ShoppingCartEntity"` is the classname of the code we had in the implementation based on Lagom Persistence Classic.
+2. The second argument must be the business id of your Aggregate. In this case, we can use `entityContext.entityId` because we're using that same business id for the sharded actor.
+3. An (optional) third argument specifying a `separator`. Lagom uses the `"|"` as a separator and, since `PersistenceId` also uses `"|"` as a default we're not specifying a separator.
 
 Even if you use the appropriate `PersistenceId`, you need to use a compatible serializer for your events. Read more about [[De/Serialization|MigratingToAkkaPersistenceTyped#Serialization]] in the section below.
 
@@ -114,7 +114,7 @@ Lagom provides appropriate tagging functions in the `AkkaTaggerAdapter` utility 
 
 All the classes sent over the wire or stored on the database will still need to be serializable. Persisted events will still have to be read.
 
-Existing code creating and registering serializers is 100% valid except for `Command` classes. In Akka Typed, it is required to add a `replyTo: ActorRef[Reply]` field on messages that need a rference to reply back (like `Commands`). In order to serialize a class that includes an `ActorRef[T]` field the class must use the Akka Jackson serializer. Read more on the [[serialization|Serialization]] section of the docs.
+Existing code creating and registering serializers is 100% valid except for `Command` classes. In Akka Typed, it is required to add a `replyTo: ActorRef[Reply]` field on messages that need a reference to reply back (like `Commands`). In order to serialize a class that includes an `ActorRef[T]` field the class must use the Akka Jackson serializer. Read more on the [[serialization|Serialization]] section of the docs.
 
 To convert your `Command` classes to use Akka Jackson serialization instead of Lagom Play-JSON you need to follow these steps:
 
