@@ -28,17 +28,17 @@ import play.api.libs.json._
 
 import scala.collection.immutable.Seq
 
-object ShoppingCart {
+object ShoppingCartExamples {
   // #shopping-cart-commands
   trait CommandSerializable
 
-  sealed trait Command extends CommandSerializable
+  sealed trait ShoppingCartCommand extends CommandSerializable
 
-  final case class AddItem(itemId: String, quantity: Int, replyTo: ActorRef[Confirmation]) extends Command
+  final case class AddItem(itemId: String, quantity: Int, replyTo: ActorRef[Confirmation]) extends ShoppingCartCommand
 
-  final case class Checkout(replyTo: ActorRef[Confirmation]) extends Command
+  final case class Checkout(replyTo: ActorRef[Confirmation]) extends ShoppingCartCommand
 
-  final case class Get(replyTo: ActorRef[Summary]) extends Command
+  final case class Get(replyTo: ActorRef[Summary]) extends ShoppingCartCommand
   // #shopping-cart-commands
 
   // #shopping-cart-replies
@@ -73,19 +73,19 @@ object ShoppingCart {
   // #shopping-cart-replies-formats
 
   // #shopping-cart-events-object
-  object Event {
-    val Tag: AggregateEventShards[Event] = AggregateEventTag.sharded[Event](numShards = 10)
+  object ShoppingCartEvent {
+    val Tag: AggregateEventShards[ShoppingCartEvent] = AggregateEventTag.sharded[ShoppingCartEvent](numShards = 10)
   }
   // #shopping-cart-events-object
 
   // #shopping-cart-events
-  sealed trait Event extends AggregateEvent[Event] {
-    override def aggregateTag: AggregateEventTagger[Event] = Event.Tag
+  sealed trait ShoppingCartEvent extends AggregateEvent[ShoppingCartEvent] {
+    override def aggregateTag: AggregateEventTagger[ShoppingCartEvent] = ShoppingCartEvent.Tag
   }
 
-  final case class ItemAdded(itemId: String, quantity: Int) extends Event
+  final case class ItemAdded(itemId: String, quantity: Int) extends ShoppingCartEvent
 
-  final case class CartCheckedOut(eventTime: Instant) extends Event
+  final case class CartCheckedOut(eventTime: Instant) extends ShoppingCartEvent
   // #shopping-cart-events
 
   // #shopping-cart-events-formats
@@ -97,14 +97,12 @@ object ShoppingCart {
   val empty: ShoppingCart = ShoppingCart(items = Map.empty)
   // #shopping-cart-empty-state
 
-  // #shopping-cart-entity-type-key
-  val typeKey: EntityTypeKey[Command] = EntityTypeKey[Command]("ShoppingCart")
-  // #shopping-cart-entity-type-key
-
-  def createSimple(entityContext: EntityContext[Command]): EventSourcedBehavior[Command, Event, ShoppingCart] = {
+  def createSimple(
+      entityContext: EntityContext[ShoppingCartCommand]
+  ): EventSourcedBehavior[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart] = {
     // #shopping-cart-create-behavior
     EventSourcedBehavior
-      .withEnforcedReplies[Command, Event, ShoppingCart](
+      .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
         persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
         emptyState = ShoppingCart.empty,
         commandHandler = (cart, cmd) => cart.applyCommand(cmd),
@@ -113,23 +111,23 @@ object ShoppingCart {
     // #shopping-cart-create-behavior
   }
 
-  def createWithTagger(entityContext: EntityContext[Command]): Behavior[Command] = {
+  def createWithTagger(entityContext: EntityContext[ShoppingCartCommand]): Behavior[ShoppingCartCommand] = {
     // #shopping-cart-create-behavior-with-tagger
     EventSourcedBehavior
-      .withEnforcedReplies[Command, Event, ShoppingCart](
+      .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
         persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
         emptyState = ShoppingCart.empty,
         commandHandler = (cart, cmd) => cart.applyCommand(cmd),
         eventHandler = (cart, evt) => cart.applyEvent(evt)
       )
-      .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, Event.Tag))
+      .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, ShoppingCartEvent.Tag))
     // #shopping-cart-create-behavior-with-tagger
   }
 
-  def createSnapshots(entityContext: EntityContext[Command]): Behavior[Command] = {
+  def createSnapshots(entityContext: EntityContext[ShoppingCartCommand]): Behavior[ShoppingCartCommand] = {
     // #shopping-cart-create-behavior-with-snapshots
     EventSourcedBehavior
-      .withEnforcedReplies[Command, Event, ShoppingCart](
+      .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
         persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
         emptyState = ShoppingCart.empty,
         commandHandler = (cart, cmd) => cart.applyCommand(cmd),
@@ -140,105 +138,110 @@ object ShoppingCart {
     // #shopping-cart-create-behavior-with-snapshots
   }
 
-  // #shopping-cart-apply-behavior-creation
-  def apply(entityContext: EntityContext[Command]): Behavior[Command] = {
-    EventSourcedBehavior
-      .withEnforcedReplies[Command, Event, ShoppingCart](
-        persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
-        emptyState = ShoppingCart.empty,
-        commandHandler = (cart, cmd) => cart.applyCommand(cmd),
-        eventHandler = (cart, evt) => cart.applyEvent(evt)
-      )
-      .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, Event.Tag))
-      .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2))
+  // #companion-with-type-key-and-factory
+  object ShoppingCart {
+    val empty                                       = ShoppingCart(items = Map.empty)
+    val typeKey: EntityTypeKey[ShoppingCartCommand] = EntityTypeKey[ShoppingCartCommand]("ShoppingCart")
+
+    def apply(entityContext: EntityContext[ShoppingCartCommand]): Behavior[ShoppingCartCommand] = {
+      EventSourcedBehavior
+        .withEnforcedReplies[ShoppingCartCommand, ShoppingCartEvent, ShoppingCart](
+          persistenceId = PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId),
+          emptyState = ShoppingCart.empty,
+          commandHandler = (cart, cmd) => cart.applyCommand(cmd),
+          eventHandler = (cart, evt) => cart.applyEvent(evt)
+        )
+        .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, ShoppingCartEvent.Tag))
+        .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2))
+    }
   }
-  // #shopping-cart-apply-behavior-creation
+  // #companion-with-type-key-and-factory
 
   implicit val shoppingCartFormat: Format[ShoppingCart] = Json.format
-}
 
-// #shopping-cart-state
-final case class ShoppingCart(
-    items: Map[String, Int],
-    // checkedOutTime defines if cart was checked-out or not:
-    // case None, cart is open
-    // case Some, cart is checked-out
-    checkedOutTime: Option[Instant] = None
-)
-// #shopping-cart-state
-{
-  import ShoppingCart._
+  // #shopping-cart-state
+  final case class ShoppingCart(
+      items: Map[String, Int],
+      // checkedOutTime defines if cart was checked-out or not:
+      // case None, cart is open
+      // case Some, cart is checked-out
+      checkedOutTime: Option[Instant] = None
+  )
+  // #shopping-cart-state
+  {
+    import ShoppingCart._
 
-  def isOpen: Boolean     = checkedOutTime.isEmpty
-  def checkedOut: Boolean = !isOpen
+    def isOpen: Boolean     = checkedOutTime.isEmpty
+    def checkedOut: Boolean = !isOpen
 
-  // #shopping-cart-command-handlers
-  def applyCommand(cmd: Command): ReplyEffect[Event, ShoppingCart] =
-    if (isOpen) {
-      cmd match {
-        case AddItem(itemId, quantity, replyTo) => onAddItem(itemId, quantity, replyTo)
-        case Checkout(replyTo)                  => onCheckout(replyTo)
-        case Get(replyTo)                       => onGet(replyTo)
+    // #shopping-cart-command-handlers
+    def applyCommand(cmd: ShoppingCartCommand): ReplyEffect[ShoppingCartEvent, ShoppingCart] =
+      if (isOpen) {
+        cmd match {
+          case AddItem(itemId, quantity, replyTo) => onAddItem(itemId, quantity, replyTo)
+          case Checkout(replyTo)                  => onCheckout(replyTo)
+          case Get(replyTo)                       => onGet(replyTo)
+        }
+      } else {
+        cmd match {
+          case AddItem(_, _, replyTo) => Effect.reply(replyTo)(Rejected("Cannot add an item to a checked-out cart"))
+          case Checkout(replyTo)      => Effect.reply(replyTo)(Rejected("Cannot checkout a checked-out cart"))
+          case Get(replyTo)           => onGet(replyTo)
+        }
       }
-    } else {
-      cmd match {
-        case AddItem(_, _, replyTo) => Effect.reply(replyTo)(Rejected("Cannot add an item to a checked-out cart"))
-        case Checkout(replyTo)      => Effect.reply(replyTo)(Rejected("Cannot checkout a checked-out cart"))
-        case Get(replyTo)           => onGet(replyTo)
-      }
+
+    private def onAddItem(
+        itemId: String,
+        quantity: Int,
+        replyTo: ActorRef[Confirmation]
+    ): ReplyEffect[ShoppingCartEvent, ShoppingCart] = {
+      if (items.contains(itemId))
+        Effect.reply(replyTo)(Rejected(s"Item '$itemId' was already added to this shopping cart"))
+      else if (quantity <= 0)
+        Effect.reply(replyTo)(Rejected("Quantity must be greater than zero"))
+      else
+        Effect
+          .persist(ItemAdded(itemId, quantity))
+          .thenReply(replyTo)(updatedCart => Accepted(toSummary(updatedCart)))
     }
 
-  private def onAddItem(
-      itemId: String,
-      quantity: Int,
-      replyTo: ActorRef[Confirmation]
-  ): ReplyEffect[Event, ShoppingCart] = {
-    if (items.contains(itemId))
-      Effect.reply(replyTo)(Rejected(s"Item '$itemId' was already added to this shopping cart"))
-    else if (quantity <= 0)
-      Effect.reply(replyTo)(Rejected("Quantity must be greater than zero"))
-    else
-      Effect
-        .persist(ItemAdded(itemId, quantity))
-        .thenReply(replyTo)(updatedCart => Accepted(toSummary(updatedCart)))
-  }
-
-  private def onCheckout(replyTo: ActorRef[Confirmation]): ReplyEffect[Event, ShoppingCart] = {
-    if (items.isEmpty)
-      Effect.reply(replyTo)(Rejected("Cannot checkout an empty shopping cart"))
-    else
-      Effect
-        .persist(CartCheckedOut(Instant.now()))
-        .thenReply(replyTo)(updatedCart => Accepted(toSummary(updatedCart)))
-  }
-
-  private def onGet(replyTo: ActorRef[Summary]): ReplyEffect[Event, ShoppingCart] = {
-    Effect.reply(replyTo)(toSummary(shoppingCart = this))
-  }
-
-  private def toSummary(shoppingCart: ShoppingCart): Summary = {
-    Summary(shoppingCart.items, shoppingCart.checkedOut)
-  }
-  // #shopping-cart-command-handlers
-
-  // #shopping-cart-state-event-handlers
-  def applyEvent(evt: Event): ShoppingCart =
-    evt match {
-      case ItemAdded(itemId, quantity)    => onItemAdded(itemId, quantity)
-      case CartCheckedOut(checkedOutTime) => onCartCheckedOut(checkedOutTime)
+    private def onCheckout(replyTo: ActorRef[Confirmation]): ReplyEffect[ShoppingCartEvent, ShoppingCart] = {
+      if (items.isEmpty)
+        Effect.reply(replyTo)(Rejected("Cannot checkout an empty shopping cart"))
+      else
+        Effect
+          .persist(CartCheckedOut(Instant.now()))
+          .thenReply(replyTo)(updatedCart => Accepted(toSummary(updatedCart)))
     }
 
-  private def onItemAdded(itemId: String, quantity: Int): ShoppingCart =
-    copy(items = items + (itemId -> quantity))
+    private def onGet(replyTo: ActorRef[Summary]): ReplyEffect[ShoppingCartEvent, ShoppingCart] = {
+      Effect.reply(replyTo)(toSummary(shoppingCart = this))
+    }
 
-  private def onCartCheckedOut(checkedOutTime: Instant): ShoppingCart = {
-    copy(checkedOutTime = Option(checkedOutTime))
+    private def toSummary(shoppingCart: ShoppingCart): Summary = {
+      Summary(shoppingCart.items, shoppingCart.checkedOut)
+    }
+    // #shopping-cart-command-handlers
+
+    // #shopping-cart-state-event-handlers
+    def applyEvent(evt: ShoppingCartEvent): ShoppingCart =
+      evt match {
+        case ItemAdded(itemId, quantity)    => onItemAdded(itemId, quantity)
+        case CartCheckedOut(checkedOutTime) => onCartCheckedOut(checkedOutTime)
+      }
+
+    private def onItemAdded(itemId: String, quantity: Int): ShoppingCart =
+      copy(items = items + (itemId -> quantity))
+
+    private def onCartCheckedOut(checkedOutTime: Instant): ShoppingCart = {
+      copy(checkedOutTime = Option(checkedOutTime))
+    }
+    // #shopping-cart-state-event-handlers
   }
-  // #shopping-cart-state-event-handlers
 }
 
 object ShoppingCartSerializerRegistry extends JsonSerializerRegistry {
-  import ShoppingCart._
+  import ShoppingCartExamples._
   override def serializers: Seq[JsonSerializer[_]] = Seq(
     JsonSerializer[ShoppingCart],
     JsonSerializer[ItemAdded],

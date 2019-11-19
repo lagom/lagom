@@ -1,5 +1,6 @@
-PersistentEntity:Persistent Entity;next=ChoosingADatabase,PersistentEntityCassandra,PersistentEntityRDBMS
-ChoosingADatabase:Choosing a Database
+UsingAkkaPersistenceTyped:Domain Modelling with Akka Persistence Typed;next=ChoosingADatabase,ReadSide
+PersistentEntity:Persistent Entity (classic);next=ChoosingADatabase
+ChoosingADatabase:Choosing a Database;next=PersistentEntityCassandra,PersistentEntityRDBMS
 PersistentEntityCassandra:Cassandra Setup
 PersistentEntityRDBMS:Relational Database Setup
 ReadSide:Persistent Read-Side;next=ReadSideCassandra,ReadSideRDBMS
