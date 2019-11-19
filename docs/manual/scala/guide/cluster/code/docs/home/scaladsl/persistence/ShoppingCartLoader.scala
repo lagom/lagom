@@ -92,7 +92,7 @@ class ShoppingCartServiceImpl(
 // #shopping-cart-service-impl
     {
   // #shopping-cart-entity-ref
-  def entityRef(id: String): EntityRef[Command] = {
+  def entityRef(id: String): EntityRef[ShoppingCartCommand] = {
     clusterSharding.entityRefFor(ShoppingCart.typeKey, id)
   }
   // #shopping-cart-entity-ref
