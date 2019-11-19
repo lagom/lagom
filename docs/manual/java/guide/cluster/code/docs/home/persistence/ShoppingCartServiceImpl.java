@@ -137,14 +137,14 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
   // #shopping-cart-service-call
   private final Duration askTimeout = Duration.ofSeconds(5);
 
-
   @Override
   public ServiceCall<NotUsed, ShoppingCartView> get(String id) {
-      return request ->
-      entityRef(id)
-        .ask(replyTo -> new ShoppingCartEntity.Get(replyTo), askTimeout)
-        .thenApply(summary -> asShoppingCartView(id, summary));
-    }
+    return request ->
+        entityRef(id)
+            .<ShoppingCartEntity.Summary>ask(
+                replyTo -> new ShoppingCartEntity.Get(replyTo), askTimeout)
+            .thenApply(summary -> asShoppingCartView(id, summary));
+  }
   // #shopping-cart-service-call
 
   @Override
