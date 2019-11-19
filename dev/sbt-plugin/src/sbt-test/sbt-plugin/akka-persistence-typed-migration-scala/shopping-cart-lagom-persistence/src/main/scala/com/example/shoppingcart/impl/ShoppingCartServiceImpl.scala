@@ -49,7 +49,7 @@ class ShoppingCartServiceImpl(persistentEntityRegistry: PersistentEntityRegistry
       }
   }
 
-  private def convertShoppingCart(id: String, cart: ShoppingCartState): String = {
+  private def convertShoppingCart(id: String, cart: Summary): String = {
     val items = cart.items.map {case (k, v) => s"$k=$v"}.mkString(":")
     val status = if (cart.checkedOut) "checkedout" else "open"
     s"$id:$items:$status"

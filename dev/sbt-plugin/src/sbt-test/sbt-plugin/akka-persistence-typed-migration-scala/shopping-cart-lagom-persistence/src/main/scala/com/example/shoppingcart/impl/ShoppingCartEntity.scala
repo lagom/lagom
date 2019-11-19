@@ -29,13 +29,13 @@ class ShoppingCartEntity extends PersistentEntity {
 
   override type Command = ShoppingCartCommand[_]
   override type Event = ShoppingCartEvent
-  override type State = ShoppingCartState
+  override type State = ShoppingCart
 
-  override def initialState: ShoppingCartState = ShoppingCartState(items = Map.empty)
+  override def initialState: ShoppingCart = ShoppingCart(items = Map.empty)
 
   override def behavior: Behavior = {
-    case ShoppingCartState(_, None) => openShoppingCart
-    case ShoppingCartState(_, Some(_)) => checkedOut
+    case ShoppingCart(_, None) => openShoppingCart
+    case ShoppingCart(_, Some(_)) => checkedOut
   }
 
   def openShoppingCart = {
@@ -73,23 +73,23 @@ class ShoppingCartEntity extends PersistentEntity {
           ctx.reply(Done)
         }
 
-    }.onReadOnlyCommand[Get.type, ShoppingCartState] {
+    }.onReadOnlyCommand[Get.type, Summary] {
 
       // Command handler for the Hello command
       case (Get, ctx, state) =>
-        // Reply with the current state.
-        ctx.reply(state)
+        // Reply with the current summary.
+        ctx.reply(Summary(state.items, state.checkedOutTime.isDefined))
 
     }.onEvent(eventHandlers)
   }
 
   def checkedOut = {
-    Actions().onReadOnlyCommand[Get.type, ShoppingCartState] {
+    Actions().onReadOnlyCommand[Get.type, Summary] {
 
       // Command handler for the Hello command
       case (Get, ctx, state) =>
-        // Reply with the current state.
-        ctx.reply(state)
+        // Reply with the current summary.
+        ctx.reply(Summary(state.items, state.checkedOutTime.isDefined))
 
     }.onCommand[UpdateItem, Done] {
 
@@ -117,9 +117,9 @@ class ShoppingCartEntity extends PersistentEntity {
   }
 }
 
-case class ShoppingCartState(items: Map[String, Int], checkedOutTime: Option[Instant] = None) {
+case class ShoppingCart(items: Map[String, Int], checkedOutTime: Option[Instant] = None) {
 
-  def updateItem(productId: String, quantity: Int): ShoppingCartState = {
+  def updateItem(productId: String, quantity: Int): ShoppingCart = {
     quantity match {
       case 0 => copy(items = items - productId)
       case _ => copy(items = items + (productId -> quantity))
@@ -128,11 +128,16 @@ case class ShoppingCartState(items: Map[String, Int], checkedOutTime: Option[Ins
 
   def checkedOut: Boolean = checkedOutTime.nonEmpty
 
-  def checkout: ShoppingCartState = copy(checkedOutTime = Some(Instant.now()))
+  def checkout: ShoppingCart = copy(checkedOutTime = Some(Instant.now()))
 }
 
-object ShoppingCartState {
-  implicit val format: Format[ShoppingCartState] = Json.format
+object ShoppingCart {
+  implicit val format: Format[ShoppingCart] = Json.format
+}
+
+case class Summary(items: Map[String, Int], checkedOut: Boolean = false)
+object  Summary {
+  implicit val format: Format[Summary] = Json.format
 }
 
 sealed trait ShoppingCartEvent extends AggregateEvent[ShoppingCartEvent] {
@@ -166,7 +171,7 @@ object UpdateItem {
 }
 //#akka-jackson-serialization-command-before
 
-case object Get extends ShoppingCartCommand[ShoppingCartState] {
+case object Get extends ShoppingCartCommand[Summary] {
   implicit val format: Format[Get.type] = Format(
     Reads(_ => JsSuccess(Get)),
     Writes(_ => Json.obj())
@@ -195,7 +200,7 @@ object ShoppingCartSerializerRegistry extends JsonSerializerRegistry {
     JsonSerializer[UpdateItem],
     JsonSerializer[Checkout.type],
     JsonSerializer[Get.type],
-    JsonSerializer[ShoppingCartState],
+    JsonSerializer[ShoppingCart],
     JsonSerializer[ShoppingCartException]
   )
   //#akka-jackson-serialization-registry-before

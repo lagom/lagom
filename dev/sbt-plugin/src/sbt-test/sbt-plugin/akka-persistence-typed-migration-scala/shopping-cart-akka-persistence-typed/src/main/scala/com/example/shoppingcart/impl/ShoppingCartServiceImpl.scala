@@ -21,6 +21,7 @@ import akka.cluster.sharding.typed.scaladsl.ClusterSharding
 import scala.concurrent.duration._
 import akka.util.Timeout
 import akka.cluster.sharding.typed.scaladsl.EntityRef
+import akka.actor.typed.ActorRef
 
 /**
  * Implementation of the `ShoppingCartService`.
@@ -36,14 +37,14 @@ class ShoppingCartServiceImpl(
    * Looks up the shopping cart entity for the given ID.
    */
   private def entityRef(id: String): EntityRef[ShoppingCartCommand] =
-    clusterSharding.entityRefFor(ShoppingCartState.typeKey, id)
+    clusterSharding.entityRefFor(ShoppingCart.typeKey, id)
 
   implicit val timeout = Timeout(5.seconds)
 
   override def get(id: String): ServiceCall[NotUsed, String] = ServiceCall { _ =>
     entityRef(id)
-      .ask(reply => Get(reply))
-      .map(cart => convertShoppingCart(id, cart))
+      .ask { reply: ActorRef[Summary] => Get(reply) }
+      .map { cart => convertShoppingCart(id, cart) }
   }
   //#akka-persistence-reffor-after
 
@@ -65,9 +66,9 @@ class ShoppingCartServiceImpl(
       }
   }
 
-  private def convertShoppingCart(id: String, cart: CurrentState): String = {
-    val items = cart.state.items.map {case (k, v) => s"$k=$v"}.mkString(":")
-    val status = if (cart.state.checkedOut) "checkedout" else "open"
+  private def convertShoppingCart(id: String, cart: Summary): String = {
+    val items = cart.items.map {case (k, v) => s"$k=$v"}.mkString(":")
+    val status = if (cart.checkedOut) "checkedout" else "open"
     s"$id:$items:$status"
   }
 
