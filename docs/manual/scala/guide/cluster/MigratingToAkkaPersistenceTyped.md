@@ -109,7 +109,7 @@ Lagom provides an `AkkaTaggerAdapter` utility class that can be used to convert 
 
 ## Serialization
 
-All the classes sent over the wire or stored on the database will still need to be serializable. Persisted events needs to be read.
+All the classes sent over the wire or stored on the database will still need to be serializable. Persisted events need to be read.
 
 Existing code creating and registering serializers is 100% valid except for `Command` classes. In Akka Typed, it is required to add a `replyTo: ActorRef[Reply]` field on messages that need a reference to reply back. In order to serialize a class that includes an `ActorRef[T]` field the class must use the Akka Jackson serializer. Read more on the [[serialization|Serialization]] section of the docs.
 
