@@ -21,6 +21,7 @@ import akka.cluster.sharding.typed.scaladsl.ClusterSharding
 import scala.concurrent.duration._
 import akka.util.Timeout
 import akka.cluster.sharding.typed.scaladsl.EntityRef
+import akka.actor.typed.ActorRef
 
 /**
  * Implementation of the `ShoppingCartService`.
@@ -36,38 +37,38 @@ class ShoppingCartServiceImpl(
    * Looks up the shopping cart entity for the given ID.
    */
   private def entityRef(id: String): EntityRef[ShoppingCartCommand] =
-    clusterSharding.entityRefFor(ShoppingCartState.typeKey, id)
+    clusterSharding.entityRefFor(ShoppingCart.typeKey, id)
 
   implicit val timeout = Timeout(5.seconds)
 
   override def get(id: String): ServiceCall[NotUsed, String] = ServiceCall { _ =>
     entityRef(id)
-      .ask(reply => Get(reply))
-      .map(cart => convertShoppingCart(id, cart))
+      .ask { reply: ActorRef[Summary] => Get(reply) }
+      .map { cart => asShoppingCartView(id, cart) }
   }
   //#akka-persistence-reffor-after
 
-  override def updateItem(id: String, productId: String, qty: Int): ServiceCall[NotUsed, Done] = ServiceCall { update =>
+  override def updateItem(id: String, productId: String, qty: Int): ServiceCall[NotUsed, String] = ServiceCall { update =>
     entityRef(id)
-      .ask(reply => UpdateItem(productId, qty, reply))
+      .ask { replyTo: ActorRef[Confirmation] => UpdateItem(productId, qty, replyTo) }
       .map {
-        case Accepted         => Done
-        case Rejected(reason) => throw BadRequest(reason)
+        case Accepted(summary)  => asShoppingCartView(id, summary)
+        case Rejected(reason)   => throw BadRequest(reason)
       }
   }
 
-  override def checkout(id: String): ServiceCall[NotUsed, Done] = ServiceCall { _ =>
+  override def checkout(id: String): ServiceCall[NotUsed, String] = ServiceCall { _ =>
     entityRef(id)
       .ask(replyTo => Checkout(replyTo))
       .map {
-        case Accepted         => Done
-        case Rejected(reason) => throw BadRequest(reason)
+        case Accepted(summary)  => asShoppingCartView(id, summary)
+        case Rejected(reason)   => throw BadRequest(reason)
       }
   }
 
-  private def convertShoppingCart(id: String, cart: CurrentState): String = {
-    val items = cart.state.items.map {case (k, v) => s"$k=$v"}.mkString(":")
-    val status = if (cart.state.checkedOut) "checkedout" else "open"
+  private def asShoppingCartView(id: String, cart: Summary): String = {
+    val items = cart.items.map {case (k, v) => s"$k=$v"}.mkString(":")
+    val status = if (cart.checkedOut) "checkedout" else "open"
     s"$id:$items:$status"
   }
 
