@@ -29,17 +29,17 @@ class ShoppingCartEntity extends PersistentEntity {
 
   override type Command = ShoppingCartCommand[_]
   override type Event = ShoppingCartEvent
-  override type State = ShoppingCartState
+  override type State = ShoppingCart
 
-  override def initialState: ShoppingCartState = ShoppingCartState(items = Map.empty)
+  override def initialState: ShoppingCart = ShoppingCart(items = Map.empty)
 
   override def behavior: Behavior = {
-    case ShoppingCartState(_, None) => openShoppingCart
-    case ShoppingCartState(_, Some(_)) => checkedOut
+    case ShoppingCart(_, None) => openShoppingCart
+    case ShoppingCart(_, Some(_)) => checkedOut
   }
 
   def openShoppingCart = {
-    Actions().onCommand[UpdateItem, Done] {
+    Actions().onCommand[UpdateItem, Summary] {
 
       // Command handler for the UpdateItem command
       case (UpdateItem(_, quantity), ctx, _) if quantity < 0 =>
@@ -48,57 +48,57 @@ class ShoppingCartEntity extends PersistentEntity {
       case (UpdateItem(productId, 0), ctx, state) if !state.items.contains(productId) =>
         ctx.commandFailed(ShoppingCartException("Cannot delete item that is not already in cart"))
         ctx.done
-      case (UpdateItem(productId, quantity), ctx, _) =>
+      case (UpdateItem(productId, quantity), ctx, state) =>
         // In response to this command, we want to first persist it as an ItemUpdated event
         ctx.thenPersist(
           ItemUpdated(productId, quantity)
         ) { _ =>
-          // Then once the event is successfully persisted, we respond with done.
-          ctx.reply(Done)
+          // Reply with the current summary.
+          ctx.reply(toSummary(state))
         }
 
-    }.onCommand[Checkout.type, Done] {
+    }.onCommand[Checkout.type, Summary] {
 
       // Command handler for the Checkout command
       case (Checkout, ctx, state) if state.items.isEmpty =>
         ctx.commandFailed(ShoppingCartException("Cannot checkout empty cart"))
         ctx.done
-      case (Checkout, ctx, _) =>
+      case (Checkout, ctx, state) =>
         // In response to this command, we want to first persist it as a
         // CheckedOut event
         ctx.thenPersist(
           CheckedOut
         ) { _ =>
-          // Then once the event is successfully persisted, we respond with done.
-          ctx.reply(Done)
+          // Reply with the current summary.
+          ctx.reply(toSummary(state))
         }
 
-    }.onReadOnlyCommand[Get.type, ShoppingCartState] {
+    }.onReadOnlyCommand[Get.type, Summary] {
 
       // Command handler for the Hello command
       case (Get, ctx, state) =>
-        // Reply with the current state.
-        ctx.reply(state)
+      // Reply with the current summary.
+        ctx.reply(Summary(state.items, state.checkedOutTime.isDefined))
 
     }.onEvent(eventHandlers)
   }
 
   def checkedOut = {
-    Actions().onReadOnlyCommand[Get.type, ShoppingCartState] {
+    Actions().onReadOnlyCommand[Get.type, Summary] {
 
       // Command handler for the Hello command
       case (Get, ctx, state) =>
-        // Reply with the current state.
-        ctx.reply(state)
+        // Reply with the current summary.
+        ctx.reply(toSummary(state))
 
-    }.onCommand[UpdateItem, Done] {
+    }.onCommand[UpdateItem, Summary] {
 
       // Not valid when checked out
       case (_, ctx, _) =>
         ctx.commandFailed(ShoppingCartException("Can't update item on already checked out shopping cart"))
         ctx.done
 
-    }.onCommand[Checkout.type, Done] {
+    }.onCommand[Checkout.type, Summary] {
 
       // Not valid when checked out
       case (_, ctx, _) =>
@@ -107,6 +107,9 @@ class ShoppingCartEntity extends PersistentEntity {
 
     }.onEvent(eventHandlers)
   }
+
+  private def toSummary(shoppingCart: ShoppingCart) =
+    Summary(shoppingCart.items, shoppingCart.checkedOutTime.isDefined)
 
   def eventHandlers: EventHandler = {
     // Event handler for the ItemUpdated event
@@ -117,9 +120,9 @@ class ShoppingCartEntity extends PersistentEntity {
   }
 }
 
-case class ShoppingCartState(items: Map[String, Int], checkedOutTime: Option[Instant] = None) {
+case class ShoppingCart(items: Map[String, Int], checkedOutTime: Option[Instant] = None) {
 
-  def updateItem(productId: String, quantity: Int): ShoppingCartState = {
+  def updateItem(productId: String, quantity: Int): ShoppingCart = {
     quantity match {
       case 0 => copy(items = items - productId)
       case _ => copy(items = items + (productId -> quantity))
@@ -128,11 +131,16 @@ case class ShoppingCartState(items: Map[String, Int], checkedOutTime: Option[Ins
 
   def checkedOut: Boolean = checkedOutTime.nonEmpty
 
-  def checkout: ShoppingCartState = copy(checkedOutTime = Some(Instant.now()))
+  def checkout: ShoppingCart = copy(checkedOutTime = Some(Instant.now()))
 }
 
-object ShoppingCartState {
-  implicit val format: Format[ShoppingCartState] = Json.format
+object ShoppingCart {
+  implicit val format: Format[ShoppingCart] = Json.format
+}
+
+case class Summary(items: Map[String, Int], checkedOut: Boolean = false)
+object  Summary {
+  implicit val format: Format[Summary] = Json.format
 }
 
 sealed trait ShoppingCartEvent extends AggregateEvent[ShoppingCartEvent] {
@@ -159,21 +167,21 @@ final case object CheckedOut extends ShoppingCartEvent {
 //#akka-jackson-serialization-command-before
 sealed trait ShoppingCartCommand[R] extends ReplyType[R]
 
-case class UpdateItem(productId: String, quantity: Int) extends ShoppingCartCommand[Done]
+case class UpdateItem(productId: String, quantity: Int) extends ShoppingCartCommand[Summary]
 
 object UpdateItem {
   implicit val format: Format[UpdateItem] = Json.format
 }
 //#akka-jackson-serialization-command-before
 
-case object Get extends ShoppingCartCommand[ShoppingCartState] {
+case object Get extends ShoppingCartCommand[Summary] {
   implicit val format: Format[Get.type] = Format(
     Reads(_ => JsSuccess(Get)),
     Writes(_ => Json.obj())
   )
 }
 
-case object Checkout extends ShoppingCartCommand[Done] {
+case object Checkout extends ShoppingCartCommand[Summary] {
 
   implicit val format: Format[Checkout.type] = Format(
     Reads(_ => JsSuccess(Checkout)),
@@ -195,7 +203,7 @@ object ShoppingCartSerializerRegistry extends JsonSerializerRegistry {
     JsonSerializer[UpdateItem],
     JsonSerializer[Checkout.type],
     JsonSerializer[Get.type],
-    JsonSerializer[ShoppingCartState],
+    JsonSerializer[ShoppingCart],
     JsonSerializer[ShoppingCartException]
   )
   //#akka-jackson-serialization-registry-before

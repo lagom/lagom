@@ -15,7 +15,6 @@ import com.lightbend.lagom.javadsl.persistence.multinode.AbstractClusteredPersis
 import com.lightbend.lagom.javadsl.persistence.multinode.AbstractClusteredPersistentEntitySpec
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.javadsl.persistence.TestEntityReadSide
-import com.lightbend.lagom.persistence.TolerateFailuresWhenRunningContinuousIntegration
 import com.typesafe.config.Config
 
 object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
@@ -28,8 +27,7 @@ class CassandraClusteredPersistentEntitySpecMultiJvmNode2 extends CassandraClust
 class CassandraClusteredPersistentEntitySpecMultiJvmNode3 extends CassandraClusteredPersistentEntitySpec
 
 class CassandraClusteredPersistentEntitySpec
-    extends AbstractClusteredPersistentEntitySpec(CassandraClusteredPersistentEntityConfig)
-    with TolerateFailuresWhenRunningContinuousIntegration {
+    extends AbstractClusteredPersistentEntitySpec(CassandraClusteredPersistentEntityConfig) {
   import CassandraClusteredPersistentEntityConfig._
 
   protected override def atStartup(): Unit = {

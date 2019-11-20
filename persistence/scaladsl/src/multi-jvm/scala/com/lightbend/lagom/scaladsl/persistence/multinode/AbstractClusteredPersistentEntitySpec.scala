@@ -124,13 +124,15 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
   // implicit EC needed for pipeTo
   import system.dispatcher
 
+  final def dilatedTimeout = testConductor.Settings.BarrierTimeout.duration
+
   override def initialParticipants = roles.size
 
   def join(from: RoleName, to: RoleName): Unit = {
     runOn(from) {
       Cluster(system).join(node(to).address)
     }
-    enterBarrierWithDilatedTimeout(from.name + "-joined")
+    enterBarrier(dilatedTimeout, from.name + "-joined")
   }
 
   def fullAddress(ref: ActorRef): Address =
@@ -150,7 +152,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       )
     }
 
-    enterBarrierWithDilatedTimeout("startup")
+    enterBarrier(dilatedTimeout, "startup")
   }
 
   def components: PersistenceComponents
@@ -176,20 +178,11 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     }
   }
 
-  def enterBarrierWithDilatedTimeout(name: String) = {
-    import akka.testkit._
-    testConductor.enter(
-      Timeout.durationToTimeout(remainingOr(testConductor.Settings.BarrierTimeout.duration.dilated)),
-      scala.collection.immutable.Seq(name)
-    )
-  }
-
   "A PersistentEntity in a Cluster" must {
     "send commands to target entity" in within(75.seconds) {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-
-      enterBarrierWithDilatedTimeout("before 'send commands to target entity'")
+      enterBarrier(dilatedTimeout, "start 'send commands to target entity'")
 
       val ref1 = registry.refFor[TestEntity]("entity-1")
       val ref2 = registry.refFor[TestEntity]("entity-2")
@@ -199,17 +192,17 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       val r1 = ref1.ask(TestEntity.Add("a"))
       r1.pipeTo(testActor)
       expectMsg(TestEntity.Appended("A"))
-      enterBarrier("appended-A")
+      enterBarrier(dilatedTimeout, "appended-A")
 
       val r2 = ref2.ask(TestEntity.Add("b"))
       r2.pipeTo(testActor)
       expectMsg(TestEntity.Appended("B"))
-      enterBarrier("appended-B")
+      enterBarrier(dilatedTimeout, "appended-B")
 
       val r3: Future[TestEntity.Evt] = ref2.ask(TestEntity.Add("c"))
       r3.pipeTo(testActor)
       expectMsg(TestEntity.Appended("C"))
-      enterBarrier("appended-C")
+      enterBarrier(dilatedTimeout, "appended-C")
 
       // STEP 2: assert both ref's stored all the commands in their respective state.
       val r4: Future[TestEntity.State] = ref1.ask(TestEntity.Get)
@@ -225,12 +218,14 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       // NOTE: in nodes node2 and node3 {{expectAppendCount}} is a noop
       expectAppendCount("entity-1", 3)
       expectAppendCount("entity-2", 6)
+
+      enterBarrier(dilatedTimeout, "end 'send commands to target entity'")
     }
 
     "run entities on specific node roles" in {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-      enterBarrierWithDilatedTimeout("before 'run entities on specific node roles'")
+      enterBarrier(dilatedTimeout, "start 'run entities on specific node roles'")
       // node1 and node2 are configured with "backend" role
       // and lagom.persistence.run-entities-on-role = backend
       // i.e. no entities on node3
@@ -244,14 +239,16 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       }.toSet
 
       addresses should not contain node(node3).address
+
+      enterBarrier(dilatedTimeout, "end 'run entities on specific node roles'")
     }
 
     "have support for graceful leaving" in {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-      enterBarrierWithDilatedTimeout("before 'have support for graceful leaving'")
+      enterBarrier(dilatedTimeout, "start 'have support for graceful leaving'")
 
-      enterBarrierWithDilatedTimeout("node2-left")
+      enterBarrier(dilatedTimeout, "node2-left")
 
       runOn(node1) {
         within(35.seconds) {
@@ -271,7 +268,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
         }
       }
 
-      enterBarrierWithDilatedTimeout("node1-working")
+      enterBarrier(dilatedTimeout, "end 'have support for graceful leaving'")
     }
   }
 }

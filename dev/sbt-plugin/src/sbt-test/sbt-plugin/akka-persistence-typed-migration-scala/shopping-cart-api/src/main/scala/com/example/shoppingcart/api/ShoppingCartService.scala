@@ -18,9 +18,9 @@ trait ShoppingCartService extends Service {
 
   def getReport(id: String): ServiceCall[NotUsed, String]
 
-  def updateItem(id: String, productId: String, qty: Int): ServiceCall[NotUsed, Done]
+  def updateItem(id: String, productId: String, qty: Int): ServiceCall[NotUsed, String]
 
-  def checkout(id: String): ServiceCall[NotUsed, Done]
+  def checkout(id: String): ServiceCall[NotUsed, String]
 
   override final def descriptor = {
     import Service._
