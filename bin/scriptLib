@@ -11,12 +11,14 @@ set -o pipefail
 # CURRENT_BRANCH is used when updating Whitesource to determine the correct project name
 export CURRENT_BRANCH=${TRAVIS_BRANCH}
 
+EXTRA_OPTS="-Dakka.test.timefactor=10"
+
 runSbt() {
-  sbt --warn -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
+  sbt ${EXTRA_OPTS} --warn -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
 }
 
 runSbtNoisy() {
-  sbt -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
+  sbt ${EXTRA_OPTS} -jvm-opts .travis-jvmopts 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
 }
 
 
