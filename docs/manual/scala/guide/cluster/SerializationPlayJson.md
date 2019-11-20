@@ -4,7 +4,7 @@ To enable JSON Serialization there are three steps you need to follow.
 
 The first step is to define your [Format](https://www.playframework.com/documentation/2.7.x/api/scala/play/api/libs/json/Format.html) for each class that is to be serialized, this can be done using [automated mapping](#Automated-mapping) or [manual mapping](#Manual-mapping).
 
-@[format](code/docs/home/scaladsl/serialization/AddPost.scala)
+@[format](code/docs/home/scaladsl/serialization/ItemAdded.scala)
 
 Best practice is to define the `Format` as an implicit in the classes companion object, so that it can be found by implicit resolution.
 
@@ -46,7 +46,7 @@ If the class contains fields of complex types, it pulls those in from `implicit`
 
 Defining a `Format` can be done in several ways using the Play JSON APIs, either using [JSON Combinators](https://playframework.com/documentation/2.7.x/ScalaJsonCombinators#Format) or by manually implementing functions that turn a `JsValue` into a `JsSuccess(T)` or a `JsFailure()`.
 
-@[manualMapping](code/docs/home/scaladsl/serialization/AddOrder.scala)
+@[manualMapping](code/docs/home/scaladsl/serialization/OrderAdded.scala)
 
 ## Special mapping considerations
 
