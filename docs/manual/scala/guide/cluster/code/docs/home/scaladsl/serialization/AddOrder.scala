@@ -11,7 +11,6 @@ import play.api.libs.json.Json
 import play.api.libs.json.Reads
 
 object AddOrder {
-  //#manualMapping
   case class AddOrder(productId: String, quantity: Int)
 
   import play.api.libs.functional.syntax._
@@ -24,7 +23,6 @@ object AddOrder {
         .and((JsPath \ "quantity").format[Int])
         .apply(AddOrder.apply, unlift(AddOrder.unapply))
   }
-  //#manualMapping
 }
 
 object OrderCommands {
