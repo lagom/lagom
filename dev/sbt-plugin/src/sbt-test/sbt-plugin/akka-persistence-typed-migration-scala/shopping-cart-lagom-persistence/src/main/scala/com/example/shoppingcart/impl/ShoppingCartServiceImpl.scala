@@ -29,27 +29,29 @@ class ShoppingCartServiceImpl(persistentEntityRegistry: PersistentEntityRegistry
   override def get(id: String): ServiceCall[NotUsed, String] = ServiceCall { _ =>
     entityRef(id)
       .ask(Get)
-      .map(cart => convertShoppingCart(id, cart))
+      .map(cart => asShoppingCartView(id, cart))
   }
   //#akka-persistence-reffor-before
 
-  override def updateItem(id: String, productId: String, qty: Int): ServiceCall[NotUsed, Done] = ServiceCall { update =>
+  override def updateItem(id: String, productId: String, qty: Int): ServiceCall[NotUsed, String] = ServiceCall { update =>
     entityRef(id)
       .ask(UpdateItem(productId, qty))
+      .map(cart => asShoppingCartView(id, cart))
       .recover {
         case ShoppingCartException(message) => throw BadRequest(message)
       }
   }
 
-  override def checkout(id: String): ServiceCall[NotUsed, Done] = ServiceCall { _ =>
+  override def checkout(id: String): ServiceCall[NotUsed, String] = ServiceCall { _ =>
     entityRef(id)
       .ask(Checkout)
+      .map(cart => asShoppingCartView(id, cart))
       .recover {
         case ShoppingCartException(message) => throw BadRequest(message)
       }
   }
 
-  private def convertShoppingCart(id: String, cart: Summary): String = {
+  private def asShoppingCartView(id: String, cart: Summary): String = {
     val items = cart.items.map {case (k, v) => s"$k=$v"}.mkString(":")
     val status = if (cart.checkedOut) "checkedout" else "open"
     s"$id:$items:$status"
