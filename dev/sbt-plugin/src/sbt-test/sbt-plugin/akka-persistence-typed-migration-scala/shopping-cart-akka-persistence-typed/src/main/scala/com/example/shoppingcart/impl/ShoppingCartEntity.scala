@@ -56,9 +56,7 @@ case class ShoppingCart(items: Map[String, Int], checkedOutTime: Option[Instant]
       case UpdateItem(productId, quantity, replyTo) =>
         Effect
           .persist(ItemUpdated(productId, quantity))
-          .thenReply(replyTo) { _ =>
-            Accepted
-          }
+          .thenReply(replyTo)(updatedCart => Accepted(toSummary(updatedCart)))
     }
 
   //#akka-persistence-typed-example-command-handler
@@ -68,13 +66,11 @@ case class ShoppingCart(items: Map[String, Int], checkedOutTime: Option[Instant]
     else
       Effect
         .persist(CheckedOut)
-        .thenReply(cmd.replyTo) { _ =>
-          Accepted
-        }
+        .thenReply(cmd.replyTo)(updatedCart => Accepted(toSummary(updatedCart)))
   //#akka-persistence-typed-example-command-handler
 
   private def onReadState(cmd: Get): ReplyEffect[ShoppingCartEvent, ShoppingCart] =
-    Effect.reply(cmd.replyTo)(Summary(this.items, this.checkedOutTime.isDefined))
+    Effect.reply(cmd.replyTo)(toSummary(this))
 
 
   private def updateItem(productId: String, quantity: Int): ShoppingCart = {
@@ -82,6 +78,10 @@ case class ShoppingCart(items: Map[String, Int], checkedOutTime: Option[Instant]
       case 0 => copy(items = items - productId)
       case _ => copy(items = items + (productId -> quantity))
     }
+  }
+
+  private def toSummary(shoppingCart: ShoppingCart): Summary = {
+    Summary(this.items, this.checkedOutTime.isDefined)
   }
 
   private def checkout: ShoppingCart = copy(checkedOutTime = Some(Instant.now()))
@@ -139,7 +139,7 @@ final case object CheckedOut extends ShoppingCartEvent {
 // expose the serializers on the documentation. The serializers are not relevant in that case.
 //#akka-persistence-typed-replies
 sealed trait Confirmation
-sealed trait Accepted extends Confirmation
+case class Accepted(summary: Summary) extends Confirmation
 case class Rejected(reason: String) extends Confirmation
 //#akka-persistence-typed-replies
 
@@ -161,11 +161,8 @@ case object Confirmation {
   }
 }
 
-case object Accepted extends Accepted {
-  implicit val format: Format[Accepted] = Format(
-    Reads(_ => JsSuccess(Accepted)),
-    Writes(_ => Json.obj())
-  )
+case object Accepted {
+  implicit val format: Format[Accepted] = Json.format
 }
 
 
