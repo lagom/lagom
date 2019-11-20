@@ -15,6 +15,7 @@ import akka.remote.testconductor.RoleName
 import akka.remote.testkit.MultiNodeConfig
 import akka.remote.testkit.MultiNodeSpec
 import akka.testkit.ImplicitSender
+import akka.util.Timeout
 import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.persistence.testkit.pipe
 import com.typesafe.config.Config
@@ -50,16 +51,15 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
       terminate-system-after-member-removed = 60s
 
       # increase default timeouts to leave wider margin for Travis.
-      # 30s to 60s
-      akka.testconductor.barrier-timeout=60s
+      akka.testconductor.barrier-timeout=90s
 
-      ## use 13s and 15s for the timeouts below because they are coprime values and it'll be easier to spot interferences.
+      ## use coprime values for the timeouts below because it'll be easier to spot interferences.
       ## Also, make Akka's `single-expect-default` timeout higher since this test often `expect`'s over an ask operation.
       ## NOTE: these values used to be '9s' and '11s' but '9s' triggered timeouts quite often in Travis. If '13s'
       ## also triggers timeouts in Travis it's possible there's something worth reviewing on this test.
       lagom.persistence.ask-timeout = 13s
       akka.test.single-expect-default = 15s
-
+      lagom.persistence.read-side.offset-timeout = 17s
 
       # Don't terminate the actor system when doing a coordinated shutdown
       # See http://doc.akka.io/docs/akka/2.5.0/project/migration-guide-2.4.x-2.5.x.html#Coordinated_Shutdown
@@ -73,6 +73,12 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
 
       # no jvm exit on tests
       lagom.cluster.exit-jvm-when-system-terminated = off
+
+      akka.cluster.sharding.waiting-for-state-timeout = 5s
+
+      # make sure ensure active kicks in fast enough on tests
+      lagom.persistence.cluster.distribution.ensure-active-interval = 2s
+
     """
         )
         .withFallback(ConfigFactory.parseResources("play/reference-overrides.conf"))
@@ -107,7 +113,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     runOn(from) {
       Cluster(system).join(node(to).address)
     }
-    enterBarrier(from.name + "-joined")
+    enterBarrierWithDilatedTimeout(from.name + "-joined")
   }
 
   def fullAddress(ref: ActorRef): Address =
@@ -124,7 +130,7 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
       awaitAssert(Cluster(system).state.members.map(_.status) should be(Set(MemberStatus.Up)))
     }
 
-    enterBarrier("startup")
+    enterBarrierWithDilatedTimeout("startup")
   }
 
   protected override def afterTermination(): Unit = {
@@ -172,32 +178,40 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
     }
   }
 
+  def enterBarrierWithDilatedTimeout(name: String) = {
+    import akka.testkit._
+    testConductor.enter(
+      Timeout.durationToTimeout(remainingOr(testConductor.Settings.BarrierTimeout.duration.dilated)),
+      scala.collection.immutable.Seq(name)
+    )
+  }
+
   "A PersistentEntity in a Cluster" must {
 
     "send commands to target entity" in within(75.seconds) {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-      enterBarrier("before-1")
+      enterBarrierWithDilatedTimeout("start 'send commands to target entity'")
 
-      val ref1 = registry.refFor(classOf[TestEntity], "1")
-      val ref2 = registry.refFor(classOf[TestEntity], "2")
+      val ref1 = registry.refFor(classOf[TestEntity], "entity-1")
+      val ref2 = registry.refFor(classOf[TestEntity], "entity-2")
 
       // STEP 1: send some commands from all nodes of the test to ref1 and ref2
       // note that this is done on node1, node2 and node 3 !!
       val r1: CompletionStage[TestEntity.Evt] = ref1.ask(TestEntity.Add.of("a"))
       r1.pipeTo(testActor)
-      expectMsg(new TestEntity.Appended("1", "A"))
-      enterBarrier("appended-A")
+      expectMsg(new TestEntity.Appended("entity-1", "A"))
+      enterBarrierWithDilatedTimeout("appended-A")
 
       val r2: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("b"))
       r2.pipeTo(testActor)
-      expectMsg(new TestEntity.Appended("2", "B"))
-      enterBarrier("appended-B")
+      expectMsg(new TestEntity.Appended("entity-2", "B"))
+      enterBarrierWithDilatedTimeout("appended-B")
 
       val r3: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("c"))
       r3.pipeTo(testActor)
-      expectMsg(new TestEntity.Appended("2", "C"))
-      enterBarrier("appended-C")
+      expectMsg(new TestEntity.Appended("entity-2", "C"))
+      enterBarrierWithDilatedTimeout("appended-C")
 
       // STEP 2: assert both ref's stored all the commands in their respective state.
       val r4: CompletionStage[TestEntity.State] = ref1.ask(TestEntity.Get.instance)
@@ -211,15 +225,16 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
 
       // STEP 3: assert the number of events consumed in the read-side processors equals the number of expected events.
       // NOTE: in nodes node2 and node3 {{expectAppendCount}} is a noop
-      expectAppendCount("1", 3)
-      expectAppendCount("2", 6)
+      expectAppendCount("entity-1", 3)
+      expectAppendCount("entity-2", 6)
 
+      enterBarrierWithDilatedTimeout("end 'send commands to target entity'")
     }
 
     "run entities on specific node roles" in {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-      enterBarrier("before-2")
+      enterBarrierWithDilatedTimeout("start 'run entities on specific node roles'")
       // node1 and node2 are configured with "backend" role
       // and lagom.persistence.run-entities-on-role = backend
       // i.e. no entities on node3
@@ -231,38 +246,40 @@ abstract class AbstractClusteredPersistentEntitySpec(config: AbstractClusteredPe
         expectMsgType[Address]
       }.toSet
 
-      addresses should not contain (node(node3).address)
+      addresses should not contain node(node3).address
+
+      enterBarrierWithDilatedTimeout("end 'run entities on specific node roles'")
     }
 
     "have support for graceful leaving" in {
       // this barrier at the beginning of the test will be run on all nodes and should be at the
       // beginning of the test to ensure it's run.
-      enterBarrier("before-3")
+      enterBarrierWithDilatedTimeout("start 'have support for graceful leaving'")
 
       runOn(node2) {
         registry.gracefulShutdown(20.seconds).toCompletableFuture().get(20, SECONDS)
       }
-      enterBarrier("node2-left")
+      enterBarrierWithDilatedTimeout("node2-left")
 
       runOn(node1) {
         within(35.seconds) {
-          val ref1                                = registry.refFor(classOf[TestEntity], "1")
+          val ref1                                = registry.refFor(classOf[TestEntity], "entity-1")
           val r1: CompletionStage[TestEntity.Evt] = ref1.ask(TestEntity.Add.of("a"))
           r1.pipeTo(testActor)
-          expectMsg(new TestEntity.Appended("1", "A"))
+          expectMsg(new TestEntity.Appended("entity-1", "A"))
 
-          val ref2                                = registry.refFor(classOf[TestEntity], "2")
+          val ref2                                = registry.refFor(classOf[TestEntity], "entity-2")
           val r2: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("b"))
           r2.pipeTo(testActor)
-          expectMsg(new TestEntity.Appended("2", "B"))
+          expectMsg(new TestEntity.Appended("entity-2", "B"))
 
           val r3: CompletionStage[TestEntity.Evt] = ref2.ask(TestEntity.Add.of("c"))
           r3.pipeTo(testActor)
-          expectMsg(new TestEntity.Appended("2", "C"))
+          expectMsg(new TestEntity.Appended("entity-2", "C"))
         }
       }
 
-      enterBarrier("node1-working")
+      enterBarrierWithDilatedTimeout("end 'have support for graceful leaving'")
     }
   }
 }
