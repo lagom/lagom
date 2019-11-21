@@ -10,8 +10,8 @@ import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 
 object MyRegistry extends JsonSerializerRegistry {
   override val serializers = Vector(
-    JsonSerializer[AddComment],
-    JsonSerializer[AddPost]
+    JsonSerializer[ItemAdded],
+    JsonSerializer[OrderAdded]
   )
 }
 //#registry
