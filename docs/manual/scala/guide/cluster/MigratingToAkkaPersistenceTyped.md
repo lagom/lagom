@@ -2,7 +2,9 @@
 
 With the support for Akka Persistence Typed in Lagom it is possible to migrate existing code from Lagom Persistence (classic) to Akka Persistence Typed. There's a few steps to consider in order to be able to read an existing journal.
 
-> NOTE: the only limitation when migrating from from Lagom Persistence (classic) to Akka Persistence Typed is that a full cluster shutdown is required. Even though all durable data is compatible, Lagom Persistence (classic) and Akka Persistence Typed can't coexist.
+> **Note**: the only limitation when migrating from from Lagom Persistence (classic) to Akka Persistence Typed is that a full cluster shutdown is required. Even though all durable data is compatible, Lagom Persistence (classic) and Akka Persistence Typed can't coexist.
+
+Before you start, make sure you have read the page [[Domain Modelling with Akka Persistence Typed|UsingAkkaPersistenceTyped]] and you understand how to model a domain using Akka Persistence Typed.
 
 ## Migrating the model
 
@@ -43,15 +45,17 @@ See for example the `Confirmation` ADT below:
 
 @[akka-persistence-typed-replies](../../../../../dev/sbt-plugin/src/sbt-test/sbt-plugin/akka-persistence-typed-migration-scala/shopping-cart-akka-persistence-typed/src/main/scala/com/example/shoppingcart/impl/ShoppingCartEntity.scala)
 
-Then, all the command handlers must produce a `ReplyEffect`. For operations that don't mutate the model, use `Effect.reply` directly and for operations that persist events use `Effect.persist` to create a `ReplyEffect` instance:
+Then, all the command handlers must produce a `ReplyEffect`. For operations that don't mutate the model, use `Effect.reply` directly and for operations that persist events use `Effect.persist(...).thenReply` to create a `ReplyEffect` instance:
 
 @[akka-persistence-typed-example-command-handler](../../../../../dev/sbt-plugin/src/sbt-test/sbt-plugin/akka-persistence-typed-migration-scala/shopping-cart-akka-persistence-typed/src/main/scala/com/example/shoppingcart/impl/ShoppingCartEntity.scala)
+
+See [[Modelling Commands and Replies|UsingAkkaPersistenceTyped#Modelling-Commands-and-Replies]] for more details.
 
 ## Registration
 
 In order to shard and distribute the `EventSourcedBehavior` instances across the cluster you will no longer use Lagom's `persistentEntityRegistry`. Instead, Lagom now provides direct access to `clusterSharding`, an instance of Akka's `ClusterSharding` extension you can use to initialize the sharding of `EventSourcedBehavior`.
 
-__Before__, in the `ShoppingCartLoader.scala` class we'd use the Lagom provided `persistentEntityRegistry` instance to register a `macwire` provided instance:
+__Before__, in the `ShoppingCartLoader` class we'd use the Lagom provided `persistentEntityRegistry` instance to register a `macwire` provided instance:
 
 @[akka-persistence-register-classic](../../../../../dev/sbt-plugin/src/sbt-test/sbt-plugin/akka-persistence-typed-migration-scala/shopping-cart-lagom-persistence/src/main/scala/com/example/shoppingcart/impl/ShoppingCartLoader.scala)
 
@@ -95,7 +99,7 @@ In order to be able to read existing events using Akka Persistence Typed you mus
 
 The code above uses `PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId)`. There are three important pieces on that statement that we must review:
 
-1. The first argument of `PersistenceId.apply()` must be the same value you used in Lagom Persistence (classic). This first argument is known as the `typeHint` and is used by the journal as a mechanism to avoid ID collision between different types. In Lagom Persistence (classic) the type hint defaults to the classname of your `PersistentEntity` but it can be [[overwritten|PersistentEntity#Refactoring-Consideration]] (review your code or the persisted data on your database). In our case, we are using `entityContext.entityTypeKey.name` because we defined `EntityTypeKey[ShoppingCartCommand]("ShoppingCartEntity")` where `"ShoppingCartEntity"` is the classname of the code we had in the implementation based on Lagom Persistence Classic.
+1. The first argument of `PersistenceId.apply()` must be the same value you used in Lagom Persistence (classic). This first argument is known as the `typeHint` and is used by the journal as a mechanism to avoid ID collision between different types. In Lagom Persistence (classic) the type hint defaults to the classname of your `PersistentEntity` but it can be [[overwritten|PersistentEntity#Refactoring-Consideration]] (review your code or the persisted data on your database). In our case, we are using `entityContext.entityTypeKey.name` because we defined the type key as `EntityTypeKey[ShoppingCartCommand]("ShoppingCartEntity")` where `"ShoppingCartEntity"` is the classname of the code we had in the implementation based on Lagom Persistence Classic.
 2. The second argument must be the business id of your Aggregate. In this case, we can use `entityContext.entityId` because we're using that same business id for the sharded actor.
 3. An (optional) third argument specifying a `separator`. Lagom uses the `"|"` as a separator and, since `PersistenceId` also uses `"|"` as a default we're not specifying a separator.
 

@@ -19,9 +19,9 @@ public interface ShoppingCartService extends Service {
 
     ServiceCall<NotUsed, String> getReport(String id);
 
-    ServiceCall<NotUsed, Done> updateItem(String id, String productId, int qty);
+    ServiceCall<NotUsed, String> updateItem(String id, String productId, int qty);
 
-    ServiceCall<NotUsed, Done> checkout(String id);
+    ServiceCall<NotUsed, String> checkout(String id);
 
 
     @Override
