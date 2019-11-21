@@ -12,10 +12,10 @@ Similarly to Lagom's Persistent Entity, in Akka Persistence Typed you must creat
 
 @[akka-persistence-behavior-definition](../../../../../dev/sbt-plugin/src/sbt-test/sbt-plugin/akka-persistence-typed-migration-java/shopping-cart-akka-persistence-typed/src/main/java/com/example/shoppingcart/impl/ShoppingCartEntity.java)
 
-The `EventSourcedBehaviorWithEnforcedReplies` abstract class you require you to define the following:
+The `EventSourcedBehaviorWithEnforcedReplies` abstract class requires you to define the following:
 
-* a `persistenceId: PersistenceId`, to be passed to the `super` its constructor
-* a `emptyState()` method returning the `State` before any event was ever persisted
+* a `PersistenceId persistenceId`, to be passed to the `super` in its constructor
+* an `emptyState()` method returning the `State` before any event was ever persisted
 * a `commandHandler()` method to handle the commands, persist events and return a reply
 * a `eventHandler()` method to handle events and mutate the `State`
 
@@ -33,7 +33,7 @@ __After__:
 
 @[akka-jackson-serialization-command-after](../../../../../dev/sbt-plugin/src/sbt-test/sbt-plugin/akka-persistence-typed-migration-java/shopping-cart-akka-persistence-typed/src/main/java/com/example/shoppingcart/impl/ShoppingCartCommand.java)
 
-The `ActorRef<R> replyTo` is necessary to know where to send the response to. It must be added to all command classes and adding it has implication on the serialization of those classes. Make sure to review the [[Serialization]] pages later in this reference documentation.
+The `ActorRef<R> replyTo` is necessary to know where to send the response to. It must be added to all command classes and adding it has implications on the serialization of those classes. Make sure to review the [[Serialization]] pages later in this reference documentation.
 
 ### Replies
 
@@ -53,7 +53,7 @@ See [[Modelling Commands and Replies|UsingAkkaPersistenceTyped#Modelling-Command
 
 In order to shard and distribute the `EventSourcedBehavior` instances across the cluster you will no longer use Lagom's `persistentEntityRegistry`. Instead, Lagom now provides direct access to `clusterSharding`, an instance of Akka's `ClusterSharding` extension you can use to initialize the sharding of `EventSourcedBehavior`.
 
-__Before__, in the `ShoppingCartServiceImpl` class we'd use the Lagom provided `persistentEntityRegistry` instance to register a `macwire` provided instance:
+__Before__, in the `ShoppingCartServiceImpl` class we'd use the Lagom provided `persistentEntityRegistry` instance to register a Guice provided instance:
 
 @[akka-persistence-register-classic](../../../../../dev/sbt-plugin/src/sbt-test/sbt-plugin/akka-persistence-typed-migration-java/shopping-cart-lagom-persistence/src/main/java/com/example/shoppingcart/impl/ShoppingCartServiceImpl.java)
 
@@ -69,7 +69,7 @@ To avoid `entityId` collisions across the cluster, initializing the sharding of 
 
 ## Sending a command
 
-In order to send commands to your `Behavior` instance you will have to obtain a reference to the actor where the `Behavior` run and send commands to it.
+In order to send commands to your `Behavior` instance you will have to obtain a reference to the actor where the `Behavior` is running and send commands to it.
 
 __Before__:
 
