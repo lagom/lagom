@@ -92,7 +92,7 @@ object Dependencies {
   private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.10.2"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
   private val typesafeConfig         = "com.typesafe" % "config" % "1.4.0"
-  private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.0"
+  private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.1"
   private val h2                     = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore =
     ("com.datastax.cassandra" % "cassandra-driver-core" % "3.8.0").excludeAll(excludeSlf4j: _*)
