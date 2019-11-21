@@ -15,35 +15,35 @@ import org.pcollections.PMap;
 @SuppressWarnings("serial")
 @Value
 @JsonDeserialize
-public final class ShoppingCartState implements CompressedJsonable {
+public final class ShoppingCart implements CompressedJsonable {
 
     public final PMap<String, Integer> items;
     public final boolean checkedOut;
 
 
     @JsonCreator
-    ShoppingCartState(PMap<String, Integer> items, boolean checkedOut) {
+    ShoppingCart(PMap<String, Integer> items, boolean checkedOut) {
         this.items = Preconditions.checkNotNull(items, "items");
         this.checkedOut = checkedOut;
     }
 
-    public ShoppingCartState updateItem(String productId, int quantity) {
+    public ShoppingCart updateItem(String productId, int quantity) {
         PMap<String, Integer> newItems;
         if (quantity == 0) {
             newItems = items.minus(productId);
         } else {
             newItems = items.plus(productId, quantity);
         }
-        return new ShoppingCartState(newItems, checkedOut);
+        return new ShoppingCart(newItems, checkedOut);
     }
 
-    public ShoppingCartState checkout() {
-        return new ShoppingCartState(items, true);
+    public ShoppingCart checkout() {
+        return new ShoppingCart(items, true);
     }
 
     public boolean open() {
         return !checkedOut;
     }
 
-    public static final ShoppingCartState EMPTY = new ShoppingCartState(HashTreePMap.empty(), false);
+    public static final ShoppingCart EMPTY = new ShoppingCart(HashTreePMap.empty(), false);
 }

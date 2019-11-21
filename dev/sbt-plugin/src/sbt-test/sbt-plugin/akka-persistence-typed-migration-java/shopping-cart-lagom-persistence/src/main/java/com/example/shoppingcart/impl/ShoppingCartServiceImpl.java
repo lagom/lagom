@@ -4,7 +4,6 @@
 
 package com.example.shoppingcart.impl;
 
-import akka.Done;
 import akka.NotUsed;
 import com.example.shoppingcart.api.ShoppingCartService;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
@@ -23,13 +22,17 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     private final ReportRepository reportRepository;
 
+    // #akka-persistence-register-classic
     @Inject
-    public ShoppingCartServiceImpl(PersistentEntityRegistry persistentEntityRegistry, ReportRepository reportRepository) {
+    public ShoppingCartServiceImpl(PersistentEntityRegistry persistentEntityRegistry,
+                                   ReportRepository reportRepository) {
         this.persistentEntityRegistry = persistentEntityRegistry;
         this.reportRepository = reportRepository;
         persistentEntityRegistry.register(ShoppingCartEntity.class);
     }
+    // #akka-persistence-register-classic
 
+    //#akka-persistence-reffor-before
     private PersistentEntityRef<ShoppingCartCommand> entityRef(String id) {
         return persistentEntityRegistry.refFor(ShoppingCartEntity.class, id);
     }
@@ -37,10 +40,11 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     @Override
     public ServiceCall<NotUsed, String> get(String id) {
         return request ->
-                entityRef(id)
-                        .ask(ShoppingCartCommand.Get.INSTANCE)
-                        .thenApply(cart -> convertShoppingCart(id, cart));
+            entityRef(id)
+                .ask(ShoppingCartCommand.Get.INSTANCE)
+                .thenApply(cart -> asShoppingCartView(id, cart));
     }
+    //#akka-persistence-reffor-before
 
     @Override
     public ServiceCall<NotUsed, String> getReport(String id) {
@@ -57,20 +61,22 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
-    public ServiceCall<NotUsed, Done> updateItem(String id, String productId, int qty) {
+    public ServiceCall<NotUsed, String> updateItem(String id, String productId, int qty) {
         return item ->
                 convertErrors(
                         entityRef(id)
                                 .ask(new ShoppingCartCommand.UpdateItem(productId, qty))
+                                .thenApply(cart -> asShoppingCartView(id, cart))
                 );
     }
 
     @Override
-    public ServiceCall<NotUsed, Done> checkout(String id) {
+    public ServiceCall<NotUsed, String> checkout(String id) {
         return request ->
                 convertErrors(
                         entityRef(id)
                                 .ask(ShoppingCartCommand.Checkout.INSTANCE)
+                                .thenApply(cart -> asShoppingCartView(id, cart))
                 );
     }
 
@@ -86,19 +92,19 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         });
     }
 
-    private String convertShoppingCart(String id, ShoppingCartState cart) {
+    private String asShoppingCartView(String id, Summary summary) {
         StringBuilder builder = new StringBuilder();
         // abc:foo=10:checkedout
         builder.append(id);
 
-        cart.items.forEach((key, value) -> builder
+        summary.items.forEach((key, value) -> builder
             .append(":")
             .append(key)
             .append("=")
             .append(value));
 
 
-        if (cart.checkedOut) builder.append(":checkedout");
+        if (summary.checkedOut) builder.append(":checkedout");
         else builder.append(":open");
 
         return builder.toString();

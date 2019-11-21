@@ -14,15 +14,19 @@ import com.example.shoppingcart.impl.ShoppingCartCommand.UpdateItem;
 import com.example.shoppingcart.impl.ShoppingCartEvent.CheckedOut;
 import com.example.shoppingcart.impl.ShoppingCartEvent.ItemUpdated;
 import com.lightbend.lagom.javadsl.persistence.AkkaTaggerAdapter;
-
 import java.util.Set;
 
-public class ShoppingCartEntity extends EventSourcedBehaviorWithEnforcedReplies<ShoppingCartCommand, ShoppingCartEvent, ShoppingCartState> {
+// #akka-persistence-behavior-definition
+public class ShoppingCartEntity
+    extends EventSourcedBehaviorWithEnforcedReplies<ShoppingCartCommand, ShoppingCartEvent, ShoppingCart>
+// #akka-persistence-behavior-definition
+     {
 
+    // #akka-persistence-shopping-cart-object
     public static EntityTypeKey<ShoppingCartCommand> ENTITY_TYPE_KEY =
         EntityTypeKey
             .create(ShoppingCartCommand.class, "ShoppingCartEntity");
-
+    // #akka-persistence-shopping-cart-object
 
     final private EntityContext<ShoppingCartCommand> entityContext;
     final private String entityId;
@@ -31,6 +35,7 @@ public class ShoppingCartEntity extends EventSourcedBehaviorWithEnforcedReplies<
         return new ShoppingCartEntity(entityContext);
     }
 
+    // #shopping-cart-constructor
     ShoppingCartEntity(EntityContext<ShoppingCartCommand> entityContext) {
         super(
             PersistenceId.of(
@@ -42,19 +47,20 @@ public class ShoppingCartEntity extends EventSourcedBehaviorWithEnforcedReplies<
         this.entityContext = entityContext;
         this.entityId = entityContext.getEntityId();
     }
-
+    // #shopping-cart-constructor
 
     @Override
-    public ShoppingCartState emptyState() {
-        return ShoppingCartState.EMPTY;
+    public ShoppingCart emptyState() {
+        return ShoppingCart.EMPTY;
     }
 
     @Override
-    public CommandHandlerWithReply<ShoppingCartCommand, ShoppingCartEvent, ShoppingCartState> commandHandler() {
+    public CommandHandlerWithReply<ShoppingCartCommand, ShoppingCartEvent, ShoppingCart> commandHandler() {
 
-        CommandHandlerWithReplyBuilder<ShoppingCartCommand, ShoppingCartEvent, ShoppingCartState> builder = newCommandHandlerWithReplyBuilder();
+        CommandHandlerWithReplyBuilder<ShoppingCartCommand, ShoppingCartEvent, ShoppingCart> builder = newCommandHandlerWithReplyBuilder();
 
-        builder.forState(ShoppingCartState::open)
+        // #akka-persistence-typed-example-command-handler
+        builder.forState(ShoppingCart::open)
             .onCommand(UpdateItem.class, (state, cmd) -> {
                 if (cmd.quantity < 0) {
                     return Effect().reply(cmd.replyTo, new ShoppingCartCommand.Rejected("Quantity must be greater than zero"));
@@ -63,20 +69,21 @@ public class ShoppingCartEntity extends EventSourcedBehaviorWithEnforcedReplies<
                 } else {
                     return Effect()
                         .persist(new ItemUpdated(entityId, cmd.productId, cmd.quantity))
-                        .thenReply(cmd.replyTo, __ -> new ShoppingCartCommand.Accepted());
+                        .thenReply(cmd.replyTo, updatedCart -> new ShoppingCartCommand.Accepted(toSummary(updatedCart)));
                 }
 
             })
+        // #akka-persistence-typed-example-command-handler
             .onCommand(Checkout.class, (state, cmd) -> {
                 if (state.items.isEmpty()) {
                     return Effect().reply(cmd.replyTo, new ShoppingCartCommand.Rejected("Cannot checkout empty cart"));
                 } else {
-                    return Effect().persist(new CheckedOut(entityId)).thenReply(cmd.replyTo, __ -> new ShoppingCartCommand.Accepted());
+                    return Effect().persist(new CheckedOut(entityId)).thenReply(cmd.replyTo, updatedCart -> new ShoppingCartCommand.Accepted(toSummary(updatedCart)));
                 }
             });
 
 
-        builder.forState(ShoppingCartState::isCheckedOut)
+        builder.forState(ShoppingCart::isCheckedOut)
             .onCommand(
                 UpdateItem.class,
                 cmd -> Effect().reply(cmd.replyTo, new ShoppingCartCommand.Rejected("Can't update item on already checked out shopping cart")))
@@ -87,16 +94,20 @@ public class ShoppingCartEntity extends EventSourcedBehaviorWithEnforcedReplies<
         builder.forAnyState()
             .onCommand(
                 Get.class,
-                (state, cmd) -> Effect().reply(cmd.replyTo, state));
+                (state, cmd) -> Effect().reply(cmd.replyTo, toSummary(state)));
 
         return builder.build();
     }
 
-    @Override
-    public EventHandler<ShoppingCartState, ShoppingCartEvent> eventHandler() {
-        EventHandlerBuilder<ShoppingCartState, ShoppingCartEvent> builder = newEventHandlerBuilder();
+    private Summary toSummary(ShoppingCart shoppingCart) {
+        return new Summary(shoppingCart.items, shoppingCart.checkedOut);
+    }
 
-        builder.forState(ShoppingCartState::open)
+    @Override
+    public EventHandler<ShoppingCart, ShoppingCartEvent> eventHandler() {
+        EventHandlerBuilder<ShoppingCart, ShoppingCartEvent> builder = newEventHandlerBuilder();
+
+        builder.forState(ShoppingCart::open)
             .onEvent(
                 ItemUpdated.class,
                 (state, evt) -> state.updateItem(evt.productId, evt.quantity))
@@ -109,8 +120,10 @@ public class ShoppingCartEntity extends EventSourcedBehaviorWithEnforcedReplies<
     }
 
 
+    // #akka-persistence-typed-lagom-tagger-adapter
     @Override
     public Set<String> tagsFor(ShoppingCartEvent shoppingCartEvent) {
         return AkkaTaggerAdapter.fromLagom(entityContext, ShoppingCartEvent.TAG).apply(shoppingCartEvent);
     }
+    // #akka-persistence-typed-lagom-tagger-adapter
 }

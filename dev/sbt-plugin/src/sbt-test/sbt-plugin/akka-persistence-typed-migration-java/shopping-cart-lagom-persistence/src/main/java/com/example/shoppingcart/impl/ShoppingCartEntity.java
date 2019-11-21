@@ -4,7 +4,6 @@
 
 package com.example.shoppingcart.impl;
 
-import akka.Done;
 import com.example.shoppingcart.impl.ShoppingCartCommand.Checkout;
 import com.example.shoppingcart.impl.ShoppingCartCommand.Get;
 import com.example.shoppingcart.impl.ShoppingCartCommand.UpdateItem;
@@ -14,12 +13,12 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 
 import java.util.Optional;
 
-public class ShoppingCartEntity extends PersistentEntity<ShoppingCartCommand, ShoppingCartEvent, ShoppingCartState> {
+public class ShoppingCartEntity extends PersistentEntity<ShoppingCartCommand, ShoppingCartEvent, ShoppingCart> {
 
     @Override
-    public Behavior initialBehavior(Optional<ShoppingCartState> snapshotState) {
+    public Behavior initialBehavior(Optional<ShoppingCart> snapshotState) {
 
-        ShoppingCartState state = snapshotState.orElse(ShoppingCartState.EMPTY);
+        ShoppingCart state = snapshotState.orElse(ShoppingCart.EMPTY);
         BehaviorBuilder b = newBehaviorBuilder(state);
 
         if (state.isCheckedOut()) {
@@ -39,7 +38,7 @@ public class ShoppingCartEntity extends PersistentEntity<ShoppingCartCommand, Sh
                 ctx.commandFailed(new ShoppingCartException("Cannot delete item that is not already in cart"));
                 return ctx.done();
             } else {
-                return ctx.thenPersist(new ItemUpdated(entityId(), cmd.getProductId(), cmd.getQuantity()), e -> ctx.reply(Done.getInstance()));
+                return ctx.thenPersist(new ItemUpdated(entityId(), cmd.getProductId(), cmd.getQuantity()), e -> ctx.reply(toSummary(state())));
             }
         });
 
@@ -49,7 +48,7 @@ public class ShoppingCartEntity extends PersistentEntity<ShoppingCartCommand, Sh
                 ctx.commandFailed(new ShoppingCartException("Cannot checkout empty cart"));
                 return ctx.done();
             } else {
-                return ctx.thenPersist(new CheckedOut(entityId()), e -> ctx.reply(Done.getInstance()));
+                return ctx.thenPersist(new CheckedOut(entityId()), e -> ctx.reply(toSummary(state())));
             }
         });
         commonHandlers(b);
@@ -68,7 +67,7 @@ public class ShoppingCartEntity extends PersistentEntity<ShoppingCartCommand, Sh
     }
 
     private void commonHandlers(BehaviorBuilder b) {
-        b.setReadOnlyCommandHandler(Get.class, (cmd, ctx) -> ctx.reply(state()));
+        b.setReadOnlyCommandHandler(Get.class, (cmd, ctx) -> ctx.reply(toSummary(state())));
 
         b.setEventHandler(ItemUpdated.class, itemUpdated ->
             state().updateItem(itemUpdated.getProductId(), itemUpdated.getQuantity()));
@@ -77,4 +76,7 @@ public class ShoppingCartEntity extends PersistentEntity<ShoppingCartCommand, Sh
             checkedOut(newBehaviorBuilder(state().checkout())));
     }
 
+    private Summary toSummary(ShoppingCart shoppingCart) {
+        return new Summary(shoppingCart.items, shoppingCart.checkedOut);
+    }
 }
