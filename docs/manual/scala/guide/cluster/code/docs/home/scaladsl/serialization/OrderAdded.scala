@@ -25,7 +25,7 @@ object ManualMappingOrderAdded {
       (JsPath \ "product_id")
         .format[String]
         .and((JsPath \ "quantity").format[Int])
-        .apply(AddOrder.apply, unlift(AddOrder.unapply))
+        .apply(OrderAdded.apply, unlift(OrderAdded.unapply))
   }
   //#manualMapping
 }
