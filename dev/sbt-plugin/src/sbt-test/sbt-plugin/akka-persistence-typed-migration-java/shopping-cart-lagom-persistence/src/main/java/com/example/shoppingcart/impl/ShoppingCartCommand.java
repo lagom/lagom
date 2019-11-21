@@ -4,7 +4,6 @@
 
 package com.example.shoppingcart.impl;
 
-import akka.Done;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
@@ -18,7 +17,10 @@ public interface ShoppingCartCommand extends Jsonable {
     @SuppressWarnings("serial")
     @Value
     @JsonDeserialize
-    final class UpdateItem implements ShoppingCartCommand, CompressedJsonable, PersistentEntity.ReplyType<Done> {
+    // #akka-jackson-serialization-command-before
+    final class UpdateItem implements ShoppingCartCommand, CompressedJsonable,
+        PersistentEntity.ReplyType<Summary> {
+
         public final String productId;
         public final int quantity;
 
@@ -28,12 +30,13 @@ public interface ShoppingCartCommand extends Jsonable {
             this.quantity = quantity;
         }
     }
+    // #akka-jackson-serialization-command-before
 
-    enum Get implements ShoppingCartCommand, PersistentEntity.ReplyType<ShoppingCartState> {
+    enum Get implements ShoppingCartCommand, PersistentEntity.ReplyType<Summary> {
         INSTANCE
     }
 
-    enum Checkout implements ShoppingCartCommand, PersistentEntity.ReplyType<Done> {
+    enum Checkout implements ShoppingCartCommand, PersistentEntity.ReplyType<Summary> {
         INSTANCE
     }
 }
