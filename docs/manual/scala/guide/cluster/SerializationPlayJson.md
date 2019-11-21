@@ -70,7 +70,7 @@ When mapping a hierarchy of types, for example an ADT, or a trait or abstract cl
 
 ## Schema Evolution
 
-When working on long running projects using [[Persistence|PersistentEntity]], or any kind of Event Sourcing, schema evolution becomes an important aspect of developing your application. The requirements as well as our own understanding of the business domain may (and will) change over time.
+When working on long running projects using [[Akka Persistence Typed|UsingAkkaPersistenceTyped]], Lagom [[Persistence|PersistentEntity]] (classic), or any kind of Event Sourcing, schema evolution becomes an important aspect of developing your application. The requirements as well as our own understanding of the business domain may (and will) change over time.
 
 Lagom provides a way to perform transformations of the JSON tree model during deserialization. To do those transformations you can either modify the json imperatively or use the [Play JSON transformers](https://www.playframework.com/documentation/2.7.x/ScalaJsonTransformers)
 
