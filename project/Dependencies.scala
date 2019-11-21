@@ -49,7 +49,7 @@ object Dependencies {
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
     val AlpakkaKafka  = "1.1.0"
     val Curator       = "2.12.0"
-    val Immutables    = "2.8.1"
+    val Immutables    = "2.8.2"
     val HibernateCore = "5.4.8.Final"
     val PCollections  = "3.0.5"
 
