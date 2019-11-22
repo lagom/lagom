@@ -4,12 +4,10 @@
 
 package com.lightbend.lagom.internal.persistence.jdbc
 
-import akka.Done
 import akka.actor.CoordinatedShutdown
 import play.api.db.Databases
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
 import scala.util.Random
 
 object SlickDbTestProvider {

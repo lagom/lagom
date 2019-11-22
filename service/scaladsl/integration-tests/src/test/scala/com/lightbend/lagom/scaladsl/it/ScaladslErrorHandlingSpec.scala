@@ -34,7 +34,6 @@ import com.typesafe.config.ConfigFactory;
 import org.scalatest.Matchers
 import org.scalatest.WordSpec
 import play.api.libs.streams.AkkaStreams
-import play.api.Configuration
 import play.api.Environment
 import play.api.Mode
 import play.api.libs.ws.ahc.AhcWSComponents

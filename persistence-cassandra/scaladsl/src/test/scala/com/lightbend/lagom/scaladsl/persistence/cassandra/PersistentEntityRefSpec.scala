@@ -17,7 +17,6 @@ import akka.stream.ActorMaterializer
 import akka.stream.Materializer
 import akka.testkit.TestKit
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
-import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.ClusterConfig
 import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.cassandraConfig
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator

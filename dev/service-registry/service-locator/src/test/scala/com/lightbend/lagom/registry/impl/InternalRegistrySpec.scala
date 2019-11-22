@@ -94,8 +94,7 @@ class InternalRegistrySpec extends FlatSpec with Matchers {
   it should "register managed and unmanaged services and return both of them" in {
     val unamanagedURI    = new URI("http://localhost.com:123/unmanaged")
     val serviceUnmanaged = "my-service-unmanaged"
-    val unmanagedServiceRegistryService =
-      ServiceRegistryService.of(util.Arrays.asList(unamanagedURI), Collections.emptyList[ServiceAcl])
+    ServiceRegistryService.of(util.Arrays.asList(unamanagedURI), Collections.emptyList[ServiceAcl])
     val unmanaged: UnmanagedServices = UnmanagedServices(
       Map(
         serviceUnmanaged -> ServiceRegistryService.of(unamanagedURI, Collections.emptyList[ServiceAcl]),

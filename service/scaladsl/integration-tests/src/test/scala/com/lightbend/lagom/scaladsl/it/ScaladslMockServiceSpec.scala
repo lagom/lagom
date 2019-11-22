@@ -24,7 +24,6 @@ import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 import com.typesafe.config.ConfigFactory
 import org.scalatest.Matchers
 import org.scalatest.WordSpec
-import play.api.Configuration
 import play.api.libs.streams.AkkaStreams
 import play.api.libs.ws.ahc.AhcWSComponents
 

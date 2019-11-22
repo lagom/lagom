@@ -47,7 +47,6 @@ import scala.util.control.NonFatal
 
 import com.typesafe.config.ConfigFactory
 import akka.actor.ReflectiveDynamicAccess
-import akka.serialization.jackson.JacksonJsonSerializer
 import akka.serialization.jackson.JacksonObjectMapperFactory
 import akka.serialization.jackson.JacksonObjectMapperProvider
 import com.lightbend.lagom.internal.javadsl.api._

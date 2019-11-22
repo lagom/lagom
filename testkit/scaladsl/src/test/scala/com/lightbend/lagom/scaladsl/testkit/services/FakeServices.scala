@@ -18,7 +18,6 @@ import com.lightbend.lagom.scaladsl.server.LagomApplication
 import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
 import com.typesafe.config.ConfigFactory
-import play.api.Configuration
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.collection.immutable.Seq
