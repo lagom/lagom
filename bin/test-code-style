@@ -22,6 +22,7 @@ if [ "$TRAVIS_EVENT_TYPE" != "cron" ]; then
 fi
 
 runSbt  "${EXTRA_TASKS[@]}" \
+        checkAkkaModuleVersions \
         +mimaReportBinaryIssues
 
 printMessage "VALIDATE SCALA CODE FORMATTING"
