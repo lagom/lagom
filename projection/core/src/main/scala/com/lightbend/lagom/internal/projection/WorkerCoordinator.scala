@@ -17,7 +17,6 @@ import com.lightbend.lagom.projection.Started
 import com.lightbend.lagom.projection.Status
 import com.lightbend.lagom.projection.Stopped
 
-import scala.concurrent.duration._
 
 object WorkerCoordinator {
   def props(

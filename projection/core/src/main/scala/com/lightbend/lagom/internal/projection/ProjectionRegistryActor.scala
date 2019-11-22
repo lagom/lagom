@@ -23,12 +23,10 @@ import akka.cluster.ddata.Replicator.UpdateSuccess
 import akka.cluster.ddata.Replicator.WriteConsistency
 import akka.cluster.ddata.Replicator.WriteMajority
 import akka.cluster.ddata.SelfUniqueAddress
-import com.lightbend.lagom.projection.Started
 import com.lightbend.lagom.projection.State
 import com.lightbend.lagom.projection.Status
 import com.lightbend.lagom.projection.Stopped
 
-import scala.concurrent.duration._
 import com.lightbend.lagom.projection.ProjectionSerializable
 
 @ApiMayChange

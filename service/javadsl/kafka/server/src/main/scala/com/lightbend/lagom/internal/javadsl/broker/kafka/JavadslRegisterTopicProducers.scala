@@ -29,7 +29,6 @@ import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.javadsl.api.broker.kafka.KafkaProperties
 import com.lightbend.lagom.spi.persistence.OffsetStore
 
-import scala.collection.immutable
 import scala.compat.java8.FutureConverters._
 
 class JavadslRegisterTopicProducers @Inject() (

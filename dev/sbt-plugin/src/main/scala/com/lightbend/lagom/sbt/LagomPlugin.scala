@@ -20,8 +20,6 @@ import sbt.Def.Initialize
 import sbt.Keys._
 import sbt.Def
 import sbt._
-import sbt.plugins.CorePlugin
-import sbt.plugins.IvyPlugin
 import sbt.plugins.JvmPlugin
 
 /**

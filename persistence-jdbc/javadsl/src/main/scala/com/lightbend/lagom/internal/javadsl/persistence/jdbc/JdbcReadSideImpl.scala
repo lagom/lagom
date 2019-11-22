@@ -20,6 +20,7 @@ import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcReadSide
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
 import com.lightbend.lagom.javadsl.persistence.Offset
+import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcReadSide._
 import org.slf4j.LoggerFactory
 
 import scala.compat.java8.FutureConverters._

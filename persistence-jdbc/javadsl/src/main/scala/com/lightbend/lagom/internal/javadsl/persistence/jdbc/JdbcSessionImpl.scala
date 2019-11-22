@@ -5,10 +5,11 @@
 package com.lightbend.lagom.internal.javadsl.persistence.jdbc
 
 import java.util.concurrent.CompletionStage
+
 import javax.inject.Inject
 import javax.inject.Singleton
-
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcSession
+import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcSession.ConnectionFunction
 
 import scala.compat.java8.FutureConverters._
 

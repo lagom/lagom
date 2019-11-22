@@ -10,6 +10,8 @@ import java.util
 import akka.stream.javadsl.Source
 import akka.util.ByteString
 import com.lightbend.lagom.javadsl.api.deser._
+import com.lightbend.lagom.javadsl.api.deser.MessageSerializer.NegotiatedDeserializer
+import com.lightbend.lagom.javadsl.api.deser.MessageSerializer.NegotiatedSerializer
 import com.lightbend.lagom.javadsl.api.transport.MessageProtocol
 import org.pcollections.PSequence
 

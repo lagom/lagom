@@ -4,7 +4,6 @@
 
 package com.lightbend.lagom.internal.projection
 
-import scala.concurrent.duration.Duration
 import akka.annotation.InternalApi
 import com.typesafe.config.Config
 import java.util.concurrent.TimeUnit

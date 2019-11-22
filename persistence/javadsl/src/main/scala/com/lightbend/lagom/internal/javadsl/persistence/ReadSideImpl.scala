@@ -11,7 +11,6 @@ import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
 import akka.actor.ActorSystem
-import akka.cluster.Cluster
 import akka.stream.Materializer
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.persistence.ReadSideConfig

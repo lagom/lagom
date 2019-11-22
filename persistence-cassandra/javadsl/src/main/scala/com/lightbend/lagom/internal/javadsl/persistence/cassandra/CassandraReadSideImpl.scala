@@ -22,6 +22,7 @@ import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetStore
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide.ReadSideHandlerBuilder
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession
 import org.pcollections.PSequence

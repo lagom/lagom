@@ -5,9 +5,7 @@
 package com.lightbend.lagom.scaladsl.cluster.typed
 
 import akka.actor.{ ActorSystem => ActorSystemClassic }
-import akka.cluster.{ Cluster => ClusterClassic }
 import akka.actor.typed.ActorSystem
-import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import akka.cluster.sharding.typed.scaladsl.ClusterSharding
 
 /**
