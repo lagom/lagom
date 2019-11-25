@@ -891,6 +891,7 @@ object Dependencies {
     scalaXml,
     akkaStream,
     akkaActor,
+    slf4jApi,
     akkaSlf4j,
     akkaProtobuf
   )
@@ -939,7 +940,7 @@ object Dependencies {
   val `service-locator` = libraryDependencies ++= Seq(
     playAkkaHttpServer,
     akkaHttpCore,
-    scalaTest % Test
+    scalaTest % Test,
   )
 
   val `dev-mode-ssl-support` = libraryDependencies ++= Seq(
@@ -947,6 +948,7 @@ object Dependencies {
     akkaHttpCore,
     // updates to match whitelist
     akkaActor,
+    slf4jApi,
     akkaStream,
     akkaProtobuf,
     akkaSlf4j,
@@ -963,7 +965,7 @@ object Dependencies {
       scalaTest   % Test,
       // updates to match whitelist
       akkaActor,
-      scalaJava8Compat
+      scalaJava8Compat,
     )
 
   val `service-registry-client-javadsl` =
