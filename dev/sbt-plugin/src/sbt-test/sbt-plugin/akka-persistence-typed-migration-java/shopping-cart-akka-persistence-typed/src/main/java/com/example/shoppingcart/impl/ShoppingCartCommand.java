@@ -13,19 +13,31 @@ import com.lightbend.lagom.serialization.Jsonable;
 
 public interface ShoppingCartCommand extends Jsonable {
 
+    // #akka-persistence-typed-replies
     interface Confirmation {}
-    class Accepted implements Confirmation{}
-    class Rejected implements Confirmation{
+    class Accepted implements Confirmation {
+        public final Summary summary;
+
+        @JsonCreator
+        public Accepted(Summary summary) {
+            this.summary = summary;
+        }
+    }
+    class Rejected implements Confirmation {
         public final String reason;
 
+        @JsonCreator
         public Rejected(String reason) {
             this.reason = reason;
         }
     }
+    // #akka-persistence-typed-replies
 
     @SuppressWarnings("serial")
     @JsonDeserialize
+    // #akka-jackson-serialization-command-after
     final class UpdateItem implements ShoppingCartCommand, CompressedJsonable {
+
         public final String productId;
         public final int quantity;
         public final ActorRef<Confirmation> replyTo;
@@ -37,13 +49,14 @@ public interface ShoppingCartCommand extends Jsonable {
             this.replyTo = replyTo;
         }
     }
+    // #akka-jackson-serialization-command-after
 
     @JsonDeserialize
     final class Get implements ShoppingCartCommand {
 
-        public final ActorRef<ShoppingCartState> replyTo;
+        public final ActorRef<Summary> replyTo;
 
-        public Get(ActorRef<ShoppingCartState> replyTo) {
+        public Get(ActorRef<Summary> replyTo) {
             this.replyTo = replyTo;
         }
     }

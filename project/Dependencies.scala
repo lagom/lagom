@@ -489,6 +489,8 @@ object Dependencies {
     akkaActor,
     akkaSlf4j,
     akkaStream,
+    akkaActorTyped,
+    akkaJackson,
     play,
     guava,
     // Upgrades needed to match whitelist versions
@@ -499,6 +501,7 @@ object Dependencies {
     jffi,
     jnra64asm,
     jnrConstants,
+    slf4jApi,
   ) ++ jacksonFamily ++ ow2asmDeps // to match whitelist versions
 
   val `api-javadsl` = libraryDependencies ++= Seq(
@@ -710,6 +713,8 @@ object Dependencies {
     // Upgrades needed to match whitelist versions
     akkaStream,
     akkaActor,
+    akkaActorTyped,
+    akkaJackson,
     akkaProtobuf_v3,
     akkaSlf4j,
     scalaXml,
@@ -723,6 +728,7 @@ object Dependencies {
     jnra64asm,
     jnrConstants,
     pcollections,
+    slf4jApi,
   ) ++ jacksonFamily ++ ow2asmDeps // to match whitelist versions
 
   val `akka-management-javadsl`  = libraryDependencies ++= Seq.empty[ModuleID]
@@ -1001,6 +1007,8 @@ object Dependencies {
     scalaParserCombinators,
     akkaStream,
     akkaActor,
+    akkaActorTyped,
+    akkaJackson,
     akkaSlf4j,
     akkaProtobuf_v3,
     scalaXml,
@@ -1029,6 +1037,8 @@ object Dependencies {
       scalaParserCombinators,
       akkaStream,
       akkaActor,
+      akkaActorTyped,
+      akkaJackson,
       akkaSlf4j,
       akkaProtobuf_v3,
       guava,
@@ -1104,6 +1114,7 @@ object Dependencies {
     // updates to match whitelist
     akkaActor,
     akkaActorTyped,
+    akkaJackson,
     slf4jApi,
     akkaStream,
     akkaProtobuf_v3,
