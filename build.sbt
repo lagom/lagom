@@ -652,9 +652,8 @@ lazy val `testkit-core` = (project in file("testkit/core"))
   .settings(overridesScalaParserCombinators: _*)
   .settings(forkedTests: _*)
   .dependsOn(
-    `dev-mode-ssl-support`, // TODO: remove this when SSLContext provider is promoted to play or ssl-config
-    // Ideally, this would be the other way around,
-    // but it will require some more refactoring
+    `dev-mode-ssl-support`,
+    // Ideally, this would be the other way around, but it will require some more refactoring
     `persistence-testkit`
   )
 
@@ -673,7 +672,7 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
     `server-javadsl`,
     `pubsub-javadsl`,
     `broker-javadsl`,
-    `dev-mode-ssl-support`, // TODO: remove this when SSLContext provider is promoted to play or ssl-config
+    `dev-mode-ssl-support`,
     `persistence-core`              % "compile;test->test",
     `persistence-cassandra-javadsl` % "test->test",
     `jackson`                       % "test->test",
@@ -695,10 +694,10 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
     `server-scaladsl`,
     `broker-scaladsl`,
     `kafka-broker-scaladsl`,
-    `dev-mode-ssl-support`, // TODO: remove this when SSLContext provider is promoted to play or ssl-config
+    `dev-mode-ssl-support`,
     `persistence-core`               % "compile;test->test",
     `persistence-scaladsl`           % "compile;test->test",
-    `persistence-cassandra-scaladsl` % "compile;test->test",
+    `persistence-cassandra-scaladsl` % Test,
     `persistence-jdbc-scaladsl`      % Test
   )
 
