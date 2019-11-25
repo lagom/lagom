@@ -40,7 +40,9 @@ class CassandraClusteredPersistentEntitySpec
 
   import CassandraClusteredPersistentEntityConfig._
 
-  protected override def atStartup() {
+  protected override def atStartup(): Unit = {
+    // On only one node (node1), start Cassandra & make sure the persistence layers have initialised
+    // Node1 is also the only node where cassandra-journal.keyspace-autocreate isn't disabled
     runOn(node1) {
       val cassandraDirectory = new File("target/" + system.name)
       CassandraLauncher.start(
@@ -51,7 +53,13 @@ class CassandraClusteredPersistentEntitySpec
       )
       TestUtil.awaitPersistenceInit(system)
     }
-    enterBarrier("cassandra-started")
+    enterBarrier("cassandra-initialised")
+
+    // Now make sure that sure the other node's persistence layers are warmed up
+    runOn(node2, node3) {
+      TestUtil.awaitPersistenceInit(system)
+    }
+    enterBarrier("cassandra-accessible")
 
     super.atStartup()
   }
