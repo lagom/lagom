@@ -663,12 +663,12 @@ object Dependencies {
   )
 
   val `integration-tests-javadsl` = libraryDependencies ++= Seq(
-    playNettyServer,
-    playAkkaHttpServer,
-    playTest       % Test,
-    junit          % Test,
-    slf4jApi       % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test,
+    playAkkaHttpServer % Test,
+    playNettyServer    % Test,
+    playTest           % Test,
+    junit              % Test,
+    slf4jApi           % Test,
+    "com.novocode"     % "junit-interface" % "0.11" % Test,
     scalaTest,
     // Upgrades needed to match whitelist versions
     okio        % Test,
@@ -681,11 +681,12 @@ object Dependencies {
   )
 
   val `integration-tests-scaladsl` = libraryDependencies ++= Seq(
-    playAkkaHttpServer,
-    playTest       % Test,
-    junit          % Test,
-    slf4jApi       % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test,
+    playAkkaHttpServer % Test,
+    playNettyServer    % Test,
+    playTest           % Test,
+    junit              % Test,
+    slf4jApi           % Test,
+    "com.novocode"     % "junit-interface" % "0.11" % Test,
     scalaTest,
     okio        % Test,
     byteBuddy   % Test,
