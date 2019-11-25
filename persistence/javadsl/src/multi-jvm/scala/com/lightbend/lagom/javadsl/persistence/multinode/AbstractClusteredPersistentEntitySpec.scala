@@ -93,11 +93,17 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
   }
 
   nodeConfig(node2) {
-    ConfigFactory.parseString("""akka.cluster.roles = ["backend"]""")
+    ConfigFactory.parseString("""
+      akka.cluster.roles = ["backend"]
+      cassandra-journal.keyspace-autocreate = false
+      """.stripMargin)
   }
 
   nodeConfig(node3) {
-    ConfigFactory.parseString("""akka.cluster.roles = ["read-side"]""")
+    ConfigFactory.parseString("""
+      akka.cluster.roles = ["read-side"]
+      cassandra-journal.keyspace-autocreate = false
+      """.stripMargin)
   }
 }
 
