@@ -10,7 +10,7 @@ val hibernateEntityManager = "org.hibernate" % "hibernate-entitymanager" % "5.4.
 val jpaApi  = "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final"
 val validationApi = "javax.validation" % "validation-api" % "1.1.0.Final"
 
-lazy val `shopping-cart-scala` = (project in file("."))
+lazy val `shopping-cart-java` = (project in file("."))
   .aggregate(`shopping-cart-api`, `shopping-cart-lagom-persistence`, `shopping-cart-akka-persistence-typed`)
 
 lazy val `shopping-cart-api` = (project in file("shopping-cart-api"))
