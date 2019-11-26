@@ -697,7 +697,7 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
     `dev-mode-ssl-support`,
     `persistence-core`               % "compile;test->test",
     `persistence-scaladsl`           % "compile;test->test",
-    `persistence-cassandra-scaladsl` % Test,
+    `persistence-cassandra-scaladsl` % "compile->test;test->test",
     `persistence-jdbc-scaladsl`      % Test
   )
 
