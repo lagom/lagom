@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._
 
+// A copy of akka.persistence.cassandra.CassandraLifecycle's awaitPersistenceInit.
 private[lagom] object AwaitPersistenceInit {
   def awaitPersistenceInit(system: ActorSystem): Unit = {
     val probe = TestProbe()(system)
