@@ -8,7 +8,7 @@ class ShardedBlogEventTag {
 
   //#sharded-tags
   object BlogEvent {
-    val NumShards = 20
+    val NumShards = 10
     val Tag       = AggregateEventTag.sharded[BlogEvent](NumShards)
   }
 
