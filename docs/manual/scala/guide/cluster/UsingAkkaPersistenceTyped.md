@@ -2,7 +2,7 @@
 
 This section presents all the steps to model an [Aggregate](https://martinfowler.com/bliki/DDD_Aggregate.html), as defined in Domain-Driven Design, using [Akka Persistence Typed](https://doc.akka.io/docs/akka/2.6/typed/persistence.html?language=Scala) and following the [[CQRS|ES_CQRS]] principles embraced by Lagom.
 
-Akka Persistence Typed provides an API for building distributed event-sourced Actors. We call it an Event Sourced Entity. By applying a few design rules, we can desing CQRS Aggregates on top of Akka's API. We will refer to the term **Aggregate** whenever we cover a DDD Aggregate concept. Otherwise the term **Entity** or **Event Sourced Entity** will be used.
+Akka Persistence Typed provides an API for building distributed event-sourced Actors. We call it an Event Sourced Entity. By applying a few design rules, we can design CQRS Aggregates on top of Akka's API. We will refer to the term **Aggregate** whenever we cover a DDD Aggregate concept. Otherwise the term **Entity** or **Event Sourced Entity** will be used.
 
 We use a simplified shopping cart example to guide you through the process. You can find a full-fledged shopping cart sample on our [samples repository](https://github.com/lagom/lagom-samples/tree/1.6.x/shopping-cart/shopping-cart-scala).
 
@@ -177,7 +177,7 @@ See the [Akka Cluster Sharding documentation](https://doc.akka.io/docs/akka/2.6/
 
 ### Configuring Entity passivation
 
-Keeping all the Entities in memory all the time is inefficient. Entity passivation alows removal from the cluster when they've been unused for some time.
+Keeping all the Entities in memory all the time is inefficient. Entity passivation allows removal from the cluster when they've been unused for some time.
 
 Akka supports both [programmatic passivation](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html?language=Scala#passivation) and [automatic passivation](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html?language=Scala#automatic-passivation). The default values for automatic passivation are generally good enough.
 
