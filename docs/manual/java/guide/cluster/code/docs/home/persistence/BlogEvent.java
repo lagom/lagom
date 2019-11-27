@@ -16,7 +16,7 @@ import org.pcollections.PSequence;
 // #sharded-tags
 interface BlogEvent extends Jsonable, AggregateEvent<BlogEvent> {
 
-  int NUM_SHARDS = 20;
+  int NUM_SHARDS = 10;
 
   AggregateEventShards<BlogEvent> TAG = AggregateEventTag.sharded(BlogEvent.class, NUM_SHARDS);
 

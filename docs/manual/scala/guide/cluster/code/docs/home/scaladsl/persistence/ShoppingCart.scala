@@ -74,7 +74,8 @@ object ShoppingCartExamples {
 
   // #shopping-cart-events-object
   object ShoppingCartEvent {
-    val Tag: AggregateEventShards[ShoppingCartEvent] = AggregateEventTag.sharded[ShoppingCartEvent](numShards = 10)
+    val Tag: AggregateEventShards[ShoppingCartEvent] =
+      AggregateEventTag.sharded[ShoppingCartEvent](numShards = 10)
   }
   // #shopping-cart-events-object
 
