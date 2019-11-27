@@ -63,6 +63,10 @@ object InternalRegistry {
           // using "http://" defaults to having no portName and also Some("http") so "http" becomes the
           // default result when searching without a `portName` query.
           Seq(None, Some(serviceUri.getScheme))
+        case "https" =>
+          // using "https://" defaults to having no portName and also Some("https") so "https" becomes the
+          // default result when searching without a `portName` query.
+          Seq(None, Some(serviceUri.getScheme))
         case _ => Seq(Some(serviceUri.getScheme))
       }
     }
