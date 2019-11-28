@@ -104,7 +104,7 @@ This example splits the tags into 10 shards and defines the event tagger in the 
 
 @[shopping-cart-event-tag](code/docs/home/persistence/ShoppingCartEntity.java)
 
-> **Note**: if you're using JDBC database to store your journal, the number of sharded tags (`NumShards`) should not be greater then 10. This is due to an existing [bug](https://github.com/dnvriend/akka-persistence-jdbc/issues/168) in the plugin. Failing to follow this directive will result in some events being delivered more than once on the read-side or topic producers.
+> **Note**: if you're using a JDBC database to store your journal, the number of sharded tags (`NumShards`) should not be greater then 10. This is due to an existing [bug](https://github.com/dnvriend/akka-persistence-jdbc/issues/168) in the plugin. Failing to follow this directive will result in some events being delivered more than once on the read-side or topic producers.
 
 The `AggregateEventTag` is a Lagom class used by Lagom's [[Read-Side Processor|ReadSide]] and [[Topic Producers|MessageBrokerApi#Implementing-a-topic]], however Akka Persistence Typed provides a method accepting an `Event` and returning a `Set<String>` to tag events before persisting them. Therefore, we need to use an adapter to transform Lagom's `AggregateEventTag` to the required Akka tagger function. As shown in the constructor section, we instantiate a `tagger` field using `AkkaTaggerAdapter`. This field can then be used when implementing the tagging method.
 

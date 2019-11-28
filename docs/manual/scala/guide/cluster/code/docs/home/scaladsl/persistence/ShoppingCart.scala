@@ -74,6 +74,7 @@ object ShoppingCartExamples {
 
   // #shopping-cart-events-object
   object ShoppingCartEvent {
+    // will produce tags with shard numbers from 0 to 9
     val Tag: AggregateEventShards[ShoppingCartEvent] =
       AggregateEventTag.sharded[ShoppingCartEvent](numShards = 10)
   }
