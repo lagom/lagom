@@ -11,6 +11,7 @@ import com.lightbend.lagom.scaladsl.persistence.AggregateEventTag
 class ShardedBlogEventTag {
   //#sharded-tags
   object BlogEvent {
+    // will produce tags with shard numbers from 0 to 9
     val NumShards = 10
     val Tag       = AggregateEventTag.sharded[BlogEvent](NumShards)
   }
