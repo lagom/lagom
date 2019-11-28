@@ -99,7 +99,7 @@ class InternalRegistrySpec extends FlatSpec with Matchers {
       ServiceRegistryService.of(util.Arrays.asList(unamanagedURI), Collections.emptyList[ServiceAcl])
     val unmanaged: UnmanagedServices = UnmanagedServices(
       Map(
-        serviceUnmanaged -> ServiceRegistryService.of(unamanagedURI, Collections.emptyList[ServiceAcl]),
+        serviceUnmanaged -> ServiceRegistryService.of(unamanagedURI, Collections.emptyList[ServiceAcl])
       )
     )
     val registry = InternalRegistry.build(unmanaged)
