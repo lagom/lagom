@@ -18,7 +18,7 @@ object Dependencies {
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.8.0-RC1" // sync with docs/build.sbt
+    val Play             = "2.8.0-RC2" // sync with docs/build.sbt
     val PlayJson         = "2.8.0"
     val PlayStandaloneWs = "2.1.0"
     val Twirl            = "1.5.0" // sync with docs/project/plugins.sbt
@@ -268,7 +268,7 @@ object Dependencies {
       sprayJson,
       "com.typesafe.netty" % "netty-reactive-streams"      % Versions.NettyReactiveStreams,
       "com.typesafe.netty" % "netty-reactive-streams-http" % Versions.NettyReactiveStreams,
-      "com.typesafe.play"  %% "cachecontrol"               % "2.0.0-M2",
+      "com.typesafe.play"  %% "cachecontrol"               % "2.0.0",
       playJson,
       playFunctional,
       // play client libs
@@ -873,6 +873,8 @@ object Dependencies {
     akkaTestkitTyped,
     slf4jApi,
     scalaJava8Compat,
+    // Upgrades needed to match whitelist versions
+    sslConfig
   )
 
   val `persistence-javadsl` = libraryDependencies ++= Seq(
