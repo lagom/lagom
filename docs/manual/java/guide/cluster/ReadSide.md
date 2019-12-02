@@ -52,6 +52,8 @@ Lagom provides some utilities for helping create sharded tags. To create the sha
 
 Now Lagom here will generate a tag name that appends the hash code of the entity ID modulo the number of shards to the class name.
 
+> **Note**: if you're using a JDBC database to store your journal, the number of sharded tags (`NumShards`) should not be greater then 10. This is due to an existing [bug](https://github.com/dnvriend/akka-persistence-jdbc/issues/168) in the plugin. Failing to follow this directive will result in some events being delivered more than once on the read-side or topic producers.
+
 ### Defining a read side processor
 
 This is how a [`ReadSideProcessor`](api/index.html?com/lightbend/lagom/javadsl/persistence/ReadSideProcessor.html) class looks like before filling in the implementation details:
