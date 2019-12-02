@@ -46,30 +46,22 @@ object InternalRegistry {
   def build(unmanagedServices: UnmanagedServices): InternalRegistry = new InternalRegistry(
     unmanagedServices.services.flatMap {
       case (serviceName, serviceRegistryService) =>
-        serviceRegistryService.uris().asScala.flatMap {
-          buildRegistryItem(serviceName, serviceRegistryService)
+        serviceRegistryService.uris().asScala.flatMap { uri =>
+          // External services are registeredtwice!
+          // Once without a portName (for lookups using ServiceLocator, eg: Lagom client)
+          // and once with a portName based on uri scheme (for lookup using ServiceDiscovery, eg: gRPC clients)
+          val portNames = Seq(None, Some(uri.getScheme))
+          buildRegistryItem(serviceName, serviceRegistryService, portNames, uri)
         }
     }
   )
 
-  private def buildRegistryItem(serviceName: String, serviceRegistryService: ServiceRegistryService)(
+  private def buildRegistryItem(
+      serviceName: String,
+      serviceRegistryService: ServiceRegistryService,
+      portNames: Seq[Option[String]],
       serviceUri: URI
   ): Seq[(ServiceRegistryKey, ServiceToRegister)] = {
-    val portNames = {
-      serviceUri.getScheme match {
-        case "tcp" =>
-          Seq(None) // using "tcp://" defaults to having no portName
-        case "http" =>
-          // using "http://" defaults to having no portName and also Some("http") so "http" becomes the
-          // default result when searching without a `portName` query.
-          Seq(None, Some(serviceUri.getScheme))
-        case "https" =>
-          // using "https://" defaults to having no portName and also Some("https") so "https" becomes the
-          // default result when searching without a `portName` query.
-          Seq(None, Some(serviceUri.getScheme))
-        case _ => Seq(Some(serviceUri.getScheme))
-      }
-    }
     val registryItems: Seq[(ServiceRegistryKey, ServiceToRegister)] = portNames.map { pn =>
       val srk = ServiceRegistryKey(ServiceName(serviceName), pn)
       srk -> ServiceToRegister(serviceUri, serviceRegistryService)
@@ -77,15 +69,29 @@ object InternalRegistry {
     registryItems
   }
 
-  def build(serviceName: String, details: ServiceRegistryService): Map[ServiceRegistryKey, ServiceToRegister] =
+  def build(serviceName: String, details: ServiceRegistryService): Map[ServiceRegistryKey, ServiceToRegister] = {
     details
       .uris()
       .asScala
-      .flatMap {
-        buildRegistryItem(serviceName, details)
+      .flatMap { uri =>
+        val portNames =
+          uri.getScheme match {
+            case "tcp" =>
+              Seq(None) // using "tcp://" defaults to having no portName
+            case "http" =>
+              // using "http://" defaults to having no portName and also Some("http") so "http" becomes the
+              // default result when searching without a `portName` query.
+              Seq(None, Some(uri.getScheme))
+            case _ => Seq(Some(uri.getScheme))
+          }
+        buildRegistryItem(serviceName, details, portNames, uri)
       }
       .toMap
+<<<<<<< HEAD
 
+=======
+  }
+>>>>>>> b58d9c6df... being explicit about portName lookups for external services
 }
 
 final case class ServiceToRegister(uri: URI, serviceRegistryService: ServiceRegistryService)

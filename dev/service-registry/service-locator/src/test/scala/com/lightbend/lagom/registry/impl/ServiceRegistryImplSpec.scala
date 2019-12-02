@@ -167,7 +167,7 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
       }
     }
 
-    "can locate 'https' services with or without port-names" in withServiceRegistryActor() { actor =>
+    "can locate 'https' services only when passing port-name" in withServiceRegistryActor() { actor =>
       val registry    = new ServiceRegistryImpl(actor)
       val serviceName = "fooservice"
       val expectedUrl = URI.create("https://localhost")
@@ -183,7 +183,7 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
         .get(testTimeoutInSeconds, TimeUnit.SECONDS)
 
       withClue("lookup without a portName") {
-        val registeredUrl = registry
+        val ee = the[ExecutionException] thrownBy registry
           .lookup(serviceName, Optional.empty())
           .invoke(NotUsed)
           .toCompletableFuture
@@ -191,7 +191,7 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
             testTimeoutInSeconds,
             TimeUnit.SECONDS
           )
-        assertResult(expectedUrl)(registeredUrl)
+        ee.getCause shouldBe a[NotFound]
       }
 
       withClue("lookup with portName 'https'") {

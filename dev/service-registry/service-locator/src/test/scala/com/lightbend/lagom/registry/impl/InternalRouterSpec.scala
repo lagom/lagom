@@ -34,7 +34,7 @@ class InternalRouterSpec extends FlatSpec with Matchers {
 
     router.rebuild(registry)
 
-    // router.routeFor(Route("GET", "/pathABC", None)) should be(Found(httpUri))
+    router.routeFor(Route("GET", "/pathABC", None)) should be(Found(httpUri))
     router.routeFor(Route("GET", "/pathABC", Some("http"))) should be(Found(httpUri))
     router.routeFor(Route("GET", "/pathABC", Some("https"))) should be(Found(httpsUri))
   }
