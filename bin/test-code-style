@@ -17,8 +17,6 @@ runSbt  +headerCheck \
 declare -a EXTRA_TASKS
 if [ "$TRAVIS_EVENT_TYPE" != "cron" ]; then
     EXTRA_TASKS+=("versionSyncCheck")
-    # only safe when not cron, b/c snapshot akka versions can break validateDependencies
-    EXTRA_TASKS+=("validateDependencies")
 fi
 
 runSbt  "${EXTRA_TASKS[@]}" \
