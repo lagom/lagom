@@ -87,11 +87,7 @@ object InternalRegistry {
         buildRegistryItem(serviceName, details, portNames, uri)
       }
       .toMap
-<<<<<<< HEAD
-
-=======
   }
->>>>>>> b58d9c6df... being explicit about portName lookups for external services
 }
 
 final case class ServiceToRegister(uri: URI, serviceRegistryService: ServiceRegistryService)
