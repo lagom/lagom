@@ -20,12 +20,12 @@ object Dependencies {
     // If you update the version of Play, you probably need to update the other Play* variables.
     val Play             = "2.7.2"
     val PlayJson         = "2.7.2"
-    val PlayStandaloneWs = "2.0.3"
+    val PlayStandaloneWs = "2.0.8"
     val Twirl            = "1.4.0"
     val PlayFileWatch    = "1.1.8"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.25")
-    val AkkaHttp     = "10.1.8"
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.26")
+    val AkkaHttp     = "10.1.11"
     val Aeron        = "1.15.1"
 
     val AkkaPersistenceCassandra = "0.61"
@@ -35,10 +35,10 @@ object Dependencies {
     val Disruptor = "3.3.11"
 
     val ScalaTest            = "3.0.5"
-    val Jackson              = "2.9.8"
+    val Jackson              = "2.9.10"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
-    val JacksonDatabind      = Jackson
+    val JacksonDatabind      = "2.9.10.1"
     val Guava                = "27.1-jre"
     val Maven                = "3.6.0"
     val Netty                = "4.1.43.Final"
