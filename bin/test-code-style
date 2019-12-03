@@ -10,8 +10,12 @@ runSbt checkHeaders \
 
 declare -a EXTRA_TASKS
 if [ "$TRAVIS_EVENT_TYPE" != "cron" ]; then
+<<<<<<< HEAD
     # only safe when not cron, b/c snapshot akka versions can break validateDependencies
     EXTRA_TASKS+=("validateDependencies")
+=======
+    EXTRA_TASKS+=("versionSyncCheck")
+>>>>>>> 980acadbd... don't run validateDependencies (whitelist) in CI
 fi
 
 runSbt  ${EXTRA_TASK[@]} \
