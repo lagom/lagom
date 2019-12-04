@@ -21,7 +21,7 @@ object Dependencies {
     val Play             = "2.7.4"
     val PlayJson         = "2.7.4"
     val PlayStandaloneWs = "2.0.8"
-    val Twirl            = "1.4.0"
+    val Twirl            = "1.4.2"
     val PlayFileWatch    = "1.1.8"
 
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.5.26")
@@ -52,7 +52,7 @@ object Dependencies {
     val PCollections  = "2.2.0"
 
     val ScalaJava8Compat = "0.9.0"
-    val ScalaXml         = "1.1.1"
+    val ScalaXml         = "1.2.0"
     val Slick            = "3.3.0"
     val JUnit            = "4.12"
     val JUnitInterface   = "0.11"
@@ -87,9 +87,9 @@ object Dependencies {
   private val scalaXml               = "org.scala-lang.modules" %% "scala-xml" % Versions.ScalaXml
   private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
   private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.8.17"
-  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
+  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
   private val typesafeConfig         = "com.typesafe" % "config" % "1.3.3"
-  private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.3.7"
+  private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.3.8"
   private val h2                     = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore =
     ("com.datastax.cassandra" % "cassandra-driver-core" % "3.6.0").excludeAll(excludeSlf4j: _*)
@@ -227,7 +227,7 @@ object Dependencies {
       sprayJson,
       "com.typesafe.netty" % "netty-reactive-streams"      % Versions.NettyReactiveStreams,
       "com.typesafe.netty" % "netty-reactive-streams-http" % Versions.NettyReactiveStreams,
-      "com.typesafe.play"  %% "cachecontrol"               % "1.1.5",
+      "com.typesafe.play"  %% "cachecontrol"               % "1.1.7",
       playJson,
       playFunctional,
       // play client libs
