@@ -13,43 +13,43 @@ object Dependencies {
 
     val Scala210 = "2.10.7"
     val Scala212 = "2.12.10"
-    val Scala213 = "2.13.0"
+    val Scala213 = "2.13.1"
     val Scala    = Seq(Scala212, Scala213)
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.8.0-RC1" // sync with docs/build.sbt
-    val PlayJson         = "2.8.0-M7"
-    val PlayStandaloneWs = "2.1.0-RC2"
-    val Twirl            = "1.5.0-M5" // sync with docs/project/plugins.sbt
-    val PlayFileWatch    = "1.1.8"
+    val Play             = "2.8.0-RC5" // sync with docs/build.sbt
+    val PlayJson         = "2.8.0"
+    val PlayStandaloneWs = "2.1.1"
+    val Twirl            = "1.5.0" // sync with docs/project/plugins.sbt
+    val PlayFileWatch    = "1.1.9"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0-RC2") // sync with docs/build.sbt
-    val AkkaHttp     = "10.1.10"
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0") // sync with docs/build.sbt
+    val AkkaHttp     = "10.1.11"
 
     val AkkaPersistenceCassandra = "0.100"
     val AkkaPersistenceJdbc      = "3.5.2"
-    val AkkaManagement           = "1.0.4"
+    val AkkaManagement           = "1.0.5"
 
     val Disruptor = "3.4.2"
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
     val ScalaTest            = "3.0.8"
-    val Jackson              = "2.10.0"
+    val Jackson              = "2.10.1"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
-    val JacksonDatabind      = "2.10.0"
+    val JacksonDatabind      = "2.10.1"
     val Guava                = "28.1-jre"
     val Maven                = "3.6.2"
     val MavenWagon           = "3.3.3"
     val MavenResolver        = "1.4.1"
     val Netty                = "4.1.43.Final"
-    val NettyReactiveStreams = "2.0.3"
+    val NettyReactiveStreams = "2.0.4"
     val Kafka                = "2.1.1"
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
     val AlpakkaKafka  = "1.1.0"
     val Curator       = "2.12.0"
-    val Immutables    = "2.8.1"
+    val Immutables    = "2.8.2"
     val HibernateCore = "5.4.8.Final"
     val PCollections  = "3.0.5"
 
@@ -92,7 +92,7 @@ object Dependencies {
   private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.10.2"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
   private val typesafeConfig         = "com.typesafe" % "config" % "1.4.0"
-  private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.0"
+  private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.1"
   private val h2                     = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore =
     ("com.datastax.cassandra" % "cassandra-driver-core" % "3.8.0").excludeAll(excludeSlf4j: _*)
@@ -268,7 +268,7 @@ object Dependencies {
       sprayJson,
       "com.typesafe.netty" % "netty-reactive-streams"      % Versions.NettyReactiveStreams,
       "com.typesafe.netty" % "netty-reactive-streams-http" % Versions.NettyReactiveStreams,
-      "com.typesafe.play"  %% "cachecontrol"               % "2.0.0-M2",
+      "com.typesafe.play"  %% "cachecontrol"               % "2.0.0",
       playJson,
       playFunctional,
       // play client libs
@@ -332,7 +332,7 @@ object Dependencies {
       "javax.inject"        % "javax.inject"            % "1",
       "javax.transaction"   % "jta"                     % "1.1",
       "jakarta.transaction" % "jakarta.transaction-api" % "1.3.3",
-      "joda-time"           % "joda-time"               % "2.10.4",
+      "joda-time"           % "joda-time"               % "2.10.5",
       "junit"               % "junit"                   % Versions.JUnit,
       "net.jodah"           % "typetools"               % "0.5.0",
       "org.lz4"             % "lz4-java"                % "1.5.0",
@@ -873,6 +873,8 @@ object Dependencies {
     akkaTestkitTyped,
     slf4jApi,
     scalaJava8Compat,
+    // Upgrades needed to match whitelist versions
+    sslConfig
   )
 
   val `persistence-javadsl` = libraryDependencies ++= Seq(
