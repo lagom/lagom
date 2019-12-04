@@ -126,6 +126,86 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
       }
     }
 
+    "can locate 'http' services with or without port-names" in withServiceRegistryActor() { actor =>
+      val registry    = new ServiceRegistryImpl(actor)
+      val serviceName = "fooservice"
+      val expectedUrl = URI.create("http://localhost")
+      registry
+        .register(serviceName)
+        .invoke(
+          ServiceRegistryService.of(
+            expectedUrl,
+            Collections.singletonList(new ServiceAcl(Optional.of(Method.GET), Optional.of("/")))
+          )
+        )
+        .toCompletableFuture
+        .get(testTimeoutInSeconds, TimeUnit.SECONDS)
+
+      withClue("lookup without a portName") {
+        val registeredUrl = registry
+          .lookup(serviceName, Optional.empty())
+          .invoke(NotUsed)
+          .toCompletableFuture
+          .get(
+            testTimeoutInSeconds,
+            TimeUnit.SECONDS
+          )
+        assertResult(expectedUrl)(registeredUrl)
+      }
+
+      withClue("lookup with portName 'http'") {
+        val registeredUrl = registry
+          .lookup(serviceName, Optional.of("http"))
+          .invoke(NotUsed)
+          .toCompletableFuture
+          .get(
+            testTimeoutInSeconds,
+            TimeUnit.SECONDS
+          )
+        assertResult(expectedUrl)(registeredUrl)
+      }
+    }
+
+    "can locate 'https' services only when passing port-name" in withServiceRegistryActor() { actor =>
+      val registry    = new ServiceRegistryImpl(actor)
+      val serviceName = "fooservice"
+      val expectedUrl = URI.create("https://localhost")
+      registry
+        .register(serviceName)
+        .invoke(
+          ServiceRegistryService.of(
+            expectedUrl,
+            Collections.singletonList(new ServiceAcl(Optional.of(Method.GET), Optional.of("/")))
+          )
+        )
+        .toCompletableFuture
+        .get(testTimeoutInSeconds, TimeUnit.SECONDS)
+
+      withClue("lookup without a portName") {
+        val ee = the[ExecutionException] thrownBy registry
+          .lookup(serviceName, Optional.empty())
+          .invoke(NotUsed)
+          .toCompletableFuture
+          .get(
+            testTimeoutInSeconds,
+            TimeUnit.SECONDS
+          )
+        ee.getCause shouldBe a[NotFound]
+      }
+
+      withClue("lookup with portName 'https'") {
+        val registeredUrl = registry
+          .lookup(serviceName, Optional.of("https"))
+          .invoke(NotUsed)
+          .toCompletableFuture
+          .get(
+            testTimeoutInSeconds,
+            TimeUnit.SECONDS
+          )
+        assertResult(expectedUrl)(registeredUrl)
+      }
+    }
+
     "default to well-known port for http URLs if no port number provided" ignore withServiceRegistryActor() { actor =>
       val registry = new ServiceRegistryImpl(actor)
       registry
@@ -166,7 +246,7 @@ class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
       }
     }
 
-    "be able to register URLs that have no port and no ACLs" ignore withServiceRegistry() { registry =>
+    "be able to register URLs that have no port and no ACLs" in withServiceRegistry() { registry =>
       registry
         .register("fooservice")
         .invoke(ServiceRegistryService.of(URI.create("tcp://localhost"), Collections.emptyList[ServiceAcl]))
