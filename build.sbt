@@ -1413,6 +1413,7 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
     mavenTestArgs := Seq(
       "-Xmx768m",
       "-XX:MaxMetaspaceSize=384m",
+      "-Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2", // avoid TLS 1.3 => issues w/ jdk 11
       s"-Dlagom.version=${version.value}",
       s"-DarchetypeVersion=${version.value}",
       "-Dorg.slf4j.simpleLogger.showLogName=false",
