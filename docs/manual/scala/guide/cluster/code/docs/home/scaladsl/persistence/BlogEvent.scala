@@ -11,7 +11,7 @@ import com.lightbend.lagom.scaladsl.persistence.AggregateEventTag
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializer
 
 object BlogEvent {
-  val NumShards = 20
+  val NumShards = 10
   // second param is optional, defaults to the class name
   val Tag = AggregateEventTag.sharded[BlogEvent](NumShards)
 
