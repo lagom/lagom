@@ -2,9 +2,9 @@ lazy val plugins = (project in file(".")).dependsOn(dev)
 
 lazy val dev = ProjectRef(Path.fileProperty("user.dir").getParentFile, "sbt-plugin")
 
-addSbtPlugin("com.lightbend.markdown" %% "sbt-lightbend-markdown" % "1.7.0")
+addSbtPlugin("com.lightbend.markdown" %% "sbt-lightbend-markdown" % "1.8.0")
 
-addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.4")
+addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.5")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-web"    % "1.4.4")
 addSbtPlugin("com.typesafe.sbt" % "sbt-twirl"  % "1.4.0")
