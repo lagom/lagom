@@ -17,5 +17,5 @@ In a distributed architecture, event sourcing provides the following advantages:
 ## Further reading
 A full discussion of Event Sourcing and CQRS is beyond the scope of this documentation. For more information, we recommend the following.
 
-* The [CQRS Journey](https://msdn.microsoft.com/en-us/library/jj554200.aspx) --- a great resource for learning more about CQRS and Event Sourcing.
-* A [blog post by one of our own](https://jazzy.id.au/2016/10/08/cqrs-increases-consistency.html) --- shows the important role CQRS plays in a microservices system. 
+* The [CQRS Journey](https://docs.microsoft.com/en-us/previous-versions/msp-n-p/jj554200(v=pandp.10)) --- a great resource for learning more about CQRS and Event Sourcing.
+* A [blog post by one of our own](https://jazzy.id.au/2016/10/08/cqrs-increases-consistency.html) --- shows the important role CQRS plays in a microservices system.
