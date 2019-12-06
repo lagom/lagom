@@ -27,7 +27,7 @@ object Dependencies {
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0") // sync with docs/build.sbt
     val AkkaHttp     = "10.1.11"
 
-    val AkkaPersistenceCassandra = "0.100"
+    val AkkaPersistenceCassandra = "0.101"
     val AkkaPersistenceJdbc      = "3.5.2"
     val AkkaManagement           = "1.0.5"
 
