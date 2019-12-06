@@ -5,7 +5,7 @@ Lagom is compatible with the following databases:
 * [Cassandra](https://cassandra.apache.org/)
 * [PostgreSQL](https://www.postgresql.org/)
 * [MySQL](https://www.mysql.com/)
-* [Oracle](https://www.oracle.com/database/index.html)
+* [Oracle](https://www.oracle.com/database/)
 * [H2](https://www.h2database.com/)
 * [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server/)
 * [Couchbase](https://www.couchbase.com/)
