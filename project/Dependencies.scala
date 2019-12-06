@@ -24,7 +24,7 @@ object Dependencies {
     val Twirl            = "1.5.0" // sync with docs/project/plugins.sbt
     val PlayFileWatch    = "1.1.9"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.0") // sync with docs/build.sbt
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.1") // sync with docs/build.sbt
     val AkkaHttp     = "10.1.11"
 
     val AkkaPersistenceCassandra = "0.100"
@@ -337,7 +337,7 @@ object Dependencies {
       "net.jodah"           % "typetools"               % "0.5.0",
       "org.lz4"             % "lz4-java"                % "1.5.0",
       "com.github.luben"    % "zstd-jni"                % "1.3.7-1",
-      "org.agrona"          % "agrona"                  % "1.0.8",
+      "org.agrona"          % "agrona"                  % "1.1.0",
       commonsLang,
       kafkaClients,
       "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.18",
