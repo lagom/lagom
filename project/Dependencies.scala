@@ -643,21 +643,21 @@ object Dependencies {
   ) ++ ow2asmDeps // to match whitelist versions
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
-    playAkkaHttpServer,
     akkaStreamTestkit,
-    scalaTest % Test,
-    "junit"   % "junit" % Versions.JUnit,
-    h2        % Test,
+    playAkkaHttpServer % Test,
+    scalaTest          % Test,
+    "junit"            % "junit" % Versions.JUnit,
+    h2                 % Test,
     // Without any binding, slf4j will print warnings when running tests
     "org.slf4j" % "slf4j-nop" % Versions.Slf4j % Test
   )
 
   val `testkit-scaladsl` = libraryDependencies ++= Seq(
-    playAkkaHttpServer,
     akkaStreamTestkit,
-    scalaTest % Test,
-    "junit"   % "junit" % Versions.JUnit,
-    h2        % Test,
+    playAkkaHttpServer % Test,
+    scalaTest          % Test,
+    "junit"            % "junit" % Versions.JUnit,
+    h2                 % Test,
     // Without any binding, slf4j will print warnings when running tests
     "org.slf4j" % "slf4j-nop" % Versions.Slf4j % Test
   )
@@ -705,7 +705,8 @@ object Dependencies {
   )
 
   val `lagom-akka-discovery-service-locator-scaladsl` = libraryDependencies ++= Seq(
-    scalaTest % Test
+    scalaTest          % Test,
+    playAkkaHttpServer % Test
   )
 
   val `akka-management-core` = libraryDependencies ++= Seq(
@@ -1112,7 +1113,7 @@ object Dependencies {
   )
 
   val `dev-mode-ssl-support` = libraryDependencies ++= Seq(
-    playAkkaHttpServer,
+    playServer,
     akkaHttpCore,
     // updates to match whitelist
     akkaActor,
