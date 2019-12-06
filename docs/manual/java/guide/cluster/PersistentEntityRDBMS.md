@@ -28,7 +28,7 @@ Lagom uses the [`akka-persistence-jdbc`](https://github.com/dnvriend/akka-persis
 
 * [PostgreSQL](https://www.postgresql.org/)
 * [MySQL](https://www.mysql.com/)
-* [Oracle](https://www.oracle.com/database/index.html)
+* [Oracle](https://www.oracle.com/database/)
 * [H2](https://www.h2database.com/)
 
 We advise against using H2 in production, however, it is suitable for use in development and testing.
