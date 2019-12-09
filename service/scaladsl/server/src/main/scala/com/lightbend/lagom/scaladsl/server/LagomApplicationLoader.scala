@@ -213,8 +213,9 @@ abstract class LagomApplication(context: LagomApplicationContext)
 
   @deprecated(message = "prefer `config` using typesafe Config instead", since = "1.4.0")
   override lazy val configuration: Configuration = {
-    val additionalConfig = new Configuration(additionalConfiguration.configuration)
-    Configuration.load(environment) ++ context.playContext.initialConfiguration ++ additionalConfig
+    val initialConfiguration = Configuration.load(environment) ++ context.playContext.initialConfiguration
+    val additionalConfig     = new Configuration(additionalConfiguration(initialConfiguration).configuration)
+    initialConfiguration ++ additionalConfig
   }
 
   override lazy val actorSystem: ActorSystem =

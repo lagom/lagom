@@ -63,9 +63,9 @@ abstract class DownstreamApplication(context: LagomApplicationContext)
     with AhcWSComponents {
   // This is a hack so C* persistence in this Applicaiton doesn't complain. C* Persistence is only used
   // so intances of this Application can mix-in a TopicComponents implementation (Test or Kafka)
-  override def additionalConfiguration: AdditionalConfiguration = {
+  override def additionalConfiguration(initialConfiguration: Configuration): AdditionalConfiguration = {
     import scala.collection.JavaConverters._
-    super.additionalConfiguration ++ ConfigFactory.parseMap(
+    super.additionalConfiguration(initialConfiguration) ++ ConfigFactory.parseMap(
       Map(
         "cassandra-journal.keyspace"                     -> "asdf",
         "cassandra-snapshot-store.keyspace"              -> "asdf",

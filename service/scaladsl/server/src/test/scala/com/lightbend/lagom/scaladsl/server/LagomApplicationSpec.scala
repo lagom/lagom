@@ -17,6 +17,7 @@ import com.typesafe.config.ConfigFactory
 import org.scalatest.Matchers
 import org.scalatest.WordSpec
 import play.api.ApplicationLoader.Context
+import play.api.Configuration
 import play.api.Environment
 import play.api.inject.DefaultApplicationLifecycle
 import play.api.libs.ws.ahc.AhcWSComponents
@@ -67,8 +68,8 @@ class LagomApplicationSpec extends WordSpec with Matchers {
   private val configKey = "akka.cluster.seed-nodes"
 
   trait FakeComponent extends ProvidesAdditionalConfiguration {
-    override def additionalConfiguration: AdditionalConfiguration =
-      super.additionalConfiguration ++
+    override def additionalConfiguration(initialConfiguration: Configuration): AdditionalConfiguration =
+      super.additionalConfiguration(initialConfiguration) ++
         ConfigFactory.parseString(configKey + "=\"via additional\"")
   }
 

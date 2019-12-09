@@ -15,6 +15,9 @@ import play.api.Configuration
  * can control which order this configuration gets applied by changing the order in which traits are mixed together.
  */
 trait ProvidesAdditionalConfiguration {
+  @deprecated(message = "prefer `additionalConfiguration(initialConfiguration: Configuration)`", since = "1.6.0")
+  def additionalConfiguration: AdditionalConfiguration = AdditionalConfiguration.empty
+
   /**
    * Define the additional configuration to add to the application.
    *
@@ -23,8 +26,11 @@ trait ProvidesAdditionalConfiguration {
    *
    * When overriding, the overridden file should be a def, so as to ensure multiple components can all override it.
    * Lagom will only invoke this method once from a lazy val, so it will effectively be calculated once.
+   *
+   * @param initialConfiguration A reference to the application configuration prior to override.
    */
-  def additionalConfiguration: AdditionalConfiguration = AdditionalConfiguration.empty
+  def additionalConfiguration(initialConfiguration: Configuration): AdditionalConfiguration =
+    AdditionalConfiguration.empty
 }
 
 /**

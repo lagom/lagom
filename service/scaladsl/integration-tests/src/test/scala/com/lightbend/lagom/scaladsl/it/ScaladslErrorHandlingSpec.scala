@@ -248,9 +248,9 @@ class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
         override lazy val lagomServer = serverFor[MockService](new MockServiceImpl)
         override lazy val environment = Environment.simple(mode = mode)
 
-        override def additionalConfiguration: AdditionalConfiguration = {
+        override def additionalConfiguration(initialConfiguration: Configuration): AdditionalConfiguration = {
           import scala.collection.JavaConverters._
-          super.additionalConfiguration ++ ConfigFactory.parseMap(
+          super.additionalConfiguration(initialConfiguration) ++ ConfigFactory.parseMap(
             Map(
               "play.server.provider" -> httpBackend.provider
             ).asJava
