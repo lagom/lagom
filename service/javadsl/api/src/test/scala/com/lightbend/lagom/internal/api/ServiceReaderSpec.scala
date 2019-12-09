@@ -28,8 +28,10 @@ import com.lightbend.lagom.javadsl.api._
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ServiceReaderSpec extends WordSpec with Matchers with Inside {
+class ServiceReaderSpec extends AnyWordSpec with Matchers with Inside {
   "The service reader" should {
     "read a simple Java service descriptor" in {
       val descriptor = serviceDescriptor[MockService]

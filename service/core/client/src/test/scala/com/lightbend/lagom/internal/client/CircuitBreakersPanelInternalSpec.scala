@@ -9,13 +9,13 @@ import akka.pattern.CircuitBreakerOpenException
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.Futures
-import org.scalatest.AsyncFlatSpec
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
 
 import scala.concurrent.Await
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import org.scalatest.flatspec.AsyncFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 class CircuitBreakersPanelInternalSpec extends AsyncFlatSpec with Matchers with BeforeAndAfterAll with Futures {
   val actorSystem = ActorSystem("CircuitBreakersPanelInternalSpec")

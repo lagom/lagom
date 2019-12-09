@@ -15,8 +15,6 @@ import akka.pattern.ask
 import com.lightbend.lagom.javadsl.api.ServiceAcl
 import com.lightbend.lagom.javadsl.api.transport.Method
 import com.lightbend.lagom.javadsl.api.transport.NotFound
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
 import akka.NotUsed
 import java.util.concurrent.TimeUnit
 import java.net.URI
@@ -28,8 +26,10 @@ import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class ServiceRegistryImplSpec extends WordSpecLike with Matchers {
+class ServiceRegistryImplSpec extends AnyWordSpecLike with Matchers {
   private val testTimeoutInSeconds = 5
   private implicit val testTimeout = Timeout(testTimeoutInSeconds.seconds)
 

@@ -8,12 +8,12 @@ import akka.util.ByteString
 import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer._
 import com.lightbend.lagom.scaladsl.api.transport.DeserializationException
 import com.lightbend.lagom.scaladsl.api.transport.MessageProtocol
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 import play.api.libs.json._
 import scala.collection.immutable.Seq
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class MessageSerializerSpec extends WordSpec with Matchers {
+class MessageSerializerSpec extends AnyWordSpec with Matchers {
   case class Dummy(prop: Option[String])
 
   "ByteString-to-PlayJson (via JsValueMessageSerializer)" should {

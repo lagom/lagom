@@ -18,6 +18,8 @@ import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.concurrent.Future
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
 
 class AkkaDiscoveryServiceLocatorSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll with OptionValues {
   "ServiceLocator" should {

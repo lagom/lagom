@@ -16,8 +16,8 @@ import com.typesafe.config.ConfigFactory
 import org.scalactic.CanEqual
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 object ActorSystemSpec {
   def getCallerName(clazz: Class[_]): String = {
@@ -35,7 +35,7 @@ object ActorSystemSpec {
 
 abstract class ActorSystemSpec(system: ActorSystem)
     extends TestKit(system)
-    with WordSpecLike
+    with AnyWordSpecLike
     with Matchers
     with BeforeAndAfterAll
     with TypeCheckedTripleEquals

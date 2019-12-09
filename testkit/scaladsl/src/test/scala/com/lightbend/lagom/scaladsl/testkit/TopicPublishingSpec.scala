@@ -17,9 +17,9 @@ import com.lightbend.lagom.scaladsl.server.LagomServer
 import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
 import com.lightbend.lagom.scaladsl.testkit.services.AlphaEvent
 import com.lightbend.lagom.scaladsl.testkit.services.AlphaService
-import org.scalatest.AsyncWordSpec
-import org.scalatest.Matchers
 import play.api.libs.ws.ahc.AhcWSComponents
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
 
 abstract class AlphaApplication(context: LagomApplicationContext)
     extends LagomApplication(context)

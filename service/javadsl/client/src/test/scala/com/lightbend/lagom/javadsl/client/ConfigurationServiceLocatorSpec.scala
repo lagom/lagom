@@ -9,12 +9,12 @@ import java.util.concurrent.CompletionStage
 import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
 import com.typesafe.config.ConfigFactory
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 
 import scala.compat.java8.OptionConverters._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ConfigurationServiceLocatorSpec extends WordSpec with Matchers {
+class ConfigurationServiceLocatorSpec extends AnyWordSpec with Matchers {
   val serviceLocator = new ConfigurationServiceLocator(
     ConfigFactory.parseString(
       """

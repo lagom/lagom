@@ -7,13 +7,13 @@ package com.lightbend.lagom.internal.persistence.cassandra
 import akka.actor.ActorSystem
 import akka.testkit.TestKit
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.MustMatchers
-import org.scalatest.WordSpec
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ServiceLocatorHolderSpec extends WordSpec with MustMatchers with BeforeAndAfterAll {
+class ServiceLocatorHolderSpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
   val system = ActorSystem("test")
 
   protected override def afterAll(): Unit = {

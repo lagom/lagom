@@ -15,13 +15,13 @@ import com.lightbend.lagom.internal.scaladsl.PubSubRegistryImpl
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.ConfigFactory
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
+class PubSubSpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
   val app = new PubSubComponents {
     override lazy val actorSystem = {
       val config = ConfigFactory.parseString("""

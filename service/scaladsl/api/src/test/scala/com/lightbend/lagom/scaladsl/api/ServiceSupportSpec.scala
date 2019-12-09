@@ -8,11 +8,11 @@ import Service._
 import com.lightbend.lagom.scaladsl.api.Descriptor.CallImpl
 import com.lightbend.lagom.scaladsl.api.Descriptor.PathCallIdImpl
 import com.lightbend.lagom.scaladsl.api.deser.PathParamSerializer
-import org.scalatest.Matchers
 import org.scalatest.OptionValues
-import org.scalatest.WordSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ServiceSupportSpec extends WordSpec with Matchers with OptionValues {
+class ServiceSupportSpec extends AnyWordSpec with Matchers with OptionValues {
   "ServiceSupport macro" when {
     "using String path params support service" should {
       val holder = new StringMockService {

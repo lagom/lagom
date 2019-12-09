@@ -13,18 +13,18 @@ import com.lightbend.lagom.scaladsl.api.deser.ExceptionSerializer
 import com.lightbend.lagom.scaladsl.api.deser.RawExceptionMessage
 import com.lightbend.lagom.scaladsl.api.transport.ExceptionMessage
 import com.lightbend.lagom.scaladsl.api.transport._
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 import play.api.Environment
 import play.api.Mode
 
 import scala.collection.immutable.Seq
 import scala.util.control.NoStackTrace
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 /**
  *
  */
-class ExceptionsSpec extends WordSpec with Matchers {
+class ExceptionsSpec extends AnyWordSpec with Matchers {
   val protocolTextPlain = MessageProtocol(Some("text/plain"), Some("utf-8"))
   val protocolJson      = MessageProtocol(Some("application/json"), Some("utf-8"))
   val protocolHtml      = MessageProtocol(Some("text/html"), Some("utf-8"))

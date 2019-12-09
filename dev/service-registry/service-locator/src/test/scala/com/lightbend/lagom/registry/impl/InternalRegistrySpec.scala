@@ -10,10 +10,10 @@ import java.util.Collections
 
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
 import com.lightbend.lagom.javadsl.api.ServiceAcl
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class InternalRegistrySpec extends FlatSpec with Matchers {
+class InternalRegistrySpec extends AnyFlatSpec with Matchers {
   behavior.of("InternalRegistry")
 
   it should "add unmanaged services" in {
