@@ -16,8 +16,6 @@ import com.lightbend.lagom.projection.Worker
 import com.typesafe.config.ConfigFactory
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
 import com.lightbend.lagom.internal.projection.protobuf.msg.{ ProjectionMessages => pm }
 import com.lightbend.lagom.projection.Projection
 import com.lightbend.lagom.projection.State
@@ -26,6 +24,8 @@ import com.lightbend.lagom.projection.Stopped
 
 import scala.util.Failure
 import scala.util.Success
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 object ProjectionMessagesSerializerSpec {
   def actorSystem(): ActorSystem = {
@@ -36,7 +36,7 @@ object ProjectionMessagesSerializerSpec {
 
 class ProjectionMessagesSerializerSpec
     extends TestKit(ProjectionMessagesSerializerSpec.actorSystem())
-    with WordSpecLike
+    with AnyWordSpecLike
     with Matchers
     with BeforeAndAfterAll
     with TypeCheckedTripleEquals

@@ -6,8 +6,8 @@ package com.lightbend.lagom.dev
 
 import com.lightbend.lagom.dev.PortAssigner.Port
 import com.lightbend.lagom.dev.PortAssigner.PortRange
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 object PortAssignerSpec {
   implicit class AsProjectName(val name: String) extends AnyVal {
@@ -16,7 +16,7 @@ object PortAssignerSpec {
   }
 }
 
-class PortAssignerSpec extends WordSpecLike with Matchers {
+class PortAssignerSpec extends AnyWordSpecLike with Matchers {
   import PortAssignerSpec._
 
   private val portRange = PortRange(20000, 30000)

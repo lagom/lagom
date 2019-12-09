@@ -11,9 +11,9 @@ import com.lightbend.lagom.scaladsl.testkit.services._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.Seconds
 import org.scalatest.time.Span
-import org.scalatest.AsyncWordSpec
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
 
 class ProducerStubSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll with Eventually {
   var producerStub: ProducerStub[AlphaEvent] = _

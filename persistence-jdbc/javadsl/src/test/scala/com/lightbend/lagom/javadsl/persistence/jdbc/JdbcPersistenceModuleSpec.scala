@@ -10,6 +10,8 @@ import play.api.PlayException
 import play.api.db.DBApi
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.{ bind => playBind }
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
 
 /**
  * This test will simply wire a minimal application using Guice.

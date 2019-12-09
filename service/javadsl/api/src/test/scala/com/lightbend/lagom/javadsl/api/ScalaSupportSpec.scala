@@ -5,10 +5,10 @@
 package com.lightbend.lagom.javadsl.api
 
 import org.scalatest.Inside
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ScalaSupportSpec extends WordSpec with Matchers with Inside {
+class ScalaSupportSpec extends AnyWordSpec with Matchers with Inside {
   "scala support" should {
     "resolve a function" in {
       val method: ScalaServiceSupport.ScalaMethodCall[String] = testMethod _

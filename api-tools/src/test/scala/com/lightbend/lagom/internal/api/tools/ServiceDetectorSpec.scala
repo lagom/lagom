@@ -13,8 +13,10 @@ import com.lightbend.lagom.javadsl.api.Descriptor
 import com.lightbend.lagom.javadsl.api.Service
 import org.scalatest._
 import play.api.libs.json.Json
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ServiceDetectorSpec extends WordSpec with Matchers with Inside {
+class ServiceDetectorSpec extends AnyWordSpec with Matchers with Inside {
   "The service detector" should {
     "resolve the service descriptor for a LagomJava project with ACLs" in {
       val expectedJsonString =

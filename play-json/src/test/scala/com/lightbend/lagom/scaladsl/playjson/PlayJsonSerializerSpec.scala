@@ -10,12 +10,12 @@ import akka.actor.ActorSystem
 import akka.serialization.SerializationExtension
 import akka.serialization.SerializerWithStringManifest
 import akka.testkit.TestKit
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 import play.api.libs.json._
 
 import scala.collection.immutable.Seq
 import scala.collection.immutable.SortedMap
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 case class Event1(name: String, increment: Int)
 object Event1 {
@@ -130,7 +130,7 @@ object TestRegistryWithJson extends JsonSerializerRegistry {
 
 case class Box(surprise: Option[String])
 
-class PlayJsonSerializerSpec extends WordSpec with Matchers {
+class PlayJsonSerializerSpec extends AnyWordSpec with Matchers {
   // this is a magic number copied from src/main/reference.conf.
   val COMPRESSION_THRESHOLD = 32 * 1024
 

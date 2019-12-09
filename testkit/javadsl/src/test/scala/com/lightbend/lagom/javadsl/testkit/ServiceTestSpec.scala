@@ -17,15 +17,15 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import com.lightbend.lagom.javadsl.testkit.ServiceTest.Setup
 import com.lightbend.lagom.javadsl.testkit.ServiceTest.TestServer
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 import play.inject.guice.GuiceApplicationBuilder
 
 import scala.collection.JavaConverters._
 import scala.compat.java8.FunctionConverters._
 import scala.util.Properties
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ServiceTestSpec extends WordSpec with Matchers {
+class ServiceTestSpec extends AnyWordSpec with Matchers {
   "ServiceTest" when {
     "started with Cassandra" should {
       "create a temporary directory" in {
