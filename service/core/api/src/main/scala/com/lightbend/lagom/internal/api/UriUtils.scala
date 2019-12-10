@@ -7,6 +7,7 @@ package com.lightbend.lagom.internal.api
 import java.net.URI
 
 object UriUtils {
+
   /**
    * Generate a comma separated String containing the host and port of passed URIs.
    */

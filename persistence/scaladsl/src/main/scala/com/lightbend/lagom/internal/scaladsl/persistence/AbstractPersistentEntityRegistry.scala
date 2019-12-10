@@ -135,13 +135,12 @@ class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEn
 
         queries
           .eventsByTag(tag, fromOffset)
-          .map(
-            env =>
-              new EventStreamElement[Event](
-                PersistentEntityActor.extractEntityId(env.persistenceId),
-                env.event.asInstanceOf[Event],
-                env.offset
-              )
+          .map(env =>
+            new EventStreamElement[Event](
+              PersistentEntityActor.extractEntityId(env.persistenceId),
+              env.event.asInstanceOf[Event],
+              env.offset
+            )
           )
       case None =>
         throw new UnsupportedOperationException(

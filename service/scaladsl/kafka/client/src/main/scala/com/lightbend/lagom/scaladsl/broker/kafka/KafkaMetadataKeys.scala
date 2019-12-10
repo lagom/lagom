@@ -12,6 +12,7 @@ import org.apache.kafka.common.record.TimestampType
  * Metadata keys specific to the Kafka broker implementation.
  */
 object KafkaMetadataKeys {
+
   /**
    * The partition the message is published to.
    */

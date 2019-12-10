@@ -35,11 +35,12 @@ trait TopicFactoryProvider {
 
 @Singleton
 class InjectorTopicFactoryProvider @Inject() (injector: Injector) extends TopicFactoryProvider {
-  override lazy val get: Option[TopicFactory] = try {
-    Some(injector.instanceOf[TopicFactory])
-  } catch {
-    case NonFatal(e) => None
-  }
+  override lazy val get: Option[TopicFactory] =
+    try {
+      Some(injector.instanceOf[TopicFactory])
+    } catch {
+      case NonFatal(e) => None
+    }
 }
 
 object NoTopicFactoryProvider extends TopicFactoryProvider {

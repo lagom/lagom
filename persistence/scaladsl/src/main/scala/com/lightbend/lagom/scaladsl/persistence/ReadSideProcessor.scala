@@ -14,12 +14,14 @@ import akka.persistence.query.NoOffset
 import akka.persistence.query.Offset
 
 object ReadSideProcessor {
+
   /**
    * An read side offset processor.
    *
    * This is responsible for the actual read side handling, including handling offsets and the events themselves.
    */
   abstract class ReadSideHandler[Event <: AggregateEvent[Event]] {
+
     /**
      * Prepare the database for all processors.
      *
@@ -83,6 +85,7 @@ object ReadSideProcessor {
  * just focus on handling the events themselves.
  */
 abstract class ReadSideProcessor[Event <: AggregateEvent[Event]] {
+
   /**
    * Return a [[ReadSideProcessor#ReadSideHandler]] for the given offset type.
    *
