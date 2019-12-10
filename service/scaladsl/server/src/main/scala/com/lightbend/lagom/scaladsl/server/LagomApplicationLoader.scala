@@ -154,6 +154,7 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
  * to an app, this can be extended without breaking compatibility.
  */
 sealed trait LagomApplicationContext {
+
   /**
    * The Play application loader context.
    */
@@ -161,6 +162,7 @@ sealed trait LagomApplicationContext {
 }
 
 object LagomApplicationContext {
+
   /**
    * Create a Lagom application loader context.
    *

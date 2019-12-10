@@ -59,16 +59,17 @@ private[lagom] class ReadSideImpl @Inject() (
       clazz: Class[_]
   ) = {
     // Capture and improve failure messages. This improvement is only required due to using runtime DI
-    val readSideProcessor = try {
-      processorFactory()
-    } catch {
-      case NonFatal(e) =>
-        throw new IllegalArgumentException(
-          "Cannot create instance of " +
-            s"[${clazz.getName}]",
-          e
-        )
-    }
+    val readSideProcessor =
+      try {
+        processorFactory()
+      } catch {
+        case NonFatal(e) =>
+          throw new IllegalArgumentException(
+            "Cannot create instance of " +
+              s"[${clazz.getName}]",
+            e
+          )
+      }
 
     val readSideName           = name.asScala.fold("")(_ + "-") + readSideProcessor.readSideName()
     val tags                   = readSideProcessor.aggregateTags().asScala

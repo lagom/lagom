@@ -46,6 +46,7 @@ class MavenFacade @Inject() (
     lifecycleExecutionPlanCalculator: LifecycleExecutionPlanCalculator,
     logger: MavenLoggerProxy
 ) {
+
   /**
    * Resolve the classpath for the given artifact.
    *

@@ -13,6 +13,7 @@ import java.security.Principal
  * on behalf of.
  */
 trait ServicePrincipal extends Principal {
+
   /**
    * The service name.
    *
@@ -36,6 +37,7 @@ trait ServicePrincipal extends Principal {
 }
 
 object ServicePrincipal {
+
   /**
    * Get a service principal for the given named service.
    *

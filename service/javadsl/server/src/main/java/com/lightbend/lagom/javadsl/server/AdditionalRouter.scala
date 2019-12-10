@@ -31,6 +31,7 @@ final case class InstanceBased(router: Router, prefix: Option[String]) extends A
 }
 
 object AdditionalRouter {
+
   /**
    * Simulate Play's withPrefix behavior by prepending new prefix to an existing path.
    */
