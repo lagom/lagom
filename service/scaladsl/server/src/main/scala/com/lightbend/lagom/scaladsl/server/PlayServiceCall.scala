@@ -32,6 +32,7 @@ trait PlayServiceCall[Request, Response] extends ServiceCall[Request, Response] 
 }
 
 object PlayServiceCall {
+
   /**
    * Convenience function for creating Play service calls.
    *

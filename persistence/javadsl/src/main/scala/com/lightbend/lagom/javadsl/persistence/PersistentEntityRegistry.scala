@@ -26,6 +26,7 @@ import scala.concurrent.duration._
  * Commands are sent to a [[PersistentEntity]] using a `PersistentEntityRef`.
  */
 trait PersistentEntityRegistry {
+
   /**
    * At system startup all [[PersistentEntity]] classes must be registered
    * with this method.

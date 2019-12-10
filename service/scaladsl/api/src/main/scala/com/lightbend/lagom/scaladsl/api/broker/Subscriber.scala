@@ -14,6 +14,7 @@ import scala.concurrent.Future
  * A Subscriber for consuming messages from a message broker.
  */
 trait Subscriber[Payload] {
+
   /**
    * Returns a copy of this subscriber with the passed group id.
    *
@@ -62,6 +63,7 @@ trait Subscriber[Payload] {
 }
 
 object Subscriber {
+
   /**
    * Subscribers with the same group id belong to the same subscriber group.
    * Conceptually you can think of a subscriber group as being a single logical

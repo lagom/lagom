@@ -45,6 +45,7 @@ private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
 )(implicit mat: Materializer, ec: ExecutionContext)
     extends Actor
     with ActorLogging {
+
   /** Switch used to terminate the on-going Kafka publishing stream when this actor fails.*/
   private var shutdown: Option[KillSwitch] = None
 
