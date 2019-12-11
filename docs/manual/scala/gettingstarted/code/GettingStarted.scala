@@ -57,9 +57,7 @@ package helloservice {
 
     override def useGreeting(id: String) = ServiceCall { request =>
       entityRef(id)
-        .ask[Confirmation](
-          replyTo => UseGreetingMessage(request.message, replyTo)
-        )
+        .ask[Confirmation](replyTo => UseGreetingMessage(request.message, replyTo))
         .map {
           case Accepted => Done
           case _        => throw BadRequest("Can't upgrade the greeting message.")

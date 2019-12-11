@@ -35,6 +35,7 @@ import scala.concurrent.Future
  */
 abstract class CircuitBreakingServiceLocator(circuitBreakers: CircuitBreakersPanel)(implicit ec: ExecutionContext)
     extends ServiceLocator {
+
   /**
    * Do the given block with the given service looked up.
    *

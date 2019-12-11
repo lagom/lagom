@@ -53,6 +53,7 @@ import scala.util.Try
 import scala.util.control.NonFatal
 
 object ServiceRouter {
+
   /** RFC 6455 Section 5.5 - maximum control frame size is 125 bytes */
   val WebSocketControlFrameMaxLength = 125
 

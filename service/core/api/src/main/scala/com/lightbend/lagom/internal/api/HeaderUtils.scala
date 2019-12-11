@@ -7,6 +7,7 @@ package com.lightbend.lagom.internal.api
 import java.util.Locale
 
 object HeaderUtils {
+
   /**
    * Normalize an HTTP header name.
    *

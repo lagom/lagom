@@ -27,6 +27,7 @@ import scala.language.implicitConversions
  * implementation for the [[Service#descriptor]] method.
  */
 trait Service {
+
   /**
    * Describe this service.
    *

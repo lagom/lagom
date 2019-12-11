@@ -15,6 +15,7 @@ import scala.collection.immutable
 import scala.util.control.NonFatal
 
 trait MessageSerializer[Message, WireFormat] {
+
   /**
    * The message headers that will be accepted for response serialization.
    */
@@ -87,6 +88,7 @@ trait StreamedMessageSerializer[Message]
 }
 
 object MessageSerializer extends LowPriorityMessageSerializerImplicits {
+
   /**
    * A negotiated serializer.
    *
@@ -94,6 +96,7 @@ object MessageSerializer extends LowPriorityMessageSerializerImplicits {
    * @tparam WireFormat The wire format that this serializer serializes to.
    */
   trait NegotiatedSerializer[Message, WireFormat] {
+
     /**
      * Get the protocol associated with this message.
      */
@@ -116,6 +119,7 @@ object MessageSerializer extends LowPriorityMessageSerializerImplicits {
    * @tparam WireFormat The wire format that this serializer serializes to.
    */
   trait NegotiatedDeserializer[Message, WireFormat] {
+
     /**
      * Deserialize the given wire format.
      *
@@ -270,11 +274,12 @@ trait LowPriorityMessageSerializerImplicits {
       override def protocol: MessageProtocol = jsValueSerializer.protocol
 
       override def serialize(message: Message): ByteString = {
-        val jsValue = try {
-          Json.toJson(message)
-        } catch {
-          case NonFatal(e) => throw SerializationException(e)
-        }
+        val jsValue =
+          try {
+            Json.toJson(message)
+          } catch {
+            case NonFatal(e) => throw SerializationException(e)
+          }
         jsValueSerializer.serialize(jsValue)
       }
     }
