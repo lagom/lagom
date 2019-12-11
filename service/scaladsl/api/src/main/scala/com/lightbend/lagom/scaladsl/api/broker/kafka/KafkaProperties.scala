@@ -10,6 +10,7 @@ import com.lightbend.lagom.scaladsl.api.Descriptor
  * Provides a set of Kafka specific properties that can be used when creating a topic descriptor.
  */
 object KafkaProperties {
+
   /**
    * A PartitionKeyStrategy produces a key for each message published to a Kafka topic.
    *

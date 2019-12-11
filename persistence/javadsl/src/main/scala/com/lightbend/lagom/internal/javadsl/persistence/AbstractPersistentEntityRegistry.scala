@@ -90,17 +90,18 @@ class AbstractPersistentEntityRegistry(
       () => injector.instanceOf(entityClass)
 
     // try to create one instance to fail fast (e.g. wrong constructor)
-    val entityTypeName = try {
-      entityFactory().entityTypeName
-    } catch {
-      case NonFatal(e) =>
-        throw new IllegalArgumentException(
-          "Cannot create instance of " +
-            s"[${entityClass.getName}]. The class must extend PersistentEntity and have a " +
-            "constructor without parameters or annotated with @Inject.",
-          e
-        )
-    }
+    val entityTypeName =
+      try {
+        entityFactory().entityTypeName
+      } catch {
+        case NonFatal(e) =>
+          throw new IllegalArgumentException(
+            "Cannot create instance of " +
+              s"[${entityClass.getName}]. The class must extend PersistentEntity and have a " +
+              "constructor without parameters or annotated with @Inject.",
+            e
+          )
+      }
 
     // detect non-unique short class names, since that is used as sharding type name
     val alreadyRegistered = registeredTypeNames.putIfAbsent(entityTypeName, entityClass)

@@ -7,6 +7,7 @@ package com.lightbend.lagom.scaladsl.api
 import scala.collection.immutable
 
 sealed trait ServiceInfo {
+
   /**
    * The name of this service.
    */

@@ -20,6 +20,7 @@ import akka.japi.Effect
 import akka.event.Logging
 
 object PersistentEntity {
+
   /**
    * Commands to a `PersistentEntity` must implement this interface
    * to define the reply type.
@@ -187,6 +188,7 @@ abstract class PersistentEntity[Command, Event, State] {
       eventHandlers: Map[Class[_ <: Event], JFunction[_ <: Event, Behavior]],
       commandHandlers: Map[Class[_ <: Command], JBiFunction[_ <: Command, CommandContext[Any], Persist[_ <: Event]]]
   ) {
+
     /**
      * @return new instance with the given state
      */
@@ -357,6 +359,7 @@ abstract class PersistentEntity[Command, Event, State] {
    * The context that is passed to read-only command handlers.
    */
   abstract class ReadOnlyCommandContext[R] {
+
     /**
      * Send reply to a command. The type `R` must be the type defined by
      * the command.
@@ -380,6 +383,7 @@ abstract class PersistentEntity[Command, Event, State] {
    * The context that is passed to command handler function.
    */
   abstract class CommandContext[R] extends ReadOnlyCommandContext[R] {
+
     /**
      * A command handler may return this `Persist` directive to define
      * that one event is to be persisted.

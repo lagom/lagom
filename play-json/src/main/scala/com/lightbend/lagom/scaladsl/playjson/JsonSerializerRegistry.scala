@@ -36,6 +36,7 @@ abstract class JsonSerializerRegistry {
 }
 
 object JsonSerializerRegistry {
+
   /**
    * Create the serializer details for the given serializer registry.
    */
@@ -85,6 +86,7 @@ object EmptyJsonSerializerRegistry extends JsonSerializerRegistry {
  * The jsonSerializerFactory is intentionally abstract to force end users to provide one.
  */
 trait RequiresJsonSerializerRegistry extends ProvidesJsonSerializerRegistry {
+
   /**
    * The serializer registry.
    *
@@ -107,6 +109,7 @@ trait RequiresJsonSerializerRegistry extends ProvidesJsonSerializerRegistry {
  * mandatory serializer as the optional serializer provided by this trait.
  */
 trait ProvidesJsonSerializerRegistry {
+
   /**
    * The optionally provided serializer registry.
    *
