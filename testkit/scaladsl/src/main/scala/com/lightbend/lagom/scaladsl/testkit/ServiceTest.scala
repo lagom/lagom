@@ -46,6 +46,7 @@ import scala.util.control.NonFatal
  */
 object ServiceTest {
   sealed trait Setup {
+
     /**
      * Enable or disable Cassandra.
      *
@@ -190,6 +191,7 @@ object ServiceTest {
       val playServer: Server,
       @ApiMayChange val clientSslContext: Option[SSLContext] = None
   ) {
+
     /**
      * Convenient access to the materializer
      */

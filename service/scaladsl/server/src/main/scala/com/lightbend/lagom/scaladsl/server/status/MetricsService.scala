@@ -29,6 +29,7 @@ import scala.concurrent.duration._
 import scala.util.control.NonFatal
 
 trait MetricsService extends Service {
+
   /**
    * Snapshot of current circuit breaker status
    */

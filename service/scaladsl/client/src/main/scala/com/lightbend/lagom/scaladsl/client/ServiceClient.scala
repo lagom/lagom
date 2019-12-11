@@ -72,6 +72,7 @@ trait ServiceClient { self: ServiceClientConstructor =>
  * cause end users to have a binary dependency on this class, which is why it's in the `scaladsl` package.
  */
 trait ServiceClientConstructor extends ServiceClient {
+
   /**
    * Construct a service client, by invoking the passed in function that takes the implementation context.
    */
@@ -91,6 +92,7 @@ trait ServiceClientConstructor extends ServiceClient {
  * cause end users to have a binary dependency on this class, which is why it's in the `scaladsl` package.
  */
 trait ServiceClientImplementationContext {
+
   /**
    * Resolve the given descriptor to a service client context.
    */
@@ -110,6 +112,7 @@ trait ServiceClientImplementationContext {
  * cause end users to have a binary dependency on this class, which is why it's in the `scaladsl` package.
  */
 trait ServiceClientContext {
+
   /**
    * Create a service call for the given method name and passed in parameters.
    */

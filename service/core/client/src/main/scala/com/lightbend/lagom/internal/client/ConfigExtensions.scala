@@ -10,6 +10,7 @@ import com.typesafe.config.Config
 import com.typesafe.config.ConfigException
 
 object ConfigExtensions {
+
   /**
    * INTERNAL API
    *

@@ -26,6 +26,7 @@ import scala.concurrent.Future
  * set.
  */
 trait ServerServiceCall[Request, Response] extends ServiceCall[Request, Response] {
+
   /**
    * Invoke the given action with the request and response headers.
    *
@@ -81,6 +82,7 @@ trait ServerServiceCall[Request, Response] extends ServiceCall[Request, Response
 }
 
 object ServerServiceCall {
+
   /**
    * Factory for creating a ServerServiceCall.
    *
