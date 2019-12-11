@@ -6,9 +6,9 @@ This page highlights the new features of Lagom 1.6. If you want to learn about t
 
 Lagom 1.6 are based on the new Akka 2.6 release and have integrated support for Akka Typed.
 
-As the Akka Team said in the [announcement for Akka 2.6](https://www.lightbend.com/blog/six-things-architects-should-know-about-akka-2.6), the new Akka Actor APIs (aka Akka Typed) represents a major shift in the Akka ecosystem towards type-safety and more explicit guidance with Actors. We’re happy to be able to bring this to all Lagom users, as well.
+As presented in the [announcement for Akka 2.6](https://www.lightbend.com/blog/six-things-architects-should-know-about-akka-2.6), the new Akka Actor APIs (known as Akka Typed) represent a major shift in the Akka ecosystem towards type-safety and more explicit guidance with Actors. We’re happy to bring this to all Lagom users as well.
 
-Lagom include dependency injection support for Actors in Akka 2.6, [through Play](https://www.playframework.com/documentation/2.8.x/AkkaTyped#Integrating-with-Akka-Typed).
+Lagom includes dependency injection support for typed Actors in Akka 2.6 [through Play](https://www.playframework.com/documentation/2.8.x/AkkaTyped#Integrating-with-Akka-Typed).
 
 While the Lagom Persistence API is still supported and maintained, the [[new Akka Persistence API|UsingAkkaPersistenceTyped]] in Akka 2.6 is now the recommended default for persistence. This provides a more flexible API that gives you more control over some lower-level details, while retaining some of the guided approach that Lagom introduced. Akka Persistence can coexist with existing persistent entities, and the same read-side processor and topic producer APIs fully support both types of entities.
 
@@ -24,4 +24,4 @@ Lagom 1.6 has a new API to [[programmaticaly stop and resume projections|Project
 
 ## Support for Scala 2.13 and Java 11
 
-Lagom 1.6 support the latest Scala version (2.13) and LTS Java version (11), as well as the earlier Scala 2.12 and Java 8 versions.
+Lagom 1.6 supports the latest Scala version (2.13), LTS Java version (11) and sbt 1.3, as well as the earlier Scala 2.12 and Java 8 versions.
