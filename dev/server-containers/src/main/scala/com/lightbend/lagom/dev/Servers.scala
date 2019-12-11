@@ -36,6 +36,7 @@ private[lagom] object Servers {
   }
 
   abstract class ServerContainer {
+
     /**
      * Each ServerContainer implementation needs to define the Server type using structural typing.
      * This is needed because the server classes are not available on the classloader used by the tooling.
@@ -172,7 +173,8 @@ private[lagom] object Servers {
     private def stop(): Unit =
       synchronized {
         try server.close()
-        catch { case _: Exception => () } finally server = null
+        catch { case _: Exception => () }
+        finally server = null
       }
   }
 
