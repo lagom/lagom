@@ -37,6 +37,7 @@ trait SlickReadSide {
    * Builder for the handler.
    */
   trait ReadSideHandlerBuilder[Event <: AggregateEvent[Event]] {
+
     /**
      * Set a global prepare Database I/O Action.
      *

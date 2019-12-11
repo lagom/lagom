@@ -17,6 +17,7 @@ import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandle
 
 //#my-database
 trait MyDatabase {
+
   /**
    * Create the tables needed for this read side if not already created.
    */

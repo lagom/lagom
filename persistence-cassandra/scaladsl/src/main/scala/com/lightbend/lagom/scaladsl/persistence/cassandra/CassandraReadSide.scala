@@ -21,10 +21,12 @@ import scala.reflect.ClassTag
  * This should be used to build and register a read side processor.
  */
 object CassandraReadSide {
+
   /**
    * Builder for the handler.
    */
   trait ReadSideHandlerBuilder[Event <: AggregateEvent[Event]] {
+
     /**
      * Set a global prepare callback.
      *
@@ -66,6 +68,7 @@ object CassandraReadSide {
 }
 
 trait CassandraReadSide {
+
   /**
    * Create a builder for a Cassandra read side event handler.
    *

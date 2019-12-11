@@ -75,6 +75,7 @@ object JsonMigrations {
  * current class name.
  */
 abstract class JsonMigration(val currentVersion: Int) {
+
   /**
    * Override to provide transformation of the old JSON structure to the new
    * JSON structure.

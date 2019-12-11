@@ -37,6 +37,7 @@ package com.lightbend.lagom.sbt {
   import sbt.internal.BuildStructure
 
   object DynamicProjectAdder {
+
     /**
      * Add a list of projects to the state.
      *

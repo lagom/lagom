@@ -10,6 +10,7 @@ package com.lightbend.lagom.scaladsl.persistence
  * Handles the management of read-sides.
  */
 trait ReadSide {
+
   /**
    * Register a read-side processor with Lagom.
    *

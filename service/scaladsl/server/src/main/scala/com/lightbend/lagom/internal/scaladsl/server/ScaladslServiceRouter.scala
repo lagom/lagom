@@ -83,8 +83,8 @@ class ScaladslServiceRouter(
       // If it's a Play service call, then rather than creating the action directly, we let it create the action, and
       // pass it a callback that allows it to convert a service call into an action.
       case playServiceCall: PlayServiceCall[Request, Response] =>
-        playServiceCall.invoke(
-          serviceCall => createAction(call, descriptor, serviceCall, requestSerializer, responseSerializer)
+        playServiceCall.invoke(serviceCall =>
+          createAction(call, descriptor, serviceCall, requestSerializer, responseSerializer)
         )
       case _ =>
         createAction(call, descriptor, serviceCall, requestSerializer, responseSerializer)
