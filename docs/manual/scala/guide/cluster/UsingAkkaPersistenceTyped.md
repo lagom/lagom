@@ -119,7 +119,7 @@ Lagom uses [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/clust
 
 ### Creating the Entity instance
 
-The event-source behavior needs to be initialized on the `ClusterSharding` before it's used. That process won't create any specific Entity instance, and it will only create the Shard Regions and prepare it to be used (read more about Shard Regions in the [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html?language=Scala) docs).
+The event-sourced behavior needs to be initialized on the `ClusterSharding` before it's used. That process won't create any specific Entity instance, and it will only create the Shard Regions and prepare it to be used (read more about Shard Regions in the [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html?language=Scala) docs).
 
 You must define an `EntityTypeKey` and a function of `EntityContext[Command] => Behavior[Command]` to initialize the `EventSourcedBehavior` for the Shopping Cart Entity.
 
