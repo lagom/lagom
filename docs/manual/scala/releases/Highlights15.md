@@ -18,15 +18,15 @@ lagom.cluster.bootstrap.enabled = false
 
 ## gRPC
 
-Lagom 1.5 introduces support for cross-service gRPC communication. [gRPC](https://grpc.io/) is a high-performance, open-source universal RPC framework. The original, HTTP/JSON-based transport is not disappearing but, instead, Lagom introduces gRPC so users can choose to expose alternative transports increasing the adoption of their services. Lagom's support for gRPC is built on top of [Play-gRPC](https://developer.lightbend.com/docs/play-grpc/current/) using the new `additionalRouter` feature in Lagom (see below). 
+Lagom 1.5 introduces support for cross-service gRPC communication. [gRPC](https://grpc.io/) is a high-performance, open-source universal RPC framework. The original, HTTP/JSON-based transport is not disappearing but, instead, Lagom introduces gRPC so users can choose to expose alternative transports increasing the adoption of their services. Lagom's support for gRPC is built on top of [Play-gRPC](https://developer.lightbend.com/docs/play-grpc/current/) using the new `additionalRouter` feature in Lagom (see below).
 
-gRPC must run on HTTP/2. Lagom already supported HTTP/2 since it is built on top of Play. In Lagom 1.5 we’ve reviewed all the necessary pieces so HTTP/2 can also be used on dev mode. In the same spirit, it is now also possible to use encrypted (TLS) communication on dev mode. 
+gRPC must run on HTTP/2. Lagom already supported HTTP/2 since it is built on top of Play. In Lagom 1.5 we’ve reviewed all the necessary pieces so HTTP/2 can also be used on dev mode. In the same spirit, it is now also possible to use encrypted (TLS) communication on dev mode.
 
 ## TLS Support
 
 Lagom in both [[dev mode|ConfiguringServicesInDevelopment#Using-HTTPS-in-development-mode]] and [[tests|TestingServices#How-to-use-TLS-on-tests]] supports basic usage of TLS by means of self-signed certificates provided by the framework.
 
-##Additional Routers
+## Additional Routers
 
 As of Lagom 1.5 it is possible to extend the routes exposed by your service. So your service will not only expose the calls listed in `Service.Descriptor` but will also serve endpoints handled by `additionalRouters`. The [[documentation|AdditionalRouters]] covers all the details. Additional routers make it trivial to extend a `Service.Descriptor` with features natively supported by Play such as uploading a file. There is also a [Lagom recipe](https://github.com/lagom/lagom-recipes/tree/master/file-upload) detailing such a use case.
 
