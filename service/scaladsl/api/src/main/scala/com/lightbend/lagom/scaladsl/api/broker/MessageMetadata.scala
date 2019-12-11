@@ -10,6 +10,7 @@ package com.lightbend.lagom.scaladsl.api.broker
  * This provides access to both the message payload, and the metadata.
  */
 sealed trait Message[Payload] {
+
   /**
    * The payload of the message.
    */
@@ -52,6 +53,7 @@ sealed trait Message[Payload] {
 }
 
 object Message {
+
   /**
    * Create a message with the given payload.
    */
@@ -76,6 +78,7 @@ object Message {
  * A metadata key.
  */
 sealed trait MetadataKey[Metadata] {
+
   /**
    * The name of the metadata key.
    */
@@ -83,6 +86,7 @@ sealed trait MetadataKey[Metadata] {
 }
 
 object MetadataKey {
+
   /**
    * Create a metadata key with the given name.
    */

@@ -135,8 +135,9 @@ private[lagom] class PersistentEntityActor(
   }
 
   private def applyEvent(event: E): Unit = {
-    val actions = try behavior(state)
-    catch unhandledState
+    val actions =
+      try behavior(state)
+      catch unhandledState
     state = actions.eventHandler.applyOrElse((event, state), unhandledEvent)
   }
 
@@ -162,8 +163,9 @@ private[lagom] class PersistentEntityActor(
       }
 
       try {
-        val actions = try behavior(state)
-        catch unhandledState
+        val actions =
+          try behavior(state)
+          catch unhandledState
         val commandHandler = actions.commandHandlers.get(cmd.getClass) match {
           case Some(h) => h
           case None    => PartialFunction.empty

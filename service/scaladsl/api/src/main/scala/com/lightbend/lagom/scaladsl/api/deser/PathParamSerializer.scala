@@ -21,6 +21,7 @@ import scala.collection.immutable.Seq
  * values for query string parameters.
  */
 trait PathParamSerializer[Param] {
+
   /**
    * Serialize the given `parameter` into path parameters.
    */
@@ -37,6 +38,7 @@ trait PathParamSerializer[Param] {
 object PathParamSerializer extends DefaultPathParamSerializers
 
 trait DefaultPathParamSerializers extends LowPriorityPathParamSerializers {
+
   /**
    * Create a PathParamSerializer for required parameters.
    */

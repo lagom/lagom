@@ -43,6 +43,7 @@ object PersistentEntityTestDriver {
       sideEffects: JList[SideEffect],
       issues: JList[Issue]
   ) {
+
     /**
      * The messages that were sent as replies using the context that is
      * passed as parameter to the command handler functions.

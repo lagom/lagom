@@ -21,6 +21,7 @@ import scala.collection.immutable
  * automatically have these streams published while the service is running, sharded across the services nodes.
  */
 object TopicProducer {
+
   /**
    * Publish a single stream.
    *

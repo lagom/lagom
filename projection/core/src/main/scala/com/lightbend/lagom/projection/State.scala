@@ -106,6 +106,7 @@ object Projection {
  */
 @ApiMayChange
 final class State(val projections: Seq[Projection]) extends ProjectionSerializable {
+
   /** Java API  */
   def getProjections: java.util.List[Projection] = projections.asJava
 
