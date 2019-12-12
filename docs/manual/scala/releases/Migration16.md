@@ -45,18 +45,19 @@ Switching from `persistence` to `ddata`, such as if your cluster relies of Lagom
 # Opt-back to Lagom 1.5's 'persistence' instead of Lagom 1.6's default of 'ddata'.
 akka.cluster.sharding.state-store-mode = persistence
 ```
+
 ### Akka Persistence Cassandra Update
 
-The Akka Persistence Cassandra plugin is updated to version 0.100. This version requires a schema migration before you upgrade to Lagom 1.6.0.
+The Akka Persistence Cassandra plugin is updated to version 0.101. This version requires two schema migrations before you upgrade to Lagom 1.6.0. For more information on how to migrate, consult the following documentations:
 
-For more information on how to migrate, consult [Akka Persistence Cassandra migration document](https://doc.akka.io/docs/akka-persistence-cassandra/current/migrations.html#migrations-to-0-80-and-later).
+* [Akka Persistence Cassandra Migrations to 0.101](https://doc.akka.io/docs/akka-persistence-cassandra/0.101/migrations.html#migrations-to-0-101)
+* [Akka Persistence Cassandra Migrations to 0.80](https://doc.akka.io/docs/akka-persistence-cassandra/0.101/migrations.html#migrations-to-0-80-and-later)
 
-Note that although it's technically possible to run the migration while running your application we advise against it.
+Note that although it's technically possible to run the migrations while running your application we advise against it.
 
 ### Akka Persistence Typed
 
 With the new support for Akka Persistence Typed you may [[migrate your Persistent Entities to Akka Persistence Typed|MigratingToAkkaPersistenceTyped]] `Behavior`'s.
-
 
 ## Upgrading a production system
 
