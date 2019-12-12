@@ -1,6 +1,8 @@
 # Domain Modelling with Akka Persistence Typed
 
-This section presents all the steps to model an [Aggregate](https://martinfowler.com/bliki/DDD_Aggregate.html), as defined in Domain-Driven Design, using [Akka Persistence Typed](https://doc.akka.io/docs/akka/2.6/typed/persistence.html?language=Scala) and following the [[CQRS|ES_CQRS]] principles embraced by Lagom. While Akka Persistence Typed provides an API for building event-sourced actors, the same does not necessarily apply for CQRS Aggregates. To build CQRS applications, we need to use a few rules to our design.
+This section presents all the steps to model an [Aggregate](https://martinfowler.com/bliki/DDD_Aggregate.html), as defined in Domain-Driven Design, using [Akka Persistence Typed](https://doc.akka.io/docs/akka/2.6/typed/persistence.html?language=Scala) and following the [[CQRS|ES_CQRS]] principles embraced by Lagom.
+
+Akka Persistence Typed provides an API for building distributed event-sourced Actors. We call it an Event Sourced Entity. By applying a few design rules, we can design CQRS Aggregates on top of Akka's API. We will refer to the term **Aggregate** whenever we cover a DDD Aggregate concept. Otherwise the term **Entity** or **Event Sourced Entity** will be used.
 
 We use a simplified shopping cart example to guide you through the process. You can find a full-fledged shopping cart sample on our [samples repository](https://github.com/lagom/lagom-samples/tree/1.6.x/shopping-cart/shopping-cart-scala).
 
@@ -22,7 +24,7 @@ Note that we are modeling it using a case class `ShoppingCart`, and there is a `
 
 Next, we define the commands that we can send to it.
 
-Each command defines a [reply](https://doc.akka.io/docs/akka/2.6/typed/persistence.html?language=Scala#replies) through a `replyTo: ActorRef[R]` field where `R` is the reply *type* that will be sent back to the caller. Replies are used to communicate back if a command was accepted or rejected or to read the aggregate data (ie: read-only commands). It is also possible to have a mix of both. For example, if the command succeeds, it returns some updated data; if it fails, it returns a rejected message. Or you can have commands without replies (ie: fire-and-forget). This is a less common pattern in CQRS Aggregate modeling though and not covered in this example.
+Each command defines a [reply](https://doc.akka.io/docs/akka/2.6/typed/persistence.html?language=Scala#replies) through a `replyTo: ActorRef[R]` field where `R` is the reply *type* that will be sent back to the caller. Replies are used to communicate back if a command was accepted or rejected or to read the Entity data (ie: read-only commands). It is also possible to have a mix of both. For example, if the command succeeds, it returns some updated data; if it fails, it returns a rejected message. Or you can have commands without replies (ie: fire-and-forget). This is a less common pattern in CQRS Aggregate modeling though and not covered in this example.
 
 @[shopping-cart-commands](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
@@ -35,7 +37,7 @@ The replies used by the commands above are defined like this:
 
 Here there are two different kinds of replies: `Confirmation` and `Summary`. `Confirmation` is used when we want to modify the state. A modification request can be `Accepted` or `Rejected`. Then, the `Summary` is used when we want to read the state of the shopping cart.
 
-> **Note**: Keep in mind that `Summary` is not the shopping cart itself, but the representation we want to expose to the external world. It's a good practice to keep the internal state of the aggregate private because it allows the internal state, and the exposed API to evolve independently.
+> **Note**: Keep in mind that `Summary` is not the shopping cart itself, but the representation we want to expose to the external world. It's a good practice to keep the internal state of the Entity private because it allows the internal state, and the exposed API to evolve independently.
 
 ### Modelling Events
 
@@ -55,7 +57,7 @@ You can encode it in different ways. The [recommended style](https://doc.akka.io
 
 Command handlers are the meat of the model. They encode the business rules of your model and act as a guardian of the model consistency. The command handler must first validate that the incoming command can be applied to the current model state. In case of successful validation, one or more events expressing the mutations are persisted. Once the events are persisted, they are applied to the state producing a new valid state.
 
-Because an Aggregate is intended to model a consistency boundary, it's not recommended validating commands using data that is not available in scope. Any decision should be solely based on the data passed in the commands and the state of the Aggregate. Any external call should be considered a smell because it means that the Aggregate is not in full control of the invariants it's supposed to be protecting.
+Because a DDD Aggregate is intended to model a consistency boundary, it's not recommended validating commands using data that is not available in scope. Any decision should be solely based on the data passed in the commands and the state of the Aggregate. Any external call should be considered a smell because it means that the Aggregate is not in full control of the invariants it's supposed to be protecting.
 
 There are two ways of sending back a reply: using `Effect.reply` and `Effect.persist(...).thenReply`. The first one is available directly on `Effect` and should be used when you reply without persisting any event. In this case, you can use the available state in scope because it's guaranteed not to have changed. The second variant should be used when you have persisted one or more events. The updated state is then available to you on the function used to define the reply.
 
@@ -63,7 +65,7 @@ You may run side effects inside the command handler. Please refer to [Akka docum
 
 ### Defining the Event Handlers
 
-The event handlers are used to mutate the state of the Aggregate by applying the events to it. Event handlers must be pure functions as they will be used when instantiating the Aggregate and replaying the event journal. Similar to the command handlers, a [recommended style](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html?language=Scala#command-handlers-in-the-state) is to add them in the state classes.
+The event handlers are used to mutate the state of the Entity by applying the events to it. Event handlers must be pure functions as they will be used when instantiating the Entity and replaying the event journal. Similar to the command handlers, a [recommended style](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html?language=Scala#command-handlers-in-the-state) is to add them in the state classes.
 
 @[shopping-cart-state-event-handlers](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
@@ -91,11 +93,11 @@ If you are familiar with general Akka Actors, you are probably aware that after 
 
 ### Tagging the events -- Akka Persistence Query considerations
 
-Events are persisted in the event journal and are primarily used to replay the state of the Aggregate each time it needs to be instantiated. However, in CQRS, we also want to consume those same events and generate read-side views or publish them in a message broker (eg: Kafka) for external consumption.
+Events are persisted in the event journal and are primarily used to replay the state of the event-sourced entity each time it needs to be instantiated. However, in CQRS, we also want to consume those same events and generate read-side views or publish them in a message broker (eg: Kafka) for external consumption.
 
 To be able to consume the events on the read-side, the events must be tagged. This is done using the `AggregateEventTag` utility. It's recommended to shard the tags so they can be consumed in a distributed fashion by Lagom's [[Read-Side Processor|ReadSide]] and [[Topic Producers|MessageBrokerApi#Implementing-a-topic]]. Although not recommended, it's also possible to not shard the events as explained [[here|ReadSide#Event-tags]].
 
-This example splits the tags into 10 shards and defines the event tagger in the companion object of `ShoppingCart.Event`. Note that the tag name must be stable, as well as the number of shards. These two values can't be changed later without migrating the journal.
+This example splits the tags into 10 shards and defines the event tagger in the companion object of `ShoppingCartEvent`. Note that the tag name must be stable, as well as the number of shards. These two values can't be changed later without migrating the journal.
 
 @[shopping-cart-events-object](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
@@ -115,35 +117,33 @@ You can define snapshot rules in two ways: by predicate and by counter. Both can
 
 ## Akka Cluster Sharding
 
-Lagom uses [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html?language=Scala) to distribute the Aggregates across all the nodes and guarantee that, at any single time, there is only one instance of a given Aggregate loaded in memory over the whole cluster.
+Lagom uses [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html?language=Scala) to distribute the event-sourced entities across all the nodes and guarantee that, at any single time, there is only one instance of a given Entity loaded in memory over the whole cluster.
 
-### Creating the Aggregate instance
+### Creating the Entity instance
 
-The Aggregate needs to be initialized on the `ClusterSharding` before it's used. That process won't create any specific Aggregate instance, and it will only create the Shard Regions and prepare it to be used (read more about Shard Regions in the [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html?language=Scala) docs).
+The event-sourced behavior needs to be initialized on the `ClusterSharding` before it's used. That process won't create any specific Entity instance, and it will only create the Shard Regions and prepare it to be used (read more about Shard Regions in the [Akka Cluster Sharding](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html?language=Scala) docs).
 
-> **Note**: In Akka Cluster, the term to refer to a sharded actor is _entity_, so a sharded Aggregate can also be referred to as an Aggregate Entity.
-
-You must define an `EntityTypeKey` and a function of `EntityContext[Command] => Behavior[Command]` to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate.
+You must define an `EntityTypeKey` and a function of `EntityContext[Command] => Behavior[Command]` to initialize the `EventSourcedBehavior` for the Shopping Cart Entity.
 
 The `EntityTypeKey` has as name to uniquely identify this model in the cluster. It should be typed on `ShoppingCartCommand` which is the type of the messages that the Shopping Cart can receive.
 
-In the companion object of `ShoppingCart`, define the `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Aggregate.
+In the companion object of `ShoppingCart`, define the `EntityTypeKey` and factory method to initialize the `EventSourcedBehavior` for the Shopping Cart Entity.
 
 @[companion-with-type-key-and-factory](code/docs/home/scaladsl/persistence/ShoppingCart.scala)
 
 > **Note**: [Akka style guide](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html?language=Scala) recommends having an `apply` factory method in the companion object.
 
-Finally, initialize the Aggregate on the `ClusterSharding` using the `typedKey` and the `behavior`. Lagom provides an instance of the `clusterSharding` extension through dependency injection for your convenience. Initializing an entity should be done only once and, in the case of Lagom Aggregates, it is typically done in the `LagomApplication`:
+Finally, initialize the Entity on the `ClusterSharding` using the `typedKey` and the `behavior`. Lagom provides an instance of the `clusterSharding` extension through dependency injection for your convenience. Initializing an entity should be done only once and, in the case of Lagom, it is typically done in the `LagomApplication`:
 
 @[shopping-cart-loader](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
-### Getting instances of the Aggregate Entity
+### Getting instances of the Entity
 
-To access instances of the Aggregate (which may be running locally or remotely on the cluster), you should inject the `ClusterSharding` on your service:
+To access instances of the Entity (which may be running locally or remotely on the cluster), you should inject the `ClusterSharding` on your service:
 
 @[shopping-cart-service-impl](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
-And then you can instantiate an `EntityRef` using the method `entityRefFor`. In our case, the `EntityRef` is typed to only accept `ShoppingCart.Command`s.
+And then you can instantiate an `EntityRef` using the method `entityRefFor`. In our case, the `EntityRef` is typed to only accept `ShoppingCartCommand`s.
 
 @[shopping-cart-entity-ref](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
@@ -153,7 +153,7 @@ The `EntityRef` is similar to an `ActorRef` but denotes the actor is sharded. In
 
 #### Considerations on using the ask pattern
 
-Since we want to send commands to the Aggregate and these commands declare a reply we will need to use the [ask pattern](https://doc.akka.io/docs/akka/2.6/typed/interaction-patterns.html?language=Scala#request-response).
+Since we want to send commands to the Entity and these commands declare a reply we will need to use the [ask pattern](https://doc.akka.io/docs/akka/2.6/typed/interaction-patterns.html?language=Scala#request-response).
 
 The code we introduced below creates an `EntityRef` from inside the `ShoppingCartServiceImpl` meaning we are calling the actor (the `EntityRef`) from outside the `ActorSystem`. `EntityRef` provides an `ask()` overload out of the box meant to be used from outside actors.
 
@@ -169,7 +169,7 @@ The `ShoppingCartView` and `asShoppingCartView` are defined as:
 
 @[shopping-cart-service-map](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
-> **Note**: We are keeping the internal state of the Aggregate isolated from the exposed service API so they can evolve independently.
+> **Note**: We are keeping the internal state of the Entity isolated from the exposed service API so they can evolve independently.
 
 ### Configuring number of shards
 
@@ -179,7 +179,7 @@ See the [Akka Cluster Sharding documentation](https://doc.akka.io/docs/akka/2.6/
 
 ### Configuring Entity passivation
 
-Keeping all the Aggregates in memory all the time is inefficient. Instead, use the Entity passivation feature, then sharded entities (the Aggregates) are removed from the cluster when they've been unused for some time.
+Keeping all the Entities in memory all the time is inefficient. Entity passivation allows removal from the cluster when they've been unused for some time.
 
 Akka supports both [programmatic passivation](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html?language=Scala#passivation) and [automatic passivation](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html?language=Scala#automatic-passivation). The default values for automatic passivation are generally good enough.
 
