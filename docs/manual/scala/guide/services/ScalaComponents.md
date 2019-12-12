@@ -36,8 +36,8 @@ This is a list of available Components you may use to build your application cak
 
 You can mix in `Components` from other frameworks or libraries, for example:
 
- * [AhcWSComponents](https://www.playframework.com/documentation/2.7.x/api/scala/index.html#play.api.libs.ws.ahc.AhcWSComponents): provides a `WSClient` based on an Async HTTP Client.
- * [DBComponents](https://www.playframework.com/documentation/2.7.x/api/scala/play/api/db/DBComponents.html)
- * [HikariCPComponents](https://www.playframework.com/documentation/2.7.x/api/scala/play/api/db/HikariCPComponents.html)
+ * [AhcWSComponents](https://www.playframework.com/documentation/2.8.x/api/scala/index.html#play.api.libs.ws.ahc.AhcWSComponents): provides a `WSClient` based on an Async HTTP Client.
+ * [DBComponents](https://www.playframework.com/documentation/2.8.x/api/scala/play/api/db/DBComponents.html)
+ * [HikariCPComponents](https://www.playframework.com/documentation/2.8.x/api/scala/play/api/db/HikariCPComponents.html)
 
-Lagom inherits all Components provided by Play. You can find the complete list of inherited `Components` by searching for _components_ in [Play docs](https://www.playframework.com/documentation/2.7.x/api/scala/index.html).
+Lagom inherits all Components provided by Play. You can find the complete list of inherited `Components` by searching for _components_ in [Play docs](https://www.playframework.com/documentation/2.8.x/api/scala/index.html).
