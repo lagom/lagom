@@ -2,7 +2,7 @@
 
 To enable JSON Serialization there are three steps you need to follow.
 
-The first step is to define your [Format](https://www.playframework.com/documentation/2.7.x/api/scala/play/api/libs/json/Format.html) for each class that is to be serialized, this can be done using [automated mapping](#Automated-mapping) or [manual mapping](#Manual-mapping).
+The first step is to define your [Format](https://www.playframework.com/documentation/2.8.x/api/scala/play/api/libs/json/Format.html) for each class that is to be serialized, this can be done using [automated mapping](#Automated-mapping) or [manual mapping](#Manual-mapping).
 
 @[format](code/docs/home/scaladsl/serialization/ItemAdded.scala)
 
@@ -22,7 +22,7 @@ If you need to use the registry outside of a Lagom application, for example, in 
 
 ## Compression
 
-Compression, as described here, is only used for persistent events, persistent snapshots and remote messages with the service cluster. 
+Compression, as described here, is only used for persistent events, persistent snapshots and remote messages with the service cluster.
 
 JSON can be rather verbose and for large messages it can be beneficial to enable compression. That is done by using the [`JsonSerializer.compressed[T]`](api/com/lightbend/lagom/scaladsl/playjson/JsonSerializer$.html) builder method instead of the `JsonSerializer.apply[T]` (as shown in the example snippet above):
 
@@ -34,7 +34,7 @@ The serializer will by default only compress messages that are larger than 32Kb.
 
 ## Automated mapping
 
-The [Json.format\[MyClass\]](https://www.playframework.com/documentation/2.7.x/api/scala/index.html#play.api.libs.json.Json$@format[A]:play.api.libs.json.OFormat[A]) macro will inspect a `case class` for what fields it contains and produce a `Format` that uses the field names and types of the class in the resulting JSON.
+The [Json.format\[MyClass\]](https://www.playframework.com/documentation/2.8.x/api/scala/index.html#play.api.libs.json.Json$@format[A]:play.api.libs.json.OFormat[A]) macro will inspect a `case class` for what fields it contains and produce a `Format` that uses the field names and types of the class in the resulting JSON.
 
 The macro allows for defining formats based on the exact structure of the class which is handy and avoids spending development time on explicitly defining the format, on the other hand it tightly couples the structure of the JSON with the structure of the class so that a refactoring of the class unexpectedly leads to the format being unable to read JSON that was serialized before the change. There are tools in place to deal with this (see [schema evolution](#Schema-Evolution)) but care must be taken.
 
@@ -72,7 +72,7 @@ When mapping a hierarchy of types, for example an ADT, or a trait or abstract cl
 
 When working on long running projects using [[Akka Persistence Typed|UsingAkkaPersistenceTyped]], Lagom [[Persistence|PersistentEntity]] (classic), or any kind of Event Sourcing, schema evolution becomes an important aspect of developing your application. The requirements as well as our own understanding of the business domain may (and will) change over time.
 
-Lagom provides a way to perform transformations of the JSON tree model during deserialization. To do those transformations you can either modify the json imperatively or use the [Play JSON transformers](https://www.playframework.com/documentation/2.7.x/ScalaJsonTransformers)
+Lagom provides a way to perform transformations of the JSON tree model during deserialization. To do those transformations you can either modify the json imperatively or use the [Play JSON transformers](https://www.playframework.com/documentation/2.8.x/ScalaJsonTransformers)
 
 We will look at a few scenarios of how the classes may be evolved.
 
@@ -106,7 +106,7 @@ Create a concrete subclass of [JsonMigration](api/com/lightbend/lagom/scaladsl/p
 
 Then provide your `JsonMigration` together with the classname of the class that it migrates in the `migrations` map from your `JsonSerializerRegistry`.
 
-Alternatively you can use the [Play JSON transformers](https://www.playframework.com/documentation/2.7.x/ScalaJsonTransformers) API which is more concise but arguably has a much higher threshold to learn.
+Alternatively you can use the [Play JSON transformers](https://www.playframework.com/documentation/2.8.x/ScalaJsonTransformers) API which is more concise but arguably has a much higher threshold to learn.
 
 @[transformer-migration](code/docs/home/scaladsl/serialization/v2b/ItemAdded.scala)
 
