@@ -4,7 +4,7 @@ This page highlights the new features of Lagom 1.6. If you want to learn about t
 
 ## Akka Typed and Akka Persistence Typed
 
-Lagom 1.6 are based on the new Akka 2.6 release and have integrated support for Akka Typed.
+Lagom 1.6 is based on the new Akka 2.6 release and have integrated support for Akka Typed.
 
 As presented in the [announcement for Akka 2.6](https://www.lightbend.com/blog/six-things-architects-should-know-about-akka-2.6), the new Akka Actor APIs (known as Akka Typed) represent a major shift in the Akka ecosystem towards type-safety and more explicit guidance with Actors. We’re happy to bring this to all Lagom users as well.
 
@@ -26,4 +26,4 @@ Lagom 1.6 has a new API to [[programmaticaly stop and resume projections|Project
 
 Lagom 1.6 supports the latest Scala version (2.13), LTS Java version (11) and sbt 1.3, as well as the earlier Scala 2.12 and Java 8 versions.
 
-Scala 2.13 brings in a few preformance improvements for its collection and async (Future) APIs. Although Java users are not exposed directly to Scala APIs, the Lagom itself is built in Scala and uses many Scala dependencies. That said, updating the Scala to 2.13 version is also beneficial for users of Lagom's Java API.
+Scala 2.13 brings in a few performance improvements for its collection and async (Future) APIs. Although Java users are not exposed directly to Scala APIs, the Lagom itself is built in Scala and uses many Scala dependencies. That said, updating to Scala 2.13 is also beneficial for Java API users.
