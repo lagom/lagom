@@ -369,8 +369,7 @@ val sbtScriptedProjects = Seq[ProjectReference](
 
 lazy val root = (project in file("."))
   .settings(name := "lagom")
-  .settings(runtimeLibCommon: _*)
-  .settings(noMima)
+  .settings(runtimeLibCommon, noMima)
   .settings(
     crossScalaVersions := Nil,
     scalaVersion := Dependencies.Versions.Scala.head,
@@ -387,8 +386,7 @@ def SonatypeOnly      = Sonatype && PluginsAccessor.exclude(BintrayPlugin)
 def RuntimeLibPlugins = SonatypeOnly && HeaderPlugin && Unidoc
 
 lazy val api = (project in file("service/core/api"))
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-api",
@@ -397,8 +395,7 @@ lazy val api = (project in file("service/core/api"))
 
 lazy val `api-javadsl` = (project in file("service/javadsl/api"))
   .settings(name := "lagom-javadsl-api")
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     Dependencies.`api-javadsl`
@@ -407,8 +404,7 @@ lazy val `api-javadsl` = (project in file("service/javadsl/api"))
 
 lazy val `api-scaladsl` = (project in file("service/scaladsl/api"))
   .settings(name := "lagom-scaladsl-api")
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     Dependencies.`api-scaladsl`
@@ -417,8 +413,7 @@ lazy val `api-scaladsl` = (project in file("service/scaladsl/api"))
 
 lazy val immutables = (project in file("immutables"))
   .settings(name := "lagom-javadsl-immutables")
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     Dependencies.immutables
@@ -426,21 +421,18 @@ lazy val immutables = (project in file("immutables"))
 
 lazy val spi = (project in file("spi"))
   .settings(name := "lagom-spi")
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
 
 lazy val jackson = (project in file("jackson"))
   .settings(name := "lagom-javadsl-jackson")
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(Dependencies.jackson)
   .dependsOn(`api-javadsl`, immutables % "test->compile")
 
 lazy val `play-json` = (project in file("play-json"))
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-play-json",
@@ -448,13 +440,12 @@ lazy val `play-json` = (project in file("play-json"))
   )
 
 lazy val `api-tools` = (project in file("api-tools"))
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     Dependencies.`api-tools`
   )
-  .settings(overridesScalaParserCombinators: _*)
+  .settings(overridesScalaParserCombinators)
   .dependsOn(
     spi,
     `server-javadsl`  % Test,
@@ -462,8 +453,7 @@ lazy val `api-tools` = (project in file("api-tools"))
   )
 
 lazy val client = (project in file("service/core/client"))
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-client",
@@ -472,8 +462,7 @@ lazy val client = (project in file("service/core/client"))
   .dependsOn(api, spi)
 
 lazy val `client-javadsl` = (project in file("service/javadsl/client"))
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-javadsl-client",
@@ -482,10 +471,9 @@ lazy val `client-javadsl` = (project in file("service/javadsl/client"))
   .dependsOn(client, `api-javadsl`, jackson)
 
 lazy val `client-scaladsl` = (project in file("service/scaladsl/client"))
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(macroCompileSettings: _*)
+  .settings(macroCompileSettings)
   .settings(
     name := "lagom-scaladsl-client",
     Dependencies.`client-scaladsl`
@@ -497,8 +485,7 @@ lazy val `integration-client-javadsl` = (project in file("service/javadsl/integr
     name := "lagom-javadsl-integration-client",
     Dependencies.`integration-client-javadsl`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-javadsl`, `service-registry-client-javadsl`, `kafka-client-javadsl`)
 
@@ -508,8 +495,7 @@ lazy val server = (project in file("service/core/server"))
     Dependencies.server
   )
   .enablePlugins(RuntimeLibPlugins)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .dependsOn(client)
 
 lazy val `server-javadsl` = (project in file("service/javadsl/server"))
@@ -518,8 +504,7 @@ lazy val `server-javadsl` = (project in file("service/javadsl/server"))
     Dependencies.`server-javadsl`
   )
   .enablePlugins(RuntimeLibPlugins)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .dependsOn(`akka-management-javadsl`, server, `client-javadsl`, immutables % "provided")
   // bring jackson closer to the root of the dependency tree to prompt Maven to choose the right version
   .dependsOn(jackson)
@@ -530,20 +515,17 @@ lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
     Dependencies.`server-scaladsl`
   )
   .enablePlugins(RuntimeLibPlugins)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .dependsOn(`akka-management-scaladsl`, server, `client-scaladsl`, `play-json`)
 
 lazy val `testkit-core` = (project in file("testkit/core"))
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-core-testkit",
     Dependencies.`testkit-core`
   )
-  .settings(overridesScalaParserCombinators: _*)
-  .settings(forkedTests: _*)
+  .settings(overridesScalaParserCombinators, forkedTests)
   .dependsOn(
     `dev-mode-ssl-support`,
     // Ideally, this would be the other way around, but it will require some more refactoring
@@ -551,15 +533,13 @@ lazy val `testkit-core` = (project in file("testkit/core"))
   )
 
 lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings, forkedTests)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(forkedTests: _*)
   .settings(
     name := "lagom-javadsl-testkit",
     Dependencies.`testkit-javadsl`
   )
-  .settings(overridesScalaParserCombinators: _*)
+  .settings(overridesScalaParserCombinators)
   .dependsOn(
     `testkit-core`,
     `server-javadsl`,
@@ -573,11 +553,9 @@ lazy val `testkit-javadsl` = (project in file("testkit/javadsl"))
   )
 
 lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings, forkedTests)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(forkedTests: _*)
-  .settings(overridesScalaParserCombinators: _*)
+  .settings(overridesScalaParserCombinators)
   .settings(
     name := "lagom-scaladsl-testkit",
     Dependencies.`testkit-scaladsl`
@@ -595,10 +573,8 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
   )
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
-  .settings(runtimeLibCommon: _*)
-  .settings(noMima)
+  .settings(runtimeLibCommon, noMima, forkedTests)
   .enablePlugins(HeaderPlugin)
-  .settings(forkedTests: _*)
   .settings(
     name := "lagom-javadsl-integration-tests",
     Dependencies.`integration-tests-javadsl`,
@@ -615,10 +591,8 @@ lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integra
   )
 
 lazy val `integration-tests-scaladsl` = (project in file("service/scaladsl/integration-tests"))
-  .settings(runtimeLibCommon: _*)
-  .settings(noMima)
+  .settings(runtimeLibCommon, noMima, forkedTests)
   .enablePlugins(HeaderPlugin)
-  .settings(forkedTests: _*)
   .settings(
     name := "lagom-scaladsl-integration-tests",
     Dependencies.`integration-tests-scaladsl`,
@@ -650,8 +624,7 @@ def singleTestsGrouping(tests: Seq[TestDefinition]) = {
 }
 
 lazy val `akka-discovery-service-locator-core` = (project in file("akka-service-locator/core"))
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-akka-discovery-service-locator-core",
@@ -661,8 +634,7 @@ lazy val `akka-discovery-service-locator-core` = (project in file("akka-service-
 lazy val `akka-discovery-service-locator-javadsl` = (project in file("akka-service-locator/javadsl"))
   .dependsOn(`akka-discovery-service-locator-core`)
   .dependsOn(`client-javadsl`)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-javadsl-akka-discovery-service-locator"
@@ -671,8 +643,7 @@ lazy val `akka-discovery-service-locator-javadsl` = (project in file("akka-servi
 lazy val `akka-discovery-service-locator-scaladsl` = (project in file("akka-service-locator/scaladsl"))
   .dependsOn(`akka-discovery-service-locator-core`)
   .dependsOn(`client-scaladsl`)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-akka-discovery-service-locator",
@@ -681,8 +652,7 @@ lazy val `akka-discovery-service-locator-scaladsl` = (project in file("akka-serv
   .dependsOn(`testkit-scaladsl` % Test)
 
 lazy val `akka-management-core` = (project in file("akka-management/core"))
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-akka-management-core",
@@ -690,8 +660,7 @@ lazy val `akka-management-core` = (project in file("akka-management/core"))
   )
 lazy val `akka-management-javadsl` = (project in file("akka-management/javadsl"))
   .dependsOn(`akka-management-core`)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-akka-management-javadsl",
@@ -699,8 +668,7 @@ lazy val `akka-management-javadsl` = (project in file("akka-management/javadsl")
   )
 lazy val `akka-management-scaladsl` = (project in file("akka-management/scaladsl"))
   .dependsOn(`akka-management-core`)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-akka-management-scaladsl",
@@ -709,9 +677,7 @@ lazy val `akka-management-scaladsl` = (project in file("akka-management/scaladsl
 
 lazy val `cluster-core` = (project in file("cluster/core"))
   .dependsOn(`akka-management-core`)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
-  .settings(Protobuf.settings)
+  .settings(runtimeLibCommon, mimaSettings, Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-cluster-core",
@@ -721,8 +687,7 @@ lazy val `cluster-core` = (project in file("cluster/core"))
 
 lazy val `cluster-javadsl` = (project in file("cluster/javadsl"))
   .dependsOn(`akka-management-javadsl`, `cluster-core`, jackson)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-javadsl-cluster",
@@ -731,8 +696,7 @@ lazy val `cluster-javadsl` = (project in file("cluster/javadsl"))
 
 lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
   .dependsOn(`akka-management-scaladsl`, `cluster-core`, `play-json`)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-cluster",
@@ -744,8 +708,7 @@ lazy val `pubsub-javadsl` = (project in file("pubsub/javadsl"))
     `cluster-core` % "compile;multi-jvm->multi-jvm",
     `cluster-javadsl`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-javadsl-pubsub",
@@ -758,8 +721,7 @@ lazy val `pubsub-scaladsl` = (project in file("pubsub/scaladsl"))
     `cluster-core` % "compile;multi-jvm->multi-jvm",
     `cluster-scaladsl`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-pubsub",
@@ -772,9 +734,7 @@ lazy val `projection-core` = (project in file("projection/core"))
     `cluster-core` % "compile;multi-jvm->multi-jvm",
     logback        % Test
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
-  .settings(Protobuf.settings)
+  .settings(runtimeLibCommon, mimaSettings, Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-projection-core",
@@ -784,8 +744,7 @@ lazy val `projection-core` = (project in file("projection/core"))
 
 lazy val `projection-scaladsl` = (project in file("projection/scaladsl"))
   .dependsOn(`projection-core`, `cluster-scaladsl`, logback % Test)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-scaladsl-projection",
@@ -794,8 +753,7 @@ lazy val `projection-scaladsl` = (project in file("projection/scaladsl"))
 
 lazy val `projection-javadsl` = (project in file("projection/javadsl"))
   .dependsOn(`projection-core`, `cluster-javadsl`, logback % Test)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-javadsl-projection",
@@ -804,9 +762,7 @@ lazy val `projection-javadsl` = (project in file("projection/javadsl"))
 
 lazy val `persistence-core` = (project in file("persistence/core"))
   .dependsOn(`cluster-core` % "compile;test->test", logback % Test)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
-  .settings(Protobuf.settings)
+  .settings(runtimeLibCommon, mimaSettings, Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-persistence-core",
@@ -814,8 +770,7 @@ lazy val `persistence-core` = (project in file("persistence/core"))
   )
 
 lazy val `persistence-testkit` = (project in file("persistence/testkit"))
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-persistence-testkit",
@@ -835,9 +790,7 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
     `cluster-javadsl`,
     `projection-javadsl`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
-  .settings(Protobuf.settings)
+  .settings(runtimeLibCommon, mimaSettings, Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
   .configure(multiJvm)
 
@@ -854,16 +807,13 @@ lazy val `persistence-scaladsl` = (project in file("persistence/scaladsl"))
     `cluster-scaladsl`,
     `projection-scaladsl`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
-  .settings(Protobuf.settings)
+  .settings(runtimeLibCommon, mimaSettings, Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
   .configure(multiJvm)
 
 lazy val `persistence-cassandra-core` = (project in file("persistence-cassandra/core"))
   .dependsOn(`persistence-core` % "compile;test->test")
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-persistence-cassandra-core",
@@ -881,10 +831,8 @@ lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassand
     `persistence-cassandra-core` % "compile;test->test",
     `api-javadsl`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
-  .settings()
   .configure(multiJvm)
 
 lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassandra/scaladsl"))
@@ -898,20 +846,16 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
     `persistence-cassandra-core` % "compile;test->test",
     `api-scaladsl`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
-  .settings()
   .configure(multiJvm)
 
 lazy val `persistence-jdbc-core` = (project in file("persistence-jdbc/core"))
   .dependsOn(
     `persistence-core` % "compile;test->test"
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings, forkedTests)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(forkedTests: _*)
   .settings(
     name := "lagom-persistence-jdbc-core",
     Dependencies.`persistence-jdbc-core`
@@ -928,10 +872,8 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
     `persistence-core`      % "compile;test->test",
     `persistence-javadsl`   % "compile;test->test;multi-jvm->multi-jvm"
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings, forkedTests)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(forkedTests: _*)
   .configure(multiJvm)
 
 lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scaladsl"))
@@ -944,18 +886,14 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
     `persistence-core`      % "compile;test->test",
     `persistence-scaladsl`  % "compile;test->test;multi-jvm->multi-jvm"
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings, forkedTests)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(forkedTests: _*)
   .configure(multiJvm)
 
 lazy val `persistence-jpa-javadsl` = (project in file("persistence-jpa/javadsl"))
   .dependsOn(`persistence-jdbc-javadsl` % "compile;test->test")
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings, forkedTests)
   .enablePlugins(RuntimeLibPlugins)
-  .settings(forkedTests: _*)
   .settings(
     name := "lagom-javadsl-persistence-jpa",
     Dependencies.`persistence-jpa-javadsl`,
@@ -968,8 +906,7 @@ lazy val `broker-javadsl` = (project in file("service/javadsl/broker"))
     name := "lagom-javadsl-broker",
     Dependencies.`broker-javadsl`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .dependsOn(`api-javadsl`, `persistence-javadsl`)
 
 lazy val `broker-scaladsl` = (project in file("service/scaladsl/broker"))
@@ -978,15 +915,12 @@ lazy val `broker-scaladsl` = (project in file("service/scaladsl/broker"))
     name := "lagom-scaladsl-broker",
     Dependencies.`broker-scaladsl`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .dependsOn(`api-scaladsl`, `persistence-scaladsl`)
 
 lazy val `kafka-client` = (project in file("service/core/kafka/client"))
   .enablePlugins(RuntimeLibPlugins)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
-  .settings(forkedTests: _*)
+  .settings(runtimeLibCommon, mimaSettings, forkedTests)
   .settings(
     name := "lagom-kafka-client",
     Dependencies.`kafka-client`
@@ -995,8 +929,7 @@ lazy val `kafka-client` = (project in file("service/core/kafka/client"))
 
 lazy val `kafka-client-javadsl` = (project in file("service/javadsl/kafka/client"))
   .enablePlugins(RuntimeLibPlugins)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .settings(
     name := "lagom-javadsl-kafka-client",
     Dependencies.`kafka-client-javadsl`
@@ -1009,25 +942,22 @@ lazy val `kafka-client-scaladsl` = (project in file("service/scaladsl/kafka/clie
     name := "lagom-scaladsl-kafka-client",
     Dependencies.`kafka-client-scaladsl`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .dependsOn(`api-scaladsl`, `kafka-client`)
 
 lazy val `kafka-broker` = (project in file("service/core/kafka/server"))
   .enablePlugins(RuntimeLibPlugins)
-  .settings(mimaSettings)
   .settings(
+    mimaSettings,
     name := "lagom-kafka-broker",
     Dependencies.`kafka-broker`
   )
-  .settings(runtimeLibCommon: _*)
+  .settings(runtimeLibCommon)
   .dependsOn(`api`, `persistence-core`, `projection-core`, `kafka-client`)
 
 lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server"))
   .enablePlugins(RuntimeLibPlugins)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
-  .settings(forkedTests: _*)
+  .settings(runtimeLibCommon, mimaSettings, forkedTests)
   .settings(
     name := "lagom-javadsl-kafka-broker",
     Dependencies.`kafka-broker-javadsl`,
@@ -1044,9 +974,7 @@ lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server
 
 lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/server"))
   .enablePlugins(RuntimeLibPlugins)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
-  .settings(forkedTests: _*)
+  .settings(runtimeLibCommon, mimaSettings, forkedTests)
   .settings(
     name := "lagom-scaladsl-kafka-broker",
     Dependencies.`kafka-broker-scaladsl`,
@@ -1063,23 +991,21 @@ lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/serv
 
 lazy val logback = (project in file("logback"))
   .enablePlugins(RuntimeLibPlugins)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .settings(
     name := "lagom-logback",
     Dependencies.logback
   )
-  .settings(overridesScalaParserCombinators: _*)
+  .settings(overridesScalaParserCombinators)
 
 lazy val log4j2 = (project in file("log4j2"))
   .enablePlugins(RuntimeLibPlugins)
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .settings(
     name := "lagom-log4j2",
     Dependencies.log4j2
   )
-  .settings(overridesScalaParserCombinators: _*)
+  .settings(overridesScalaParserCombinators)
 
 lazy val devEnvironmentProjects = Seq[ProjectReference](
   `reloadable-server`,
@@ -1103,8 +1029,7 @@ lazy val devEnvironmentProjects = Seq[ProjectReference](
 
 lazy val `dev-environment` = (project in file("dev"))
   .settings(name := "lagom-dev")
-  .settings(common: _*)
-  .settings(noMima)
+  .settings(common, noMima)
   .enablePlugins(HeaderPlugin)
   .aggregate(devEnvironmentProjects: _*)
   .settings(
@@ -1117,14 +1042,13 @@ lazy val `dev-environment` = (project in file("dev"))
   )
 
 lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-reloadable-server",
     Dependencies.`reloadable-server`
   )
-  .settings(overridesScalaParserCombinators: _*)
+  .settings(overridesScalaParserCombinators)
   .dependsOn(`dev-mode-ssl-support`)
 
 lazy val `server-containers` = (project in file("dev") / "server-containers")
@@ -1144,9 +1068,7 @@ lazy val `server-containers` = (project in file("dev") / "server-containers")
 
 def sharedBuildToolSupportSetup(p: Project): Project =
   p.enablePlugins(HeaderPlugin, SonatypeOnly)
-    .settings(sonatypeSettings: _*)
-    .settings(common: _*)
-    .settings(mimaSettings)
+    .settings(sonatypeSettings, common, mimaSettings)
     .settings(
       name := s"lagom-${thisProject.value.id}",
       sourceGenerators in Compile += Def.task {
@@ -1188,9 +1110,7 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
   )
 
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
-  .settings(common: _*)
-  .settings(mimaSettings)
-  .settings(scriptedSettings: _*)
+  .settings(common, mimaSettings, scriptedSettings)
   .enablePlugins(HeaderPlugin, BintrayPlugin && PluginsAccessor.exclude(Sonatype), SbtPlugin)
   .settings(
     name := "lagom-sbt-plugin",
@@ -1292,10 +1212,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
 
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .enablePlugins(lagom.SbtMavenPlugin, HeaderPlugin, SonatypeOnly, Unidoc)
-  .settings(sonatypeSettings: _*)
-  .settings(common: _*)
-  .settings(mimaSettings)
-  .settings(publishMavenStyleSettings)
+  .settings(sonatypeSettings, common, mimaSettings, publishMavenStyleSettings)
   .settings(
     name := "Lagom Maven Plugin",
     description := "Provides Lagom development environment support to maven.",
@@ -1322,8 +1239,8 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .dependsOn(`build-tool-support`)
 
 lazy val `maven-launcher` = (project in file("dev") / "maven-launcher")
-  .settings(sbtScalaSettings: _*)
   .settings(
+    sbtScalaSettings,
     name := "lagom-maven-launcher",
     description := "Dummy project, exists only to resolve the maven launcher classpath",
     Dependencies.`maven-launcher`
@@ -1353,11 +1270,7 @@ val ArchetypeVariablePattern = "%([A-Z-]+)%".r
 def archetypeProject(archetypeName: String) =
   Project(s"maven-$archetypeName-archetype", file("dev") / "archetypes" / s"maven-$archetypeName")
     .enablePlugins(HeaderPlugin, SonatypeOnly)
-    .settings(sonatypeSettings: _*)
-    .settings(common: _*)
-    .settings(mimaSettings)
-    .settings(sbtScalaSettings: _*)
-    .settings(publishMavenStyleSettings)
+    .settings(sonatypeSettings, common, mimaSettings, sbtScalaSettings, publishMavenStyleSettings)
     .settings(
       name := s"maven-archetype-lagom-$archetypeName",
       autoScalaLibrary := false,
@@ -1391,11 +1304,7 @@ def archetypeProject(archetypeName: String) =
 lazy val `maven-java-archetype` = archetypeProject("java")
 lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
   .enablePlugins(HeaderPlugin, SonatypeOnly)
-  .settings(sonatypeSettings: _*)
-  .settings(common: _*)
-  .settings(noMima)
-  .settings(sbtScalaSettings: _*)
-  .settings(publishMavenStyleSettings)
+  .settings(sonatypeSettings, common, noMima, sbtScalaSettings, publishMavenStyleSettings)
   .settings(
     name := "lagom-maven-dependencies",
     autoScalaLibrary := false,
@@ -1473,11 +1382,9 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
   .enablePlugins(HeaderPlugin, SonatypeOnly)
-  .settings(sonatypeSettings: _*)
-  .settings(common: _*)
-  .settings(mimaSettings)
-  .settings(name := "lagom-sbt-scripted-tools")
+  .settings(sonatypeSettings, common, mimaSettings)
   .settings(
+    name := "lagom-sbt-scripted-tools",
     sbtPlugin := true,
     scriptedDependencies := (()),
     crossScalaVersions := Dependencies.Versions.SbtScala,
@@ -1488,18 +1395,16 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
 
 // This project also get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-library")
-  .settings(name := "lagom-sbt-scripted-library")
-  .settings(runtimeLibCommon: _*)
-  .settings(noMima)
+  .settings(runtimeLibCommon, noMima)
   .settings(
+    name := "lagom-sbt-scripted-library",
     PgpKeys.publishSigned := {},
     publish := {}
   )
   .dependsOn(`server-javadsl`)
 
 lazy val `service-locator` = (project in file("dev") / "service-registry" / "service-locator")
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-service-locator",
@@ -1534,9 +1439,7 @@ lazy val `dev-mode-ssl-support` = (project in file("dev") / "dev-mode-ssl-suppor
     name := "lagom-dev-mode-ssl-support",
     Dependencies.`dev-mode-ssl-support`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
-  .settings(overridesScalaParserCombinators: _*)
+  .settings(runtimeLibCommon, mimaSettings, overridesScalaParserCombinators)
   .enablePlugins(RuntimeLibPlugins)
 
 lazy val `service-registry-client-core` = (project in file("dev") / "service-registry" / "client-core")
@@ -1544,9 +1447,7 @@ lazy val `service-registry-client-core` = (project in file("dev") / "service-reg
     name := "lagom-service-registry-client-core",
     Dependencies.`service-registry-client-core`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
-  .settings(overridesScalaParserCombinators: _*)
+  .settings(runtimeLibCommon, mimaSettings, overridesScalaParserCombinators)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(logback % Test)
 
@@ -1555,8 +1456,7 @@ lazy val `service-registry-client-javadsl` = (project in file("dev") / "service-
     name := "lagom-service-registry-client",
     Dependencies.`service-registry-client-javadsl`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-javadsl`, `service-registry-client-core`, immutables % "provided")
 
@@ -1565,8 +1465,7 @@ lazy val `service-registration-javadsl` = (project in file("dev") / "service-reg
     name := "lagom-service-registration",
     Dependencies.`service-registration-javadsl`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`server-javadsl`, `service-registry-client-javadsl`)
 
@@ -1575,8 +1474,7 @@ lazy val `devmode-scaladsl` = (project in file("dev") / "service-registry" / "de
     name := "lagom-scaladsl-dev-mode",
     Dependencies.`devmode-scaladsl`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-scaladsl`, `service-registry-client-core`)
 
@@ -1585,16 +1483,12 @@ lazy val `play-integration-javadsl` = (project in file("dev") / "service-registr
     name := "lagom-javadsl-play-integration",
     Dependencies.`play-integration-javadsl`
   )
-  .settings(runtimeLibCommon: _*)
-  .settings(mimaSettings)
+  .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`service-registry-client-javadsl`)
 
 lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
-  .settings(common: _*)
-  .settings(mimaSettings)
-  .settings(runtimeScalaSettings: _*)
-  .settings(sonatypeSettings)
+  .settings(common, mimaSettings, runtimeScalaSettings, sonatypeSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-cassandra-server",
@@ -1602,10 +1496,7 @@ lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
   )
 
 lazy val `kafka-server` = (project in file("dev") / "kafka-server")
-  .settings(common: _*)
-  .settings(mimaSettings)
-  .settings(runtimeScalaSettings: _*)
-  .settings(sonatypeSettings)
+  .settings(common, mimaSettings, runtimeScalaSettings, sonatypeSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-kafka-server",
@@ -1630,8 +1521,7 @@ def excludeLog4jFromKafkaServer: Seq[Setting[_]] = Seq(
 
 // Provides macros for testing macros. Is not published.
 lazy val `macro-testkit` = (project in file("macro-testkit"))
-  .settings(runtimeLibCommon)
-  .settings(noMima)
+  .settings(runtimeLibCommon, noMima)
   .settings(
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value
