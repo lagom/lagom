@@ -4,7 +4,7 @@ This page highlights the new features of Lagom 1.6. If you want to learn about t
 
 ## Akka Typed and Akka Persistence Typed
 
-Lagom 1.6 are based on the new Akka 2.6 release and have integrated support for Akka Typed.
+Lagom 1.6 is based on the new Akka 2.6 release and have integrated support for Akka Typed.
 
 As presented in the [announcement for Akka 2.6](https://www.lightbend.com/blog/six-things-architects-should-know-about-akka-2.6), the new Akka Actor APIs (known as Akka Typed) represent a major shift in the Akka ecosystem towards type-safety and more explicit guidance with Actors. We’re happy to bring this to all Lagom users as well.
 
