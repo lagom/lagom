@@ -26,4 +26,4 @@ Lagom 1.6 has a new API to [[programmaticaly stop and resume projections|Project
 
 Lagom 1.6 supports the latest Scala version (2.13), LTS Java version (11) and sbt 1.3, as well as the earlier Scala 2.12 and Java 8 versions.
 
-Scala 2.13 brings in a few preformance improvements for its collection and async (Future) APIs. Although Java users are not exposed directly to Scala APIs, the Lagom itself is built in Scala and uses many Scala dependencies. That said, updating the Scala to 2.13 version is also beneficial for users of Lagom's Java API.
+Scala 2.13 brings in a few preformance improvements for its collection and async (Future) APIs. Although Java users are not exposed directly to Scala APIs, the Lagom itself is built in Scala and uses many Scala dependencies. That said, updating Scala to v2.13 is also beneficial for Java API users.
