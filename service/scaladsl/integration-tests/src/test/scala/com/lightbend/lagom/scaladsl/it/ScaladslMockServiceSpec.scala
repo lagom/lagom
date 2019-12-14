@@ -223,9 +223,9 @@ class ScaladslMockServiceSpec extends WordSpec with Matchers {
       new LagomApplication(LagomApplicationContext.Test) with AhcWSComponents with LocalServiceLocator {
         override lazy val lagomServer = serverFor[MockService](new MockServiceImpl)
 
-        override def additionalConfiguration(initialConfiguration: Configuration): AdditionalConfiguration = {
+        override def additionalConfiguration: AdditionalConfiguration = {
           import scala.collection.JavaConverters._
-          super.additionalConfiguration(initialConfiguration) ++ ConfigFactory.parseMap(
+          super.additionalConfiguration ++ ConfigFactory.parseMap(
             Map(
               "play.server.provider" -> httpBackend.provider
             ).asJava

@@ -27,7 +27,6 @@ import com.lightbend.lagom.scaladsl.api.broker.Message
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.broker.kafka.KafkaProperties
 import com.lightbend.lagom.scaladsl.api.broker.kafka.PartitionKeyStrategy
-import com.lightbend.lagom.scaladsl.api.AdditionalConfiguration
 import com.lightbend.lagom.scaladsl.api.Descriptor
 import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
@@ -44,7 +43,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest._
 import org.slf4j.LoggerFactory
 import play.api.libs.ws.ahc.AhcWSComponents
-import play.api.Configuration
 
 import scala.collection.mutable
 import scala.concurrent.Await
@@ -78,9 +76,9 @@ class ScaladslKafkaApiSpec
       override lazy val jsonSerializerRegistry = EmptyJsonSerializerRegistry
       override lazy val lagomServer            = serverFor[TestService](new TestServiceImpl)
 
-      override def additionalConfiguration(initialConfiguration: Configuration): AdditionalConfiguration = {
+      override def additionalConfiguration = {
         import scala.collection.JavaConverters._
-        super.additionalConfiguration(initialConfiguration) ++ ConfigFactory.parseMap(
+        super.additionalConfiguration ++ ConfigFactory.parseMap(
           Map(
             "akka.remote.artery.canonical.port"             -> "0",
             "akka.remote.artery.canonical.hostname"         -> "127.0.0.1",
