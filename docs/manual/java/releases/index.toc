@@ -1,3 +1,4 @@
+Highlights16:What's new in Lagom 1.6
 Highlights15:What's new in Lagom 1.5
 Migration16:Lagom 1.6 Migration Guide
 Migration15:Lagom 1.5 Migration Guide

@@ -22,7 +22,7 @@ When using a streaming service client, Lagom will use internally a WebSocket cli
 
 This configuration will affect all streaming services that the service client consumes. It is not possible to provide different configurations when multiple streaming services are consumed.
 
-Note that the same parameter has to be configured on the server-side using [Play server configuration](https://www.playframework.com/documentation/2.7.x/ScalaWebSockets#Configuring-WebSocket-Frame-Length)
+Note that the same parameter has to be configured on the server-side using [Play server configuration](https://www.playframework.com/documentation/2.8.x/ScalaWebSockets#Configuring-WebSocket-Frame-Length)
 
 ## Circuit Breakers
 
