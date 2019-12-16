@@ -11,7 +11,7 @@ Let us first look at how a service implementation can retrieve data from Cassand
 
 Note that the [CassandraSession](api/index.html?com/lightbend/lagom/javadsl/persistence/cassandra/CassandraSession.html) is injected in the constructor. `CassandraSession` provides several methods in different flavors for executing queries. The one used in the above example returns a `Source`, i.e. a streamed response. There are also methods for retrieving a list of rows, which can be useful when you know that the result set is small, e.g. when you have included a `LIMIT` clause.
 
-All methods in `CassandraSession` are non-blocking and they return a `CompletionStage` or a `Source`. The statements are expressed in [Cassandra Query Language](https://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html) (CQL) syntax. See [Querying tables](https://docs.datastax.com/en/cql/3.3/cql/cql_using/useQueryDataTOC.html) for information about CQL queries.
+All methods in `CassandraSession` are non-blocking and they return a `CompletionStage` or a `Source`. The statements are expressed in [Cassandra Query Language](https://docs.datastax.com/en/archived/cql/3.3/cql/cqlIntro.html) (CQL) syntax. See [Querying tables](https://docs.datastax.com/en/archived/cql/3.3/cql/cql_using/useQueryDataTOC.html) for information about CQL queries.
 
 ## Update the Read-Side
 
