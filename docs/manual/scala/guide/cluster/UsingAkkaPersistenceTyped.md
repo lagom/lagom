@@ -192,3 +192,7 @@ In [Akka Persistence Typed](https://doc.akka.io/docs/akka/2.6/typed/persistence.
 The limitation to use Akka Jackson for Command messages doesn't apply to other messages like events, snapshots, or even replies. Each type Akka needs to serialize may use a different serializer.
 
 Read more about the serialization setup and configuration in the [[serialization|Serialization]] section.
+
+## Testing
+
+The section in [Testing](https://doc.akka.io/docs/akka/2.6/typed/persistence-testing.html?language=Scala) covers all the steps and features you need to write unit tests for your Aggregates. 

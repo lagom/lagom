@@ -186,3 +186,7 @@ Akka supports both [programmatic passivation](https://doc.akka.io/docs/akka/2.6/
 The messages (commands, replies) and the durable classes (events, state snapshots) need to be serializable to be sent over the wire across the cluster or be stored on the database. Akka recommends [Jackson-based serializers](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html?language=Java) --preferably JSON, but CBOR is also supported-- as a good default in most cases.
 
 Read more about the serialization setup and configuration in the [[serialization|Serialization]] section.
+
+## Testing
+
+The section in [Testing](https://doc.akka.io/docs/akka/2.6/typed/persistence-testing.html?language=Java) covers all the steps and features you need to write unit tests for your Aggregates. 
