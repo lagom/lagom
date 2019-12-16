@@ -7,14 +7,14 @@ object Dependencies {
 
   // If you update PlayVersion, you probably need to update the other Play*Version variables.
   // Also be sure to update PlayVersion in docs/build.sbt.
-  val PlayVersion             = "2.6.23"
-  val PlayJsonVersion         = "2.6.12"
-  val PlayStandaloneWsVersion = "1.1.13"
-  val TwirlVersion            = "1.3.15"
+  val PlayVersion             = "2.6.25"
+  val PlayJsonVersion         = "2.6.14"
+  val PlayStandaloneWsVersion = "1.1.14"
+  val TwirlVersion            = "1.3.16"
   val PlayFileWatchVersion    = "1.1.7"
 
   // Also be sure to update AkkaVersion in docs/build.sbt.
-  val AkkaVersion     = "2.5.22"
+  val AkkaVersion     = "2.5.27"
   val AkkaHttpVersion = "10.0.15"
   // Also be sure to update ScalaVersion in docs/build.sbt.
   val ScalaVersions                   = Seq("2.12.9", "2.11.12")
@@ -26,11 +26,11 @@ object Dependencies {
   val JacksonVersion              = "2.8.11"
   val JacksonCoreVersion          = JacksonVersion
   val JacksonDatatypeVersion      = JacksonVersion
-  val JacksonDatabindVersion      = "2.8.11.3"
+  val JacksonDatabindVersion      = "2.8.11.4"
   val GuavaVersion                = "23.6.1-jre"
   val MavenVersion                = "3.3.9"
-  val NettyVersion                = "4.1.34.Final"
-  val NettyReactiveStreamsVersion = "2.0.0"
+  val NettyVersion                = "4.1.43.Final"
+  val NettyReactiveStreamsVersion = "2.0.4"
   val KafkaVersion                = "0.11.0.1"
   val AkkaStreamKafkaVersion      = "0.18"
 
@@ -67,9 +67,9 @@ object Dependencies {
   private val scalaJava8Compat       = "org.scala-lang.modules" %% "scala-java8-compat" % ScalaJava8CompatVersion
   private val scalaXml               = "org.scala-lang.modules" %% "scala-xml" % ScalaXmlVersion
   private val javassist              = "org.javassist" % "javassist" % "3.21.0-GA"
-  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
+  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
   private val typesafeConfig         = "com.typesafe" % "config" % "1.3.3"
-  private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.3.7"
+  private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.3.8"
   private val h2                     = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore =
     ("com.datastax.cassandra" % "cassandra-driver-core" % "3.2.0").excludeAll(excludeSlf4j: _*)
@@ -86,7 +86,7 @@ object Dependencies {
   private val akkaStream           = "com.typesafe.akka" %% "akka-stream" % AkkaVersion
   private val akkaStreamTestkit    = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
   private val akkaTestkit          = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion
-  private val reactiveStreams      = "org.reactivestreams" % "reactive-streams" % "1.0.2"
+  private val reactiveStreams      = "org.reactivestreams" % "reactive-streams" % "1.0.3"
 
   private val akkaDiscovery = "com.typesafe.akka" %% "akka-discovery" % AkkaVersion
 
@@ -178,7 +178,7 @@ object Dependencies {
       akkaPersistenceCassandraLauncher,
       "com.typesafe.netty" % "netty-reactive-streams"      % NettyReactiveStreamsVersion,
       "com.typesafe.netty" % "netty-reactive-streams-http" % NettyReactiveStreamsVersion,
-      "com.typesafe.play"  %% "cachecontrol"               % "1.1.4",
+      "com.typesafe.play"  %% "cachecontrol"               % "1.1.7",
       playJson,
       playFunctional,
       // play client libs

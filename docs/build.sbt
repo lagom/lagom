@@ -1,10 +1,10 @@
 val ScalaVersion = "2.12.9"
 
-val AkkaVersion           = "2.5.22"
+val AkkaVersion           = "2.5.27"
 val JUnitVersion          = "4.11"
 val JUnitInterfaceVersion = "0.11"
 val ScalaTestVersion      = "3.0.4"
-val PlayVersion           = "2.6.23"
+val PlayVersion           = "2.6.25"
 val Log4jVersion          = "2.10.0"
 val MacWireVersion        = "2.3.0"
 val LombokVersion         = "1.16.20"

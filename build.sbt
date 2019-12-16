@@ -388,6 +388,8 @@ def SbtPluginPlugins  = AutomateHeaderPlugin && BintrayPlugin && PluginsAccessor
 
 lazy val api = (project in file("service/core/api"))
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-api",
@@ -397,6 +399,8 @@ lazy val api = (project in file("service/core/api"))
 lazy val `api-javadsl` = (project in file("service/javadsl/api"))
   .settings(name := "lagom-javadsl-api")
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -407,6 +411,8 @@ lazy val `api-javadsl` = (project in file("service/javadsl/api"))
 lazy val `api-scaladsl` = (project in file("service/scaladsl/api"))
   .settings(name := "lagom-scaladsl-api")
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -432,6 +438,8 @@ lazy val spi = (project in file("spi"))
 lazy val jackson = (project in file("jackson"))
   .settings(name := "lagom-javadsl-jackson")
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     Dependencies.jackson
@@ -440,6 +448,8 @@ lazy val jackson = (project in file("jackson"))
 
 lazy val `play-json` = (project in file("play-json"))
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -449,6 +459,8 @@ lazy val `play-json` = (project in file("play-json"))
 
 lazy val `api-tools` = (project in file("api-tools"))
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -473,6 +485,8 @@ lazy val client = (project in file("service/core/client"))
 
 lazy val `client-javadsl` = (project in file("service/javadsl/client"))
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -519,6 +533,8 @@ lazy val `server-javadsl` = (project in file("service/javadsl/server"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(mimaSettings(since = version140): _*)
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .dependsOn(server, `client-javadsl`, immutables % "provided")
   // bring jackson closer to the root of the dependency tree to prompt Maven to choose the right version
   .dependsOn(jackson)
@@ -536,6 +552,8 @@ lazy val `server-scaladsl` = (project in file("service/scaladsl/server"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(mimaSettings(since = version140): _*)
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .dependsOn(server, `client-scaladsl`, `play-json`)
 
 lazy val `testkit-core` = (project in file("testkit/core"))
@@ -669,6 +687,8 @@ lazy val `akka-discovery-service-locator-scaladsl` = (project in file("akka-serv
 
 lazy val `cluster-core` = (project in file("cluster/core"))
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -679,6 +699,8 @@ lazy val `cluster-core` = (project in file("cluster/core"))
 lazy val `cluster-javadsl` = (project in file("cluster/javadsl"))
   .dependsOn(`cluster-core`, jackson)
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -691,6 +713,8 @@ lazy val `cluster-javadsl` = (project in file("cluster/javadsl"))
 lazy val `cluster-scaladsl` = (project in file("cluster/scaladsl"))
   .dependsOn(`cluster-core`, `play-json`)
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -758,6 +782,8 @@ lazy val `persistence-javadsl` = (project in file("persistence/javadsl"))
   .dependsOn(`persistence-core` % "compile;test->test", jackson, `cluster-javadsl`)
   .settings(runtimeLibCommon: _*)
   .settings(mimaSettings(since = version140): _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
 
@@ -768,6 +794,8 @@ lazy val `persistence-scaladsl` = (project in file("persistence/scaladsl"))
   )
   .dependsOn(`persistence-core` % "compile;test->test", `play-json`, `cluster-scaladsl`)
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .settings(Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
@@ -794,6 +822,8 @@ lazy val `persistence-cassandra-javadsl` = (project in file("persistence-cassand
     `api-javadsl`
   )
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -812,6 +842,8 @@ lazy val `persistence-cassandra-scaladsl` = (project in file("persistence-cassan
     `api-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -842,6 +874,8 @@ lazy val `persistence-jdbc-javadsl` = (project in file("persistence-jdbc/javadsl
     `persistence-javadsl`   % "compile;test->test"
   )
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -859,6 +893,8 @@ lazy val `persistence-jdbc-scaladsl` = (project in file("persistence-jdbc/scalad
     `persistence-scaladsl`  % "compile;test->test"
   )
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .settings(multiJvmTestSettings: _*)
   .enablePlugins(RuntimeLibPlugins)
@@ -884,6 +920,8 @@ lazy val `broker-javadsl` = (project in file("service/javadsl/broker"))
     Dependencies.`broker-javadsl`
   )
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .dependsOn(`api-javadsl`, `persistence-javadsl`)
 
@@ -894,12 +932,16 @@ lazy val `broker-scaladsl` = (project in file("service/scaladsl/broker"))
     Dependencies.`broker-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .dependsOn(`api-scaladsl`, `persistence-scaladsl`)
 
 lazy val `kafka-client` = (project in file("service/core/kafka/client"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings())
   .settings(forkedTests: _*)
   .settings(
@@ -911,6 +953,8 @@ lazy val `kafka-client` = (project in file("service/core/kafka/client"))
 lazy val `kafka-client-javadsl` = (project in file("service/javadsl/kafka/client"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .settings(
     name := "lagom-javadsl-kafka-client",
@@ -925,6 +969,8 @@ lazy val `kafka-client-scaladsl` = (project in file("service/scaladsl/kafka/clie
     Dependencies.`kafka-client-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .dependsOn(`api-scaladsl`, `kafka-client`)
 
@@ -936,6 +982,8 @@ lazy val `kafka-broker` = (project in file("service/core/kafka/server"))
     Dependencies.`kafka-broker`
   )
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .dependsOn(`api`, `persistence-core`, `kafka-client`)
 
 lazy val `kafka-broker-javadsl` = (project in file("service/javadsl/kafka/server"))
@@ -981,6 +1029,8 @@ lazy val `kafka-broker-scaladsl` = (project in file("service/scaladsl/kafka/serv
 lazy val logback = (project in file("logback"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings())
   .settings(overridesScalaParserCombinators)
   .settings(
@@ -991,6 +1041,8 @@ lazy val logback = (project in file("logback"))
 lazy val log4j2 = (project in file("log4j2"))
   .enablePlugins(RuntimeLibPlugins)
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings())
   .settings(overridesScalaParserCombinators)
   .settings(
@@ -1028,6 +1080,8 @@ lazy val `dev-environment` = (project in file("dev"))
 
 lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .settings(overridesScalaParserCombinators)
@@ -1343,6 +1397,8 @@ lazy val `service-registry-client-javadsl` = (project in file("dev") / "service-
     Dependencies.`service-registry-client-javadsl`
   )
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-javadsl`, immutables % "provided")
@@ -1353,6 +1409,8 @@ lazy val `service-registration-javadsl` = (project in file("dev") / "service-reg
     Dependencies.`service-registration-javadsl`
   )
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`server-javadsl`, `service-registry-client-javadsl`)
@@ -1363,6 +1421,8 @@ lazy val `devmode-scaladsl` = (project in file("dev") / "service-registry" / "de
     Dependencies.`devmode-scaladsl`
   )
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings(since = version140): _*)
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`client-scaladsl`)
@@ -1373,6 +1433,8 @@ lazy val `play-integration-javadsl` = (project in file("dev") / "service-registr
     Dependencies.`play-integration-javadsl`
   )
   .settings(runtimeLibCommon: _*)
+  // needed because of parser-combinators -> https://github.com/scala/scala-parser-combinators/issues/197
+  .settings(forkedTests: _*)
   .settings(mimaSettings())
   .enablePlugins(RuntimeLibPlugins)
   .dependsOn(`service-registry-client-javadsl`)
