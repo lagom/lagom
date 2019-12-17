@@ -73,8 +73,7 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSett
     "-parameters",
     "-Xlint:unchecked",
     "-Xlint:deprecation"
-  ) ++ akka.JavaVersion.sourceAndTarget(akka.CrossJava.Keys.fullJavaHomes.value("8"))
-  ,
+  ) ++ akka.JavaVersion.sourceAndTarget(akka.CrossJava.Keys.fullJavaHomes.value("8")),
   LagomPublish.validatePublishSettingsSetting
 )
 

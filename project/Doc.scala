@@ -4,16 +4,12 @@
 package lagom
 
 import sbt._
-import sbtunidoc.BaseUnidocPlugin
-import sbtunidoc.GenJavadocPlugin
 import sbtunidoc.JavaUnidocPlugin
 import sbtunidoc.ScalaUnidocPlugin
-
 import sbtunidoc.BaseUnidocPlugin.autoImport._
 import sbtunidoc.JavaUnidocPlugin.autoImport._
 import sbtunidoc.GenJavadocPlugin.autoImport._
 import sbtunidoc.ScalaUnidocPlugin.autoImport._
-
 import sbt.Keys._
 import sbt.File
 import sbt.ScopeFilter.ProjectFilter
@@ -121,16 +117,22 @@ object UnidocRoot extends AutoPlugin {
     // Override the Scala unidoc target to *not* include the Scala version, since we don't cross-build docs
     target in (ScalaUnidoc, unidoc) := target.value / "unidoc",
     scalacOptions in (ScalaUnidoc, unidoc) ++= Seq("-skip-packages", "com.lightbend.lagom.internal"),
-    javacOptions in (JavaUnidoc, unidoc) := Seq(
-      // when generating java code from scala code in unidoc, the generated javadoc
-      // may not compile but that's fine because we only are interested in the
-      // docs of that code, not that the code is 100% valid java code.
-      // Unfortunately, this flag doesn't prevent the output of the error messages, you will
-      // see compiler errors on the sbt output but the HTMl generation complete successfully so
-      // from sbt's point of view, the task is successful.
-      "--ignore-source-errors",
-      "--frames",
-    ),
+    javacOptions in (JavaUnidoc, unidoc) := {
+      if (akka.JavaVersion.isJdk8)
+        Nil
+      else {
+        Seq(
+          // when generating java code from scala code in unidoc, the generated javadoc
+          // may not compile but that's fine because we only are interested in the
+          // docs of that code, not that the code is 100% valid java code.
+          // Unfortunately, this flag doesn't prevent the output of the error messages, you will
+          // see compiler errors on the sbt output but the HTMl generation complete successfully so
+          // from sbt's point of view, the task is successful.
+          "--ignore-source-errors",
+          "--frames",
+        )
+      }
+    },
     javacOptions in doc := Seq(
       "-windowtitle",
       "Lagom Services API",
