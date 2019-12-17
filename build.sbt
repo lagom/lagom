@@ -70,14 +70,11 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSett
   javacOptions in compile ++= Seq(
     "-encoding",
     "UTF-8",
-    "-source",
-    "1.8",
-    "-target",
-    "1.8",
     "-parameters",
     "-Xlint:unchecked",
     "-Xlint:deprecation"
-  ),
+  ) ++ akka.JavaVersion.sourceAndTarget(akka.CrossJava.Keys.fullJavaHomes.value("8"))
+  ,
   LagomPublish.validatePublishSettingsSetting
 )
 
