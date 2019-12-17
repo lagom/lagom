@@ -54,7 +54,10 @@ jobs:
       name: "Run multi-jvm tests for Scala 2.13"
     - script: bin/test-documentation
       name: "Documentation validations and tests"
-    - script: bin/test-docs-code-only
+    ## Until the release is run in JDK11 we must have 100% support for docs
+    ## generation in JDK8 (this means `unidoc` must be run in every PR)
+    - script: bin/test-documentation
+    #- script: bin/test-docs-code-only
       env: TRAVIS_JDK=8
       name: "Documentation tests (Java 8)"
 
