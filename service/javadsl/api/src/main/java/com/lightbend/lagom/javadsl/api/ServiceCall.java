@@ -54,8 +54,8 @@ public interface ServiceCall<Request, Response> {
    * supply the request header. A new service call can then be returned that uses the header. The
    * header passed in to the handler by the service call can be anything, it will be ignored -
    * {@link RequestHeader#DEFAULT} exists for this purpose. Generally, server implementations should
-   * not implement this method directly, rather, they should use <tt>ServerServiceCall</tt>, which
-   * provides an appropriate implementation.
+   * not implement this method directly, rather, they should use <code>ServerServiceCall</code>,
+   * which provides an appropriate implementation.
    *
    * @param handler A function that takes in the request header representing the request, and
    *     transforms it.
@@ -81,7 +81,7 @@ public interface ServiceCall<Request, Response> {
    * give the service call an opportunity to supply the response header when it supplies the
    * response, but only if the underlying transport supports sending a response header. Generally,
    * server implementations should not implement this method directly, rather, they should use
-   * <tt>ServerServiceCall</tt>, which provides an appropriate implementation.
+   * <code>ServerServiceCall</code>, which provides an appropriate implementation.
    *
    * @param handler The handler.
    * @return A service call that uses the given handler.
