@@ -331,14 +331,6 @@ jobs:
       - save-cache
       - store-test-reports
   # Build tools jobs
-  sbt-013-test:
-    <<: *defaults
-    steps:
-      - prepare
-      - run-code-compilation
-      - run-scripted-tests:
-          scalaVersion: "2.10.7"
-      - save-cache
   sbt-1-test:
     <<: *defaults
     steps:
@@ -459,13 +451,6 @@ workflows:
             - scala-213-test
             - scala-212-multi-jvm-test
             - scala-213-multi-jvm-test
-      - sbt-013-test:
-          requires:
-            - docs-test
-            - scala-212-test
-            - scala-213-test
-            - scala-212-multi-jvm-test
-            - scala-213-multi-jvm-test
       - maven-test:
           requires:
             - docs-test
@@ -476,27 +461,22 @@ workflows:
       # Fourth stage to run jobs on Java 11
       - docs-jdk8-test:
           requires:
-            - sbt-013-test
             - sbt-1-test
             - maven-test
       - scala-212-jdk8-test:
           requires:
-            - sbt-013-test
             - sbt-1-test
             - maven-test
       - scala-212-multi-jvm-jdk8-test:
           requires:
-            - sbt-013-test
             - sbt-1-test
             - maven-test
       - sbt-1-jdk8-test:
           requires:
-            - sbt-013-test
             - sbt-1-test
             - maven-test
       - maven-jdk8-test:
           requires:
-            - sbt-013-test
             - sbt-1-test
             - maven-test
       # Last stage
