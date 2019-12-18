@@ -1258,7 +1258,7 @@ def scriptedSettings: Seq[Setting[_]] =
           .get("scripted.scala.version")
           .getOrElse((scalaVersion in `reloadable-server`).value),
         s"-Dsbt.boot.directory=${file(sys.props("user.home")) / ".sbt" / "boot"}",
-      )
+      ) ++ sys.props.get("lagom.build.akka.version").map(v => s"-Dlagom.build.akka.version=$v").toSeq
     )
 
 def archetypeVariables(lagomVersion: String) = Map(
