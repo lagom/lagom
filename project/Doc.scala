@@ -108,6 +108,91 @@ object UnidocRoot extends AutoPlugin {
     case _                                                  => Seq("--allow-script-in-comments")
   }
 
+  val extraJavadocArguments =
+    if (akka.JavaVersion.isJdk8)
+      Nil
+    else {
+      Seq(
+        // when generating java code from scala code in unidoc, the generated javadoc
+        // may not compile but that's fine because we only are interested in the
+        // docs of that code, not that the code is 100% valid java code.
+        // Unfortunately, this flag doesn't prevent the output of the error messages, you will
+        // see compiler errors on the sbt output but the HTMl generation complete successfully so
+        // from sbt's point of view, the task is successful.
+        "--ignore-source-errors",
+        "--frames",
+      )
+    }
+
+  val baseJavaDocArguments =
+    Seq(
+      "-windowtitle",
+      "Lagom Services API",
+      // Adding a user agent when we run `javadoc` is necessary to create link docs
+      // with Akka (at least, maybe play too) because doc.akka.io is served by Cloudflare
+      // which blocks requests without a User-Agent header.
+      "-J-Dhttp.agent=Lagom-Unidoc-Javadoc",
+      "-link",
+      "https://docs.oracle.com/javase/8/docs/api/",
+      "-link",
+      "https://doc.akka.io/japi/akka/current/",
+      "-link",
+      "https://doc.akka.io/japi/akka-http/current/",
+      "-link",
+      "https://www.playframework.com/documentation/latest/api/java/",
+      "-public",
+      "-group",
+      "Services API",
+      packageList(
+        "com.lightbend.lagom.javadsl",
+        "com.lightbend.lagom.javadsl.api",
+        "com.lightbend.lagom.javadsl.client",
+        "com.lightbend.lagom.javadsl.server",
+        "com.lightbend.lagom.javadsl.api.deser",
+        "com.lightbend.lagom.javadsl.api.paging"
+      ),
+      "-group",
+      "Persistence",
+      packageList(
+        "com.lightbend.lagom.javadsl.persistence",
+        "com.lightbend.lagom.javadsl.persistence.cassandra",
+        "com.lightbend.lagom.javadsl.persistence.cassandra.testkit",
+        "com.lightbend.lagom.javadsl.persistence.jdbc",
+        "com.lightbend.lagom.javadsl.persistence.jdbc.testkit",
+        "com.lightbend.lagom.javadsl.persistence.jpa",
+        "com.lightbend.lagom.javadsl.persistence.testkit"
+      ),
+      "-group",
+      "Cluster",
+      packageList(
+        "com.lightbend.lagom.javadsl.pubsub",
+        "com.lightbend.lagom.javadsl.cluster"
+      ),
+      "-group",
+      "Projection",
+      packageList(
+        "com.lightbend.lagom.javadsl.projection",
+        "com.lightbend.lagom.projection"
+      ),
+      "-group",
+      "Message Broker",
+      packageList(
+        "com.lightbend.lagom.javadsl.api.broker",
+        "com.lightbend.lagom.javadsl.api.broker.kafka",
+        "com.lightbend.lagom.javadsl.broker",
+        "com.lightbend.lagom.javadsl.broker.kafka"
+      ),
+      "-noqualifier",
+      "java.lang",
+      "-encoding",
+      "UTF-8",
+      "-source",
+      "1.8",
+      "-notimestamp",
+      "-footer",
+      framesHashScrollingCode
+    ) ++ enableScriptsArgs
+
   override lazy val projectSettings = Seq(
     unidocAllSources in (JavaUnidoc, unidoc) ++= allGenjavadocSources.value,
     unidocAllSources in (JavaUnidoc, unidoc) := {
@@ -117,91 +202,11 @@ object UnidocRoot extends AutoPlugin {
     // Override the Scala unidoc target to *not* include the Scala version, since we don't cross-build docs
     target in (ScalaUnidoc, unidoc) := target.value / "unidoc",
     scalacOptions in (ScalaUnidoc, unidoc) ++= Seq("-skip-packages", "com.lightbend.lagom.internal"),
-    javacOptions in (JavaUnidoc, unidoc) := {
-      val extraJavadocArguments =
-        if (akka.JavaVersion.isJdk8)
-          Nil
-        else {
-          Seq(
-            // when generating java code from scala code in unidoc, the generated javadoc
-            // may not compile but that's fine because we only are interested in the
-            // docs of that code, not that the code is 100% valid java code.
-            // Unfortunately, this flag doesn't prevent the output of the error messages, you will
-            // see compiler errors on the sbt output but the HTMl generation complete successfully so
-            // from sbt's point of view, the task is successful.
-            "--ignore-source-errors",
-            "--frames",
-          )
-        }
-
-      Seq(
-        "-windowtitle",
-        "Lagom Services API",
-        // Adding a user agent when we run `javadoc` is necessary to create link docs
-        // with Akka (at least, maybe play too) because doc.akka.io is served by Cloudflare
-        // which blocks requests without a User-Agent header.
-        "-J-Dhttp.agent=Lagom-Unidoc-Javadoc",
-        "-link",
-        "https://docs.oracle.com/javase/8/docs/api/",
-        "-link",
-        "https://doc.akka.io/japi/akka/current/",
-        "-link",
-        "https://doc.akka.io/japi/akka-http/current/",
-        "-link",
-        "https://www.playframework.com/documentation/latest/api/java/",
-        "-public",
-        "-group",
-        "Services API",
-        packageList(
-          "com.lightbend.lagom.javadsl",
-          "com.lightbend.lagom.javadsl.api",
-          "com.lightbend.lagom.javadsl.client",
-          "com.lightbend.lagom.javadsl.server",
-          "com.lightbend.lagom.javadsl.api.deser",
-          "com.lightbend.lagom.javadsl.api.paging"
-        ),
-        "-group",
-        "Persistence",
-        packageList(
-          "com.lightbend.lagom.javadsl.persistence",
-          "com.lightbend.lagom.javadsl.persistence.cassandra",
-          "com.lightbend.lagom.javadsl.persistence.cassandra.testkit",
-          "com.lightbend.lagom.javadsl.persistence.jdbc",
-          "com.lightbend.lagom.javadsl.persistence.jdbc.testkit",
-          "com.lightbend.lagom.javadsl.persistence.jpa",
-          "com.lightbend.lagom.javadsl.persistence.testkit"
-        ),
-        "-group",
-        "Cluster",
-        packageList(
-          "com.lightbend.lagom.javadsl.pubsub",
-          "com.lightbend.lagom.javadsl.cluster"
-        ),
-        "-group",
-        "Projection",
-        packageList(
-          "com.lightbend.lagom.javadsl.projection",
-          "com.lightbend.lagom.projection"
-        ),
-        "-group",
-        "Message Broker",
-        packageList(
-          "com.lightbend.lagom.javadsl.api.broker",
-          "com.lightbend.lagom.javadsl.api.broker.kafka",
-          "com.lightbend.lagom.javadsl.broker",
-          "com.lightbend.lagom.javadsl.broker.kafka"
-        ),
-        "-noqualifier",
-        "java.lang",
-        "-encoding",
-        "UTF-8",
-        "-source",
-        "1.8",
-        "-notimestamp",
-        "-footer",
-        framesHashScrollingCode
-      ) ++ enableScriptsArgs ++ extraJavadocArguments
-    },
+    // The settings below are very similar. JDK8 honours both `javacOptions in doc`
+    // and `javacOptions in (JavaUnidoc, unidoc)` but JDK11 only seems to pick `javacOptions in (JavaUnidoc, unidoc)`.
+    // We're keeping both just in case.
+    javacOptions in doc := baseJavaDocArguments ++ extraJavadocArguments,
+    javacOptions in (JavaUnidoc, unidoc) := baseJavaDocArguments ++ extraJavadocArguments,
   )
 
   def packageList(names: String*): String =
