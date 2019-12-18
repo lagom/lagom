@@ -62,7 +62,7 @@ jobs:
       name: "Documentation tests (Java 8)"
 
     - stage: test-build-tools
-       script: SCALA_VERSION=2.12.10 bin/test-sbt
+      script: SCALA_VERSION=2.12.10 bin/test-sbt
       name: "Scripted tests for sbt 1"
     - script: SCALA_VERSION=2.12.10 bin/test-sbt
       env: TRAVIS_JDK=8
