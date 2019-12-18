@@ -50,7 +50,7 @@ commands:
     parameters:
       jdkVersion:
         type: string
-        default: "8"
+        default: "11"
     steps:
       - checkout
       - generate-cache-key
@@ -274,6 +274,13 @@ jobs:
       - prepare
       - run-code-compilation
       - run-binary-compatibility-validation
+  docs-jdk8-validation:
+    <<: *defaults
+    steps:
+      - prepare:
+          jdkVersion: "8"
+      - run-docs-validation
+      - save-cache
   docs-validation:
     <<: *defaults
     steps:
@@ -324,14 +331,6 @@ jobs:
       - save-cache
       - store-test-reports
   # Build tools jobs
-  sbt-013-test:
-    <<: *defaults
-    steps:
-      - prepare
-      - run-code-compilation
-      - run-scripted-tests:
-          scalaVersion: "2.10.7"
-      - save-cache
   sbt-1-test:
     <<: *defaults
     steps:
@@ -348,46 +347,46 @@ jobs:
       - run-mavem-pom-validation
       - save-cache
   # Java 11 jobs
-  docs-jdk11-test:
+  docs-jdk8-test:
     <<: *defaults
     steps:
       - prepare:
-          jdkVersion: "11"
+          jdkVersion: "8"
       - run-code-compilation
       - run-docs-tests
       - save-cache
       - store-test-reports
-  scala-212-jdk11-test:
+  scala-212-jdk8-test:
     <<: *defaults
     steps:
       - prepare:
-          jdkVersion: "11"
+          jdkVersion: "8"
       - run-code-compilation
       - run-tests
       - save-cache
       - store-test-reports
-  scala-212-multi-jvm-jdk11-test:
+  scala-212-multi-jvm-jdk8-test:
     <<: *defaults
     steps:
       - prepare:
-         jdkVersion: "11"
+         jdkVersion: "8"
       - run-code-compilation
       - multi-jvm-run-tests
       - save-cache
       - store-test-reports
-  sbt-1-jdk11-test:
+  sbt-1-jdk8-test:
     <<: *defaults
     steps:
       - prepare:
-          jdkVersion: "11"
+          jdkVersion: "8"
       - run-code-compilation
       - run-scripted-tests
       - save-cache
-  maven-jdk11-test:
+  maven-jdk8-test:
     <<: *defaults
     steps:
       - prepare:
-          jdkVersion: "11"
+          jdkVersion: "8"
       - run-code-compilation
       - run-maven-tests
       - save-cache
@@ -412,41 +411,40 @@ workflows:
       - code-validation
       - binary-compatibility-validation
       - docs-validation
+      - docs-jdk8-validation
       # Second workflow stage to run tests
       - docs-test:
           requires:
             - code-validation
             - docs-validation
+            - docs-jdk8-validation
             - binary-compatibility-validation
       - scala-212-test:
           requires:
             - code-validation
             - docs-validation
+            - docs-jdk8-validation
             - binary-compatibility-validation
       - scala-213-test:
           requires:
             - code-validation
             - docs-validation
+            - docs-jdk8-validation
             - binary-compatibility-validation
       - scala-212-multi-jvm-test:
           requires:
             - code-validation
             - docs-validation
+            - docs-jdk8-validation
             - binary-compatibility-validation
       - scala-213-multi-jvm-test:
           requires:
             - code-validation
             - docs-validation
+            - docs-jdk8-validation
             - binary-compatibility-validation
       # Third workflow stage to run build tools tests
       - sbt-1-test:
-          requires:
-            - docs-test
-            - scala-212-test
-            - scala-213-test
-            - scala-212-multi-jvm-test
-            - scala-213-multi-jvm-test
-      - sbt-013-test:
           requires:
             - docs-test
             - scala-212-test
@@ -461,36 +459,31 @@ workflows:
             - scala-212-multi-jvm-test
             - scala-213-multi-jvm-test
       # Fourth stage to run jobs on Java 11
-      - docs-jdk11-test:
+      - docs-jdk8-test:
           requires:
-            - sbt-013-test
             - sbt-1-test
             - maven-test
-      - scala-212-jdk11-test:
+      - scala-212-jdk8-test:
           requires:
-            - sbt-013-test
             - sbt-1-test
             - maven-test
-      - scala-212-multi-jvm-jdk11-test:
+      - scala-212-multi-jvm-jdk8-test:
           requires:
-            - sbt-013-test
             - sbt-1-test
             - maven-test
-      - sbt-1-jdk11-test:
+      - sbt-1-jdk8-test:
           requires:
-            - sbt-013-test
             - sbt-1-test
             - maven-test
-      - maven-jdk11-test:
+      - maven-jdk8-test:
           requires:
-            - sbt-013-test
             - sbt-1-test
             - maven-test
       # Last stage
       - good-build:
           requires:
-            - scala-212-jdk11-test
-            - sbt-1-jdk11-test
-            - maven-jdk11-test
-            - docs-jdk11-test
-            - scala-212-multi-jvm-jdk11-test
+            - scala-212-jdk8-test
+            - sbt-1-jdk8-test
+            - maven-jdk8-test
+            - docs-jdk8-test
+            - scala-212-multi-jvm-jdk8-test

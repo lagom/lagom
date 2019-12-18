@@ -18,7 +18,7 @@ env:
     # the following `secure` is WHITESOURCE_PASSWORD which is the same for all branches.
     - secure: "A4xDS51pB8ERJPR/a5Lui//E//1L9pJ9Eg1kcRm/OR2izg7rx7p8Wemfp9gRhz8trn1mIrXDSMSK9iwENsfIP1bc/6AgtTWKBPm9DKjG0HW3swFFMBzzd6gxmOi4JD8rOtVc62Cf4qnURz+hsPRcI5C8aAW1fNi/5x1Q3HcAMtxE8EdPR7tU6Ve8utieOFPpqNQMktcL1aFusu+QddO14ZpQ944uAg0YdRRYFMG9SCbTkNDLt66AHTF4rKyZfkbM1tadqvvDez7Uo2eGK+KoQxTyrjct8W4Gqh+obOTyj1ngaPZEKvgbIJowFCrBzY5W+oNl6S+qa6PyAwq1MWKFqyUZt4P9fk3N9MDOYvuaS+YJCQd3VS4qCL9MEWahXNc3ZT+m8u5HT5axuPy+2qiKL/wrGzAXd74K9gNKuZJD7s+79Pwn34ZEbNMZ13AxyF6QkavU+Xcr5tQNwwZ+8P+k5OGoVsJOqZ3J7M+igGDRZh0fD693Wdp+mfORQqIvJFKED4daJYgTLufwt4tBLUxPUvlUZOWZFPn8DSQqTE7vsE9VPdpKSXTv1MyHxeMTiAX+XPabEWoazB8/4rljkC/EPxAButPD+AtUatfa6fIXpyGxHIvX8CFa2UnOQe9YbTRnxqa8TYvyMsWNQn1Q1eQMkvXCetqoefW5hA0UHTU5Zy4="
   matrix:
-    - TRAVIS_JDK=8
+    - TRAVIS_JDK=11
 
 before_install:
   # See https://github.com/travis-ci/travis-ci/issues/4629#issuecomment-239493916
@@ -41,36 +41,37 @@ jobs:
     - script: SCALA_VERSION=2.12.10 bin/test-2.1x
       name: "Run tests for Scala 2.12"
     - script: SCALA_VERSION=2.12.10 bin/test-2.1x
-      env: TRAVIS_JDK=11
-      name: "Run tests for Scala 2.12 and Java 11"
+      env: TRAVIS_JDK=8
+      name: "Run tests for Scala 2.12 and Java 8"
     - script: SCALA_VERSION=2.13.0 bin/test-2.1x
       name: "Run tests for Scala 2.13"
     - script: SCALA_VERSION=2.12.10 bin/test-multi-jvm-2.1x
       name: "Run multi-jvm tests for Scala 2.12"
     - script: SCALA_VERSION=2.12.10 bin/test-multi-jvm-2.1x
-      env: TRAVIS_JDK=11
-      name: "Run multi-jvm tests for Scala 2.12 and Java 11"
+      env: TRAVIS_JDK=8
+      name: "Run multi-jvm tests for Scala 2.12 and Java 8"
     - script: SCALA_VERSION=2.13.0 bin/test-multi-jvm-2.1x
       name: "Run multi-jvm tests for Scala 2.13"
     - script: bin/test-documentation
       name: "Documentation validations and tests"
-    - script: bin/test-docs-code-only
-      env: TRAVIS_JDK=11
-      name: "Documentation tests (Java 11)"
+    ## Until the release is run in JDK11 we must have 100% support for docs
+    ## generation in JDK8 (this means `unidoc` must be run in every PR)
+    - script: bin/test-documentation
+    #- script: bin/test-docs-code-only
+      env: TRAVIS_JDK=8
+      name: "Documentation tests (Java 8)"
 
     - stage: test-build-tools
-      script: SCALA_VERSION=2.10.7 bin/test-sbt
-      name: "Scripted tests for sbt 0.13"
-    - script: SCALA_VERSION=2.12.10 bin/test-sbt
+      script: SCALA_VERSION=2.12.10 bin/test-sbt
       name: "Scripted tests for sbt 1"
     - script: SCALA_VERSION=2.12.10 bin/test-sbt
-      env: TRAVIS_JDK=11
-      name: "Scripted tests for sbt 1 and Java 11"
+      env: TRAVIS_JDK=8
+      name: "Scripted tests for sbt 1 and Java 8"
     - script: bin/test-maven
       name: "PublishM2 and test Maven"
     - script: bin/test-maven
-      name: "PublishM2 and test Maven using Java 11"
-      env: TRAVIS_JDK=11
+      name: "PublishM2 and test Maven using Java 8"
+      env: TRAVIS_JDK=8
     - script: SCALA_VERSION=2.12.10 bin/test-sbt-13x
       name: "Scripted tests for sbt 1.3"
       if: type = cron
