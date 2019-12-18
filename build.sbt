@@ -277,7 +277,23 @@ val mimaSettings: Seq[Setting[_]] = {
       else moduleID
     }.toSet,
     mimaBinaryIssueFilters ++= Seq(
-      // Add mima filters here.
+      // Drop sbt 0.13
+      ProblemFilters.exclude[MissingClassProblem]("sbt.LagomLoad"),
+      ProblemFilters.exclude[MissingClassProblem]("sbt.LagomLoad$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomPluginCompat"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomReloadableServiceCompat$autoImport"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.DynamicProjectAdder"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.DynamicProjectAdder$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomReloadableServiceCompat"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.LagomPlugin$"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.sbt.LagomPlugin.getPollInterval"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.sbt.LagomImport.getForkOptions"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.LagomImport$"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.LagomReloadableService$autoImport$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomReloadableServiceCompat$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomImportCompat"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.run.RunSupport$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.run.RunSupportCompat"),
     )
   )
 }
