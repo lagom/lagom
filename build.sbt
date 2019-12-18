@@ -14,11 +14,6 @@ import org.scalafmt.sbt.ScalafmtPlugin
 // Turn off "Resolving" log messages that clutter build logs
 ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
 
-def defineSbtVersion(scalaBinVer: String): String = scalaBinVer match {
-  case "2.12" => "1.2.8"
-  case _      => "0.13.18"
-}
-
 def evictionSettings: Seq[Setting[_]] = Seq(
   // This avoids a lot of dependency resolution warnings to be showed.
   // They are not required in Lagom since we have a more strict whitelist
@@ -1099,7 +1094,7 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
   .settings(
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
-    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
+    sbtVersion in pluginCrossBuild := Dependencies.Versions.Sbt1,
     sbtPlugin := true,
     scriptedDependencies := (()),
     target := target.value / "lagom-sbt-build-tool-support",
@@ -1112,7 +1107,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     name := "lagom-sbt-plugin",
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
-    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
+    sbtVersion in pluginCrossBuild := Dependencies.Versions.Sbt1,
     Dependencies.`sbt-plugin`,
     libraryDependencies ++= Seq(
       Defaults
@@ -1385,7 +1380,7 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
     scriptedDependencies := (()),
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
-    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value)
+    sbtVersion in pluginCrossBuild := Dependencies.Versions.Sbt1,
   )
   .dependsOn(`sbt-plugin`)
 
