@@ -1365,7 +1365,7 @@ def scriptedSettings: Seq[Setting[_]] =
         "-Dscala.version=" + sys.props
           .get("scripted.scala.version")
           .getOrElse((scalaVersion in `reloadable-server`).value)
-      )
+      ) ++ sys.props.get("lagom.build.akka.version").map(v => s"-Dlagom.build.akka.version=$v").toSeq
     )
 
 def archetypeVariables(lagomVersion: String) = Map(
