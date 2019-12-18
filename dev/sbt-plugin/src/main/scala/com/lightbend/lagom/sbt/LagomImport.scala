@@ -9,7 +9,7 @@ import com.lightbend.lagom.core.LagomVersion
 import sbt.Keys._
 import sbt._
 
-object LagomImport extends LagomImportCompat {
+object LagomImport {
   private val moduleOrganization = "com.lightbend.lagom"
   def component(id: String)      = moduleOrganization %% id % LagomVersion.current
 
@@ -68,7 +68,7 @@ object LagomImport extends LagomImportCompat {
   private def singleTestsGrouping(tests: Seq[TestDefinition], javaOptions: Seq[String]) = {
     // We could group non Cassandra tests into another group
     // to avoid new JVM for each test, see http://www.scala-sbt.org/release/docs/Testing.html
-    val forkOptions = getForkOptions(javaOptions.toVector)
+    val forkOptions = ForkOptions().withRunJVMOptions(javaOptions.toVector)
     tests.map { test =>
       Tests.Group(
         name = test.name,
