@@ -554,6 +554,8 @@ object Dependencies {
   )
 
   val `api-tools` = libraryDependencies ++= Seq(
+    akkaActorTyped,
+    akkaJackson,
     play,
     scalaTest % Test,
     // Upgrades needed to match whitelist versions
@@ -598,6 +600,7 @@ object Dependencies {
   )
 
   val `integration-client-javadsl` = libraryDependencies ++= Seq(
+    akkaJackson,
     playWs,
     playAhcWs,
     // we need to explicitly add akka-remote in test scope
@@ -629,6 +632,8 @@ object Dependencies {
 
   val `testkit-core` = libraryDependencies ++= Seq(
     akkaActor,
+    akkaActorTyped,
+    akkaJackson,
     akkaStream,
     play,
     akkaPersistenceCassandraLauncher,
@@ -848,6 +853,7 @@ object Dependencies {
   val `projection-javadsl` = libraryDependencies ++= Seq.empty[ModuleID]
 
   val `persistence-core` = libraryDependencies ++= Seq(
+    akkaActorTyped,
     akkaPersistence,
     akkaPersistenceQuery,
     akkaClusterSharding,
