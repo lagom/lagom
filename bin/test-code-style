@@ -5,31 +5,15 @@
 # shellcheck source=bin/scriptLib
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
-## The following are three separate `sbt` invocations because in some versions of sbt (0.13)
-## trying to run all tasks in a single session caused "GC overhead limit exceeded" (both in
-## Travis and locally).
-## See https://github.com/lagom/lagom/pull/1482
-
-runSbt  +headerCheck \
-        +test:headerCheck \
-        multi-jvm:headerCheck
-
 declare -a EXTRA_TASKS
 if [ "$TRAVIS_EVENT_TYPE" != "cron" ]; then
     EXTRA_TASKS+=("versionSyncCheck")
 fi
 
-runSbt  "${EXTRA_TASKS[@]}" \
-        checkAkkaModuleVersions \
-        +mimaReportBinaryIssues
-
-printMessage "VALIDATE SCALA CODE FORMATTING"
-runSbt scalafmtAll scalafmtSbt
-git diff --exit-code || (
-  echo "[error] ERROR: scalafmt check failed, see differences above."
-  echo "[error] To fix, format your sources using 'sbt scalafmtAll scalafmtSbt' before submitting a pull request."
-  false
-)
+runSbt  +headerCheck +test:headerCheck multi-jvm:headerCheck \
+        scalafmtCheckAll scalafmtSbtCheck \
+        +mimaReportBinaryIssues \
+        checkAkkaModuleVersions "${EXTRA_TASKS[@]}"
 
 printMessage "VALIDATE JAVA CODE FORMATTING"
 runSbt javafmt test:javafmt multi-jvm:javafmt
