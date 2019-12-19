@@ -110,7 +110,12 @@ object UnidocRoot extends AutoPlugin {
 
   val extraJavadocArguments =
     if (akka.JavaVersion.isJdk8)
-      Nil
+      Seq(
+        // Using Frames when generating javadoc is deprecated in JDK11 and it will be removed.
+        // Using the `--frames` argument in JDK triggers an error message (but execution 
+        // completes)
+        "--frames",
+      )
     else {
       Seq(
         // when generating java code from scala code in unidoc, the generated javadoc
@@ -120,7 +125,6 @@ object UnidocRoot extends AutoPlugin {
         // see compiler errors on the sbt output but the HTMl generation complete successfully so
         // from sbt's point of view, the task is successful.
         "--ignore-source-errors",
-        "--frames",
       )
     }
 
