@@ -1110,7 +1110,7 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
   .settings(
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
-    sbtVersion in pluginCrossBuild := Dependencies.Versions.Sbt1,
+    sbtVersion in pluginCrossBuild := Dependencies.Versions.TargetSbt1,
     sbtPlugin := true,
     scriptedDependencies := (()),
     target := target.value / "lagom-sbt-build-tool-support",
@@ -1123,7 +1123,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     name := "lagom-sbt-plugin",
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
-    sbtVersion in pluginCrossBuild := Dependencies.Versions.Sbt1,
+    sbtVersion in pluginCrossBuild := Dependencies.Versions.TargetSbt1,
     Dependencies.`sbt-plugin`,
     libraryDependencies ++= Seq(
       Defaults
@@ -1396,7 +1396,7 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
     scriptedDependencies := (()),
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
-    sbtVersion in pluginCrossBuild := Dependencies.Versions.Sbt1,
+    sbtVersion in pluginCrossBuild := Dependencies.Versions.TargetSbt1,
   )
   .dependsOn(`sbt-plugin`)
 
