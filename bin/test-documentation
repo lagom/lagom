@@ -9,14 +9,14 @@ runSbt unidoc
 
 declare -a EXTRA_TASKS
 if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then
-    EXTRA_TASK="markdownValidateExternalLinks"
+    EXTRA_TASKS+=("markdownValidateExternalLinks")
 fi
 
 cd docs
 runSbt markdownValidateDocs markdownEvaluateSbtFiles \
   headerCheck test:headerCheck \
   scalafmtCheckAll scalafmtSbtCheck \
-  test $EXTRA_TASK
+  test "${EXTRA_TASKS[@]}"
 
 printMessage "VALIDATE JAVA CODE FORMATTING FOR DOCS SAMPLE CODE"
 runSbt javafmt test:javafmt
