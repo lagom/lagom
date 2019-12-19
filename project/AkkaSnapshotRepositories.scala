@@ -12,9 +12,9 @@ object AkkaSnapshotRepositories extends AutoPlugin {
   override def trigger: PluginTrigger = allRequirements
 
   override def projectSettings: Seq[Def.Setting[_]] = {
-    // If this is a cron job in Travis:
-    // https://docs.travis-ci.com/user/cron-jobs/#detecting-builds-triggered-by-cron
-    resolvers ++= (sys.env.get("TRAVIS_EVENT_TYPE").filter(_.equalsIgnoreCase("cron")) match {
+    // The system property lagom.build.akka.version is regularly used for snapshot versions
+    // so it's the trigger for adding the snapshots resolvers
+    resolvers ++= (sys.props.get("lagom.build.akka.version") match {
       case Some(_) => Seq("akka-snapshot-repository".at("https://repo.akka.io/snapshots"))
       case None    => Seq.empty
     })
