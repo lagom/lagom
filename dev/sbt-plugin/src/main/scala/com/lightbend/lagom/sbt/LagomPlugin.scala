@@ -20,6 +20,7 @@ import sbt.Def.Initialize
 import sbt.Keys._
 import sbt.Def
 import sbt._
+import sbt.internal.inc.Analysis
 import sbt.plugins.CorePlugin
 import sbt.plugins.IvyPlugin
 import sbt.plugins.JvmPlugin
@@ -222,7 +223,10 @@ object LagomReloadableService extends AutoPlugin {
   override def requires = LagomPlugin
   override def trigger  = noTrigger
 
-  object autoImport extends LagomReloadableServiceCompat.autoImport {
+  object autoImport {
+    val lagomReload = taskKey[Analysis](
+      "Task executed to recompile (and possibly reload) the app when there are changes in sources"
+    )
     val lagomReloaderClasspath = taskKey[Classpath]("The classpath that gets used to create the reloaded classloader")
     val lagomClassLoaderDecorator = taskKey[ClassLoader => ClassLoader](
       "Function that decorates the Lagom classloader. Can be used to inject things into the classpath."
@@ -232,6 +236,9 @@ object LagomReloadableService extends AutoPlugin {
 
   import LagomPlugin.autoImport._
   import autoImport._
+
+  private def joinAnalysis(analysisSeq: Seq[xsbti.compile.CompileAnalysis]) =
+    analysisSeq.map(_.asInstanceOf[Analysis]).reduceLeft(_ ++ _)
 
   override def projectSettings = Seq(
     lagomRun := {
@@ -249,7 +256,7 @@ object LagomReloadableService extends AutoPlugin {
             inDependencies(thisProjectRef.value)
           )
         )
-        .map(LagomReloadableServiceCompat.joinAnalysis)
+        .map(joinAnalysis)
     }.value,
     lagomReloaderClasspath := Classpaths
       .concatDistinct(
@@ -300,7 +307,7 @@ object LagomReloadableService extends AutoPlugin {
 /**
  * Any service that can be run in Lagom should enable this plugin.
  */
-object LagomPlugin extends AutoPlugin with LagomPluginCompat {
+object LagomPlugin extends AutoPlugin {
   import scala.concurrent.duration._
 
   override def requires = JvmPlugin
@@ -524,7 +531,7 @@ object LagomPlugin extends AutoPlugin with LagomPluginCompat {
   override def projectSettings = Seq(
     lagomFileWatchService := {
       FileWatchService
-        .defaultWatchService(target.value, getPollInterval(pollInterval.value), new SbtLoggerProxy(sLog.value))
+        .defaultWatchService(target.value, pollInterval.value.toMillis.toInt, new SbtLoggerProxy(sLog.value))
     },
     lagomServiceAddress := "127.0.0.1",
     // deprecated settings. we set to -1 so we can verify later if user have manually assigned it or not.

@@ -11,11 +11,14 @@ object Dependencies {
   object Versions {
     // Version numbers
 
-    val Scala210 = "2.10.7"
     val Scala212 = "2.12.10"
     val Scala213 = "2.13.1"
     val Scala    = Seq(Scala212, Scala213)
-    val SbtScala = Seq(Scala212, Scala210)
+    val SbtScala = Seq(Scala212)
+
+    // This is not the sbt version used by Lagom build itself, but
+    // instead the version used to build Lagom sbt plugin.
+    val TargetSbt1 = "1.2.8"
 
     // If you update the version of Play, you probably need to update the other Play* variables.
     val Play             = "2.8.0" // sync with docs/build.sbt
