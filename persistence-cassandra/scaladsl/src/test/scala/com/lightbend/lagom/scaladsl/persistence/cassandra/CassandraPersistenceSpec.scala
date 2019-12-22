@@ -35,7 +35,7 @@ class CassandraPersistenceSpec private (system: ActorSystem) extends ActorSystem
     )
 
   def this(config: Config, jsonSerializerRegistry: JsonSerializerRegistry) =
-    this(PersistenceSpec.getCallerName(getClass), config, jsonSerializerRegistry)
+    this(PersistenceSpec.testNameFromCallStack(classOf[CassandraPersistenceSpec]), config, jsonSerializerRegistry)
 
   def this(jsonSerializerRegistry: JsonSerializerRegistry) = this(ConfigFactory.empty(), jsonSerializerRegistry)
 

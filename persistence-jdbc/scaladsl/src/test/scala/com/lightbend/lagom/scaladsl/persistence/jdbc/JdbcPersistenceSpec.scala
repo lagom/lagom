@@ -41,7 +41,7 @@ abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorS
     )
 
   def this(config: Config, registry: JsonSerializerRegistry) =
-    this(PersistenceSpec.getCallerName(getClass), config, registry)
+    this(PersistenceSpec.testNameFromCallStack(classOf[JdbcPersistenceSpec]), config, registry)
 
   def this(registry: JsonSerializerRegistry) = this(ConfigFactory.empty(), registry)
 
