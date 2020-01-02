@@ -1,4 +1,4 @@
-<!--- Copyright (C) 2016-2020 Lightbend Inc. <https://www.lightbend.com> -->
+<!--- Copyright (C) Lightbend Inc. <https://www.lightbend.com> -->
 # Lagom design philosophy
 
 Consider some of the basic requirements of a Reactive Microservice as identified by Jonas Bonér (quotes extracted from [*Reactive Microservices Architecture: Design Principles for Distributed Systems*] (https://info.lightbend.com/COLL-20XX-Reactive-Microservices-Architecture-RES-LP.html)):
