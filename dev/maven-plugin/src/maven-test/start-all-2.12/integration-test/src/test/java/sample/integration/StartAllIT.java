@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) 2016-2020 Lightbend Inc. <https://www.lightbend.com>
  */
 
 package sample.integration;
@@ -112,7 +112,7 @@ public class StartAllIT {
         String messageToPublish = "hello";
 
         // Store the message returned by Kafka into a future.
-        CompletableFuture<String> messageConsumed = new CompletableFuture<>(); 
+        CompletableFuture<String> messageConsumed = new CompletableFuture<>();
         Flow<String, Done, ?> flow = Flow.fromFunction(msg -> {
             messageConsumed.complete(msg);
             return Done.getInstance();
