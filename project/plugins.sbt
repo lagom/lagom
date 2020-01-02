@@ -11,7 +11,7 @@ addSbtPlugin("de.heikoseeberger" % "sbt-header"   % "5.3.1")
 addSbtPlugin("org.xerial.sbt"    % "sbt-sonatype" % "3.8.1")
 addSbtPlugin("com.github.gseitz" % "sbt-release"  % "1.0.12")
 addSbtPlugin("com.jsuereth"      % "sbt-pgp"      % "2.0.1")
-addSbtPlugin("org.foundweekends" % "sbt-bintray"  % "0.5.5")
+addSbtPlugin("org.foundweekends" % "sbt-bintray"  % "0.5.6")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm"   % "0.4.0")
 addSbtPlugin("com.typesafe"     % "sbt-mima-plugin" % "0.6.1")
