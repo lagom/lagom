@@ -46,7 +46,7 @@ object ScriptedTools extends AutoPlugin {
     // This is copy & pasted from project/AkkaSnapshotRepositories so that scripted tests
     // can use Akka snapshot repositories as well. If you change it here, remember to keep
     // project/AkkaSnapshotRepositories in sync.
-    resolvers ++= (sys.env.get("TRAVIS_EVENT_TYPE").filter(_.equalsIgnoreCase("cron")) match {
+    resolvers ++= (sys.props.get("lagom.build.akka.version") match {
       case Some(_) =>
         Seq(
           "akka-snapshot-repository".at("https://repo.akka.io/snapshots"),
