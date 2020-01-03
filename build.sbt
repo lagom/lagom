@@ -37,7 +37,7 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSett
   headerLicense := Some(
     HeaderLicense.Custom(
       // When updating, keep in sync with docs/build.sbt configuration
-      "Copyright (C) 2016-2020 Lightbend Inc. <https://www.lightbend.com>"
+      "Copyright (C) Lightbend Inc. <https://www.lightbend.com>"
     )
   ),
   pomExtra := {

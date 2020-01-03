@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright (C) 2009-2020 Lightbend Inc. <https://www.lightbend.com>
+# Copyright (C) Lightbend Inc. <https://www.lightbend.com>
 
 # shellcheck source=bin/scriptLib
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"

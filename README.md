@@ -22,7 +22,7 @@ Lagom focuses on ensuring that your application realizes the full potential of t
 
 ## License
 
-Copyright (C) 2016-2020 Lightbend Inc. (https://www.lightbend.com).
+Copyright (C) Lightbend Inc. (https://www.lightbend.com).
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0.
 

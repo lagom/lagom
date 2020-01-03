@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2020 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.example.hello.impl;
@@ -17,7 +17,7 @@ import com.example.hello.impl.HelloEvent.GreetingMessageChanged;
 public class HelloEntity extends PersistentEntity<HelloCommand, HelloEvent, HelloState> {
     @Override
     public Behavior initialBehavior(Optional<HelloState> snapshotState) {
- 
+
         BehaviorBuilder b = newBehaviorBuilder(
                 snapshotState.orElse(new HelloState("Hello", LocalDateTime.now().toString()))
         );

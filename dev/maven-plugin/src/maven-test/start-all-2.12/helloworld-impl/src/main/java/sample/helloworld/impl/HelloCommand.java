@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2020 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package sample.helloworld.impl;
@@ -18,7 +18,7 @@ import akka.Done;
 
 /**
  * This interface defines all the commands that the HelloWorld entity supports.
- * 
+ *
  * By convention, the commands should be inner classes of the interface, which
  * makes it simple to get a complete picture of what commands an entity
  * supports.

@@ -107,7 +107,7 @@ lazy val docs = project
     markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/edit/$branch/docs/manual/")),
     headerLicense := Some(
       HeaderLicense.Custom(
-        "Copyright (C) 2016-2020 Lightbend Inc. <https://www.lightbend.com>"
+        "Copyright (C) Lightbend Inc. <https://www.lightbend.com>"
       )
     ),
   )
