@@ -16,13 +16,5 @@ cd docs
 runSbt markdownValidateDocs markdownEvaluateSbtFiles \
   headerCheck test:headerCheck \
   scalafmtCheckAll scalafmtSbtCheck \
+  javafmtCheckAll \
   test "${EXTRA_TASKS[@]}"
-
-printMessage "VALIDATE JAVA CODE FORMATTING FOR DOCS SAMPLE CODE"
-runSbt javafmt test:javafmt
-git diff --exit-code || (
-  echo "[error] ERROR: javafmt check failed, see differences above."
-  echo "[error] To fix, before submitting a pull request, format your"
-  echo "[error] sources using sbt javafmt test:javafmt inside docs folder."
-  false
-)
