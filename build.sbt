@@ -40,7 +40,7 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSett
   sonatypeProfileName := "com.lightbend",
   headerLicense := Some(
     HeaderLicense.Custom(
-      "Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>"
+      "Copyright (C) Lightbend Inc. <https://www.lightbend.com>"
     )
   ),
   pomExtra := {

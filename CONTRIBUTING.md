@@ -1,4 +1,4 @@
-<!--- Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com> -->
+<!--- Copyright (C) Lightbend Inc. <https://www.lightbend.com> -->
 # Lagom contributor guidelines
 
 ## Prerequisites
@@ -34,7 +34,7 @@ Before making a contribution, it is important to make sure that the change you w
         * Java APIs should go to `com.lightbend.lagom.javadsl.xxxxx` in `xxxxx-javadsl` sbt project (the sbt project might be in a folder named xxxx/javadsl or similar)
         * Scala APIs should go to `com.lightbend.lagom.scaladsl.xxxxx` in `xxxxx-scaladsl` sbt project (the sbt project might be in a folder named xxxx/scaladsl or similar)
     6. New files must:
-        * Have a Lightbend copyright header in the style of ``Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>``. Running `sbt compile` will automatically add missing copyright headers.
+        * Have a Lightbend copyright header in the style of ``Copyright (C) Lightbend Inc. <https://www.lightbend.com>``. Running `sbt compile` will automatically add missing copyright headers.
         * Not use ``@author`` tags since it does not encourage [Collective Code Ownership](http://www.extremeprogramming.org/rules/collective.html).
 3. Submit a pull request.
 

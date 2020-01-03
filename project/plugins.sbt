@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+// Copyright (C) Lightbend Inc. <https://www.lightbend.com>
 
 addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.4.2")
 
