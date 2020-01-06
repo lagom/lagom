@@ -77,7 +77,7 @@ jobs:
 
 cache:
   directories:
-    - $HOME/.coursier/cache
+    - $HOME/.cache/coursier
     - $HOME/.ivy2
     - $HOME/.jabba/jdk
     - $HOME/.sbt
