@@ -345,7 +345,7 @@ object Dependencies {
       kafkaClients,
       "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.18",
       "org.hibernate"                   % "hibernate-validator"        % "5.2.4.Final",
-      "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api"      % "1.0.2.Final",
+      "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api"      % "1.0.2",
       "org.immutables"                  % "value"                      % Versions.Immutables,
       javassist,
       "org.joda"     % "joda-convert"  % "1.9.2",
@@ -946,7 +946,7 @@ object Dependencies {
   )
 
   val `persistence-jpa-javadsl` = libraryDependencies ++= Seq(
-    "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.2.Final" % Provided,
+    "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.2" % Provided,
     "org.hibernate"                   % "hibernate-core" % Versions.HibernateCore % Test,
     h2                                % Test,
     javassist                         % Test,
