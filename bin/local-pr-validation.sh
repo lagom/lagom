@@ -6,13 +6,13 @@
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
 printMessage "VALIDATE FRAMEWORK CODE"
-sbt +headerCheck +test:headerCheck multi-jvm:headerCheck \
+sbt +headerCheckAll \
   scalafmtAll scalafmtSbt \
   javafmtCheckAll
 
 printMessage "VALIDATE DOCS CODE"
 pushd docs
-sbt headerCheck test:headerCheck \
+sbt headerCheckAll \
   scalafmtAll scalafmtSbt \
   javafmtCheckAll
 popd

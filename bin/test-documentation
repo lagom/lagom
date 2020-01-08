@@ -14,7 +14,7 @@ fi
 
 cd docs
 runSbt markdownValidateDocs markdownEvaluateSbtFiles \
-  headerCheck test:headerCheck \
+  headerCheckAll \
   scalafmtCheckAll scalafmtSbtCheck \
   javafmtCheckAll \
   test "${EXTRA_TASKS[@]}"
