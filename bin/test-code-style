@@ -10,7 +10,7 @@ if [ "$TRAVIS_EVENT_TYPE" != "cron" ]; then
     EXTRA_TASKS+=("versionSyncCheck")
 fi
 
-runSbt  +headerCheck +test:headerCheck multi-jvm:headerCheck \
+runSbt  +headerCheckAll \
         scalafmtCheckAll scalafmtSbtCheck \
         javafmtCheckAll \
         +mimaReportBinaryIssues \
