@@ -47,7 +47,7 @@ In sbt:
 
 ## JVM options
 
-The Kafka server is run on a separate process, and a JVM is started with sensible memory defaults. However, if the default JVM options don't suit you, you can override them by adding the following in your build.
+The Kafka server is running on a separate process, and a JVM is started with sensible memory defaults. However, if the default JVM options don't suit you, you can override them by adding the following in your build.
 
 In the Maven root project pom:
 
