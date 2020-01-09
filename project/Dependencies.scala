@@ -848,6 +848,8 @@ object Dependencies {
   val `projection-javadsl` = libraryDependencies ++= Seq.empty[ModuleID]
 
   val `persistence-core` = libraryDependencies ++= Seq(
+    akkaActor, // explicit dependency for CRON builds using Akka snapshot versions
+    akkaActorTyped,
     akkaPersistence,
     akkaPersistenceQuery,
     akkaClusterSharding,
