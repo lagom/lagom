@@ -59,7 +59,8 @@ jobs:
 
 cache:
   directories:
-    - $HOME/.ivy2
+    - $HOME/.cache/coursier
+    - $HOME/.ivy2/cache
     - $HOME/.jabba/jdk
     - $HOME/.sbt
     - $HOME/.m2/repository
@@ -68,8 +69,6 @@ before_cache:
   # Ensure changes to the cache aren't persisted
   - rm -rf $HOME/.ivy2/cache/com.lightbend.lagom/*
   - rm -rf $HOME/.ivy2/cache/scala_*/sbt_*/com.lightbend.lagom/*
-  - rm -rf $HOME/.ivy2/local/com.lightbend.lagom/*
-  - rm -rf $HOME/.ivy2/local/scala_*/sbt_*/com.lightbend.lagom/*
   - rm -r $HOME/.m2/repository/com/lightbend/lagom/*
   # Delete all ivydata files since ivy touches them on each build
   - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
