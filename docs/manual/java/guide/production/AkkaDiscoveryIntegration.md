@@ -1,10 +1,6 @@
 # Using Akka Discovery
 
-<<<<<<< HEAD
-As of version 1.5.1, Lagom has built-in integration with [Akka Discovery](https://doc.akka.io/docs/akka/2.5/discovery/index.html) throught a  [ServiceLocator](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html) that wraps Akka Discovery. This is the recommended implementation for production specially for users targeting Kubernetes and DC/OS (Marathon).
-=======
-As of version 1.5.1, Lagom has built-in integration with [Akka Discovery](https://doc.akka.io/docs/akka/2.6/discovery/index.html) throught a  [ServiceLocator](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html) that wraps Akka Discovery. This `ServiceLocator` implementation is called `AkkaDiscoveryServiceLocator`. This is the recommended implementation for production specially for users targeting Kubernetes and DC/OS (Marathon).
->>>>>>> 20732c944... allow port-name and protocol overrides for mapped services
+As of version 1.5.1, Lagom has built-in integration with [Akka Discovery](https://doc.akka.io/docs/akka/2.5/discovery/index.html) throught a  [ServiceLocator](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html) that wraps Akka Discovery. This `ServiceLocator` implementation is called `AkkaDiscoveryServiceLocator`. This is the recommended implementation for production specially for users targeting Kubernetes and DC/OS (Marathon).
 
 ## Dependency
 
@@ -32,12 +28,7 @@ The Guice module [AkkaDiscoveryServiceLocatorModule](api/index.html?com/lightben
 
 In development, your Lagom application will keep using the Lagom's dev-mode [ServiceLocator](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html).
 
-<<<<<<< HEAD
-By default, Lagom uses [Aggregate multiple discovery methods](https://doc.akka.io/docs/akka/2.5/discovery/index.html#discovery-method-aggregate-multiple-discovery-methods). The first discovery method is set to Configuration and the second is set to DNS. 
-So the static definition of service endpoins has a priority over DNS discovery.
-=======
-By default, Lagom uses [Aggregate multiple discovery methods](https://doc.akka.io/docs/akka/2.6/discovery/index.html#discovery-method-aggregate-multiple-discovery-methods). The first discovery method is set to Configuration and the second is set to DNS. So the static definition of service endpoints has a priority over DNS discovery.
->>>>>>> 20732c944... allow port-name and protocol overrides for mapped services
+By default, Lagom uses [Aggregate multiple discovery methods](https://doc.akka.io/docs/akka/2.5/discovery/index.html#discovery-method-aggregate-multiple-discovery-methods). The first discovery method is set to Configuration and the second is set to DNS. So the static definition of service endpoints has a priority over DNS discovery.
 
 To statically configure service endpoints in your `application.conf` file consult the [Aggregate multiple discovery methods](https://doc.akka.io/docs/akka/2.5/discovery/index.html#discovery-method-aggregate-multiple-discovery-methods) documentation.
 
