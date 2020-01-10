@@ -120,7 +120,7 @@ private[lagom] class TopicProducerActor[Message](
         ) { () =>
           val brokersAndOffset: Future[(String, OffsetDao)] = eventualBrokersAndOffset(tagName)
           Source
-            .fromFuture(brokersAndOffset)
+            .future(brokersAndOffset)
             .initialTimeout(producerConfig.offsetTimeout)
             .flatMapConcat {
               case (endpoints, offsetDao) =>
