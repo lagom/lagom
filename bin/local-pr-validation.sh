@@ -7,13 +7,13 @@
 
 printMessage "VALIDATE FRAMEWORK CODE"
 sbt +headerCheckAll \
-  scalafmtAll scalafmtSbt \
+  scalafmtCheckAll scalafmtSbtCheck \
   javafmtCheckAll
 
 printMessage "VALIDATE DOCS CODE"
 pushd docs
 sbt headerCheckAll \
-  scalafmtAll scalafmtSbt \
+  scalafmtCheckAll scalafmtSbtCheck \
   javafmtCheckAll
 popd
 
