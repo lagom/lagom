@@ -14,7 +14,7 @@ While the Lagom Persistence API is still supported and maintained, the [[new Akk
 
 ## Jackson serialization
 
-In addition to `play-json` support, Lagom for Scala is now also supporting the Jackson serializer from Akka for intraclustrer messages (commands, events, replies and snapshots). The Jackson serializer provided by Akka is an improved version of the serializer in the Lagom 1.5 (Java API). You can find more information about the Akka Jackson serializer in the [Akka documentation](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html).
+In addition to `play-json` support, Lagom for Scala is now also supporting the Jackson serializer from Akka for intracluster messages (commands, events, replies and snapshots). The Jackson serializer provided by Akka is an improved version of the serializer in the Lagom 1.5's Java API. You can find more information about the Akka Jackson serializer in the [Akka documentation](https://doc.akka.io/docs/akka/2.6/serialization-jackson.html).
 
 Akka Jackson serialization is especially useful when using Akka Persistence Typed API as it allows serializaion of `ActorRef[T]` typically used when encoding command replies.
 
