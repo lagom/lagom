@@ -31,7 +31,7 @@ The old `CassandraReadSideProcessor` API is still available, but is deprecated. 
 
 Before migrating, we recommend that you read the documentation. You should read both [[Persistent Read-Side|ReadSide]], as well as [[Cassandra Read-Side support|ReadSideCassandra]].  Once you have done that, the following tasks need to be done to the processor class itself:
 
-* Modify your read side processor to implement [`ReadSideProcessor`](api/index.html?com/lightbend/lagom/javadsl/persistence/ReadSideProcessor.html) instead of [`CassandraReadSideProcessor`](api/index.html?com/lightbend/lagom/javadsl/persistence/cassandra/CassandraReadSideProcessor.html).
+* Modify your read side processor to implement [`ReadSideProcessor`](api/index.html?com/lightbend/lagom/javadsl/persistence/ReadSideProcessor.html) instead of `CassandraReadSideProcessor`.
 * Ensure your read side processor has both [`CassandraReadSide`](api/index.html?com/lightbend/lagom/javadsl/persistence/cassandra/CassandraReadSide.html) and [`CassandraSession`](api/index.html?com/lightbend/lagom/javadsl/persistence/cassandra/CassandraSession.html) injected into its constructor.
 * Replace the `aggregateTag` method with the new `aggregateTags` method, and instead of returning your single tag, wrap it in a singleton list using `TreePVector.singleton()`.
 * Implement the `buildHandler` method by invoking the `CassandraReadSide.builder` method, passing an ID for this read-side.
