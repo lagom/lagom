@@ -37,18 +37,6 @@ pull_request_rules:
     conditions:
       - author=scala-steward
       - status-success=Travis CI - Pull Request
-      - "#review-requested=0"
-      - "#changes-requested-reviews-by=0"
-      - label!=status:block-merge
-    actions:
-      merge:
-        method: merge
-
-  - name: Merge ScalaSteward's PRs even without core approval
-    conditions:
-      - author=scala-steward
-      - status-success=Travis CI - Pull Request
-      - "review-requested=@lagom/core"
       - "#changes-requested-reviews-by=0"
       - label!=status:block-merge
     actions:
