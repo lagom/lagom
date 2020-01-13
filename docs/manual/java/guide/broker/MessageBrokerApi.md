@@ -32,7 +32,7 @@ Here's an example of publishing a single, non sharded event stream:
 
 @[implement-topic](code/docs/javadsl/mb/HelloServiceImpl.java)
 
-Note that the read-side event stream you passed to the topic producer is "activated" as soon as the service is started. That means all events persisted by your services will eventually be published to the connected topic. Also, you will generally want to map your domain events into some other type, so that other service won't be tightly coupled to another service's domain model events. In other words, domain model events are an implementation detail of the service, and should not be leaked.
+Note that the read-side event stream you passed to the topic producer is, by default, "activated" as soon as the service is started. You can change that default behavior using the [[Projections API|Projections]]. That means all events persisted by your services will eventually be published to the connected topic. Also, you will generally want to map your domain events into some other type, so that other service won't be tightly coupled to another service's domain model events. In other words, domain model events are an implementation detail of the service, and should not be leaked.
 
 ### Filtering events
 
