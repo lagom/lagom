@@ -6,8 +6,6 @@ package com.lightbend.lagom.internal.javadsl.persistence.cassandra
 
 import java.util
 import java.util.concurrent.CompletionStage
-import java.util.function.BiFunction
-import java.util.UUID
 import java.util.{ List => JList }
 
 import akka.Done
@@ -19,9 +17,7 @@ import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetDao
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetStore
-import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
@@ -148,46 +144,5 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
       offsetDao = dao
       OffsetAdapter.offsetToDslOffset(dao.loadedOffset)
     }).toJava
-  }
-}
-
-/**
- * Internal API
- */
-private[cassandra] final class LegacyCassandraReadSideHandler[Event <: AggregateEvent[Event]](
-    session: CassandraSession,
-    cassandraProcessor: CassandraReadSideProcessor[Event],
-    dispatcher: String
-)(implicit ec: ExecutionContext)
-    extends CassandraReadSideHandler[Event, BiFunction[_ <: Event, UUID, CompletionStage[JList[BoundStatement]]]](
-      session,
-      cassandraProcessor.defineEventHandlers(new cassandraProcessor.EventHandlersBuilder).handlers,
-      dispatcher
-    ) {
-  protected override def invoke(
-      handler: BiFunction[_ <: Event, UUID, CompletionStage[JList[BoundStatement]]],
-      event: Event,
-      offset: Offset
-  ): CompletionStage[JList[BoundStatement]] = {
-    offset match {
-      case uuid: TimeBasedUUID =>
-        handler.asInstanceOf[BiFunction[Event, UUID, CompletionStage[JList[BoundStatement]]]].apply(event, uuid.value)
-      case other =>
-        throw new IllegalArgumentException(
-          "CassandraReadSideProcessor does not support offsets of type " + other.getClass.getName
-        )
-    }
-  }
-
-  override def prepare(tag: AggregateEventTag[Event]): CompletionStage[Offset] = {
-    Future
-      .successful(cassandraProcessor)
-      .flatMap(_.prepare(session).toScala)
-      .map { maybeUuid =>
-        if (maybeUuid.isPresent) {
-          Offset.timeBasedUUID(maybeUuid.get)
-        } else Offset.NONE
-      }
-      .toJava
   }
 }
