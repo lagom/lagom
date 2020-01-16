@@ -289,7 +289,6 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomImportCompat"),
       ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.run.RunSupport$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.run.RunSupportCompat"),
-
       // Remove CassandraReadSide legacy implementation
       ProblemFilters
         .exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor"),
