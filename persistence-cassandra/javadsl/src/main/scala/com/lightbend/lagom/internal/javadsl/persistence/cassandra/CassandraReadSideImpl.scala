@@ -15,7 +15,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import akka.Done
 import akka.actor.ActorSystem
-import akka.event.Logging
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.internal.javadsl.persistence.ReadSideImpl
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetStore
@@ -23,10 +22,7 @@ import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide.ReadSideHandlerBuilder
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession
-import org.pcollections.PSequence
-import org.pcollections.TreePVector
 import play.api.inject.Injector
 
 /**
@@ -42,29 +38,6 @@ private[lagom] final class CassandraReadSideImpl @Inject() (
 ) extends CassandraReadSide {
   private val dispatcher = system.settings.config.getString("lagom.persistence.read-side.use-dispatcher")
   implicit val ec        = system.dispatchers.lookup(dispatcher)
-
-  override def register[Event <: AggregateEvent[Event]](
-      processorClass: Class[_ <: CassandraReadSideProcessor[Event]]
-  ): Unit = {
-    readSide.registerFactory(
-      () => {
-        val processor = injector.instanceOf(processorClass)
-
-        new ReadSideProcessor[Event] {
-          override def buildHandler(): ReadSideHandler[Event] = {
-            new LegacyCassandraReadSideHandler[Event](session, processor, dispatcher)
-          }
-
-          override def aggregateTags(): PSequence[AggregateEventTag[Event]] = {
-            TreePVector.singleton(processor.aggregateTag)
-          }
-
-          override def readSideName(): String = Logging.simpleName(processorClass)
-        }
-      },
-      processorClass
-    )
-  }
 
   override def builder[Event <: AggregateEvent[Event]](eventProcessorId: String): ReadSideHandlerBuilder[Event] = {
     new ReadSideHandlerBuilder[Event] {

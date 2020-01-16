@@ -1,14 +1,12 @@
 import java.net.InetSocketAddress
 import java.nio.channels.ServerSocketChannel
 
-import com.typesafe.sbt.SbtMultiJvm
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys.MultiJvm
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys._
 import com.typesafe.tools.mima.core._
 import lagom.Protobuf
 import lagom.build._
-
 import org.scalafmt.sbt.ScalafmtPlugin
 
 // Turn off "Resolving" log messages that clutter build logs
@@ -261,9 +259,6 @@ val previousVersions = Seq("1.6.0")
 
 val noMima = mimaPreviousArtifacts := Set.empty
 val mimaSettings: Seq[Setting[_]] = {
-  import ProblemFilters.exclude
-  import sbt.librarymanagement.SemanticSelector
-  import sbt.librarymanagement.VersionNumber
   Seq(
     mimaPreviousArtifacts := previousVersions.map { version =>
       val suffix   = if (crossPaths.value && !sbtPlugin.value) s"_${scalaBinaryVersion.value}" else ""
@@ -294,6 +289,28 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomImportCompat"),
       ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.run.RunSupport$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.run.RunSupportCompat"),
+
+      // Remove CassandraReadSide legacy implementation
+      ProblemFilters
+        .exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor"),
+      ProblemFilters.exclude[DirectMissingMethodProblem](
+        "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide.register"
+      ),
+      ProblemFilters.exclude[MissingClassProblem](
+        "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor$EventHandlersBuilder"
+      ),
+      ProblemFilters.exclude[MissingClassProblem](
+        "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor$EventHandlers"
+      ),
+      ProblemFilters.exclude[MissingClassProblem](
+        "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor$EventHandlers$"
+      ),
+      ProblemFilters.exclude[DirectMissingMethodProblem](
+        "com.lightbend.lagom.internal.javadsl.persistence.cassandra.CassandraReadSideImpl.register"
+      ),
+      ProblemFilters.exclude[MissingClassProblem](
+        "com.lightbend.lagom.internal.javadsl.persistence.cassandra.LegacyCassandraReadSideHandler"
+      ),
     )
   )
 }
