@@ -30,7 +30,7 @@
         </dependency>
         <dependency>
             <groupId>com.typesafe.play</groupId>
-            <artifactId>play-netty-server_${scala.binary.version}</artifactId>
+            <artifactId>play-akka-http-server_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>com.lightbend.lagom</groupId>
