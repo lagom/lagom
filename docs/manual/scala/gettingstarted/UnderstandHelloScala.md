@@ -21,7 +21,7 @@ Note that:
 
 # Service implementation
 
-The related `impl` project, `hello-impl` provides implementation for the service abstract methods. For instance, the `HelloServiceImpl.scala` source file contains the service implementation of the `HelloService.hello` method for the `hello` service. The service implementation uses a (sharded)[https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#introduction], (persistent)[https://doc.akka.io/docs/akka/2.6/typed/persistence.html#introduction], typed actor providing data persistence using [[Event Sourcing and CQRS|ES_CQRS]].
+The related `impl` project, `hello-impl` provides implementation for the service abstract methods. For instance, the `HelloServiceImpl.scala` source file contains the service implementation of the `HelloService.hello` method for the `hello` service. The service implementation uses a [sharded](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#introduction), [persistent](https://doc.akka.io/docs/akka/2.6/typed/persistence.html#introduction), typed actor providing data persistence using [[Event Sourcing and CQRS|ES_CQRS]].
 
 @[helloserviceimpl](code/GettingStarted.scala)
 
