@@ -546,7 +546,10 @@ object LagomPlugin extends AutoPlugin {
       else Port.Unassigned.value
     },
     ivyConfigurations ++= Seq(Internal.Configs.DevRuntime),
-    PlaySettings.manageClasspath(Internal.Configs.DevRuntime),
+    managedClasspath in Internal.Configs.DevRuntime := {
+      val types = (classpathTypes in Internal.Configs.DevRuntime).value
+      Classpaths.managedJars(Internal.Configs.DevRuntime, types, update.value)
+    },
     libraryDependencies +=
       LagomImport.component("lagom-reloadable-server") % Internal.Configs.DevRuntime
   )
