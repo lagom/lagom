@@ -6,6 +6,6 @@ lazy val sslProj = (project in file(""))
 //#service-https-port
     ,
 //#service-enable-ssl
-    lagomServiceEnableSsl := true
+    lagomServiceEnableSsl in ThisBuild := true
 //#service-enable-ssl
   )
