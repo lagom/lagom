@@ -6,6 +6,7 @@ package com.lightbend.lagom.internal.scaladsl.registry
 
 import java.net.URI
 
+import com.lightbend.lagom.devmode.internal.scaladsl.registry.ServiceRegistry
 import com.lightbend.lagom.internal.registry.AbstractLoggingServiceRegistryClient
 import com.lightbend.lagom.scaladsl.api.transport.NotFound
 

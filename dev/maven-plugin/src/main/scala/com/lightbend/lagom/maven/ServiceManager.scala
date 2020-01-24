@@ -5,20 +5,21 @@
 package com.lightbend.lagom.maven
 
 import java.io.File
+
 import javax.inject.Inject
 import javax.inject.Singleton
 
 import com.lightbend.lagom.core.LagomVersion
-import com.lightbend.lagom.dev.PortAssigner.Port
-import com.lightbend.lagom.dev.PortAssigner.PortRange
-import com.lightbend.lagom.dev.PortAssigner.ProjectName
-import com.lightbend.lagom.dev.Reloader.CompileFailure
-import com.lightbend.lagom.dev.Reloader.CompileResult
-import com.lightbend.lagom.dev.Reloader.CompileSuccess
-import com.lightbend.lagom.dev.Reloader.DevServer
-import com.lightbend.lagom.dev.LagomConfig
-import com.lightbend.lagom.dev.PortAssigner
-import com.lightbend.lagom.dev.Reloader
+import com.lightbend.lagom.devmode.PortAssigner
+import com.lightbend.lagom.devmode.PortAssigner.Port
+import com.lightbend.lagom.devmode.PortAssigner.PortRange
+import com.lightbend.lagom.devmode.PortAssigner.ProjectName
+import com.lightbend.lagom.devmode.Reloader.CompileFailure
+import com.lightbend.lagom.devmode.Reloader.CompileResult
+import com.lightbend.lagom.devmode.Reloader.CompileSuccess
+import com.lightbend.lagom.devmode.Reloader.DevServer
+import com.lightbend.lagom.devmode.LagomConfig
+import com.lightbend.lagom.devmode.Reloader
 import org.apache.maven.Maven
 import org.apache.maven.artifact.ArtifactUtils
 import org.apache.maven.execution.MavenSession

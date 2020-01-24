@@ -6,11 +6,13 @@ package com.lightbend.lagom.sbt
 
 import java.io.Closeable
 
-import com.lightbend.lagom.dev.PortAssigner.Port
-import com.lightbend.lagom.dev.PortAssigner.ProjectName
-import com.lightbend.lagom.dev.Reloader.DevServer
-import com.lightbend.lagom.dev.Colors
-import com.lightbend.lagom.dev._
+import com.lightbend.lagom.devmode.PortAssigner
+import com.lightbend.lagom.devmode.PortAssigner.Port
+import com.lightbend.lagom.devmode.PortAssigner.ProjectName
+import com.lightbend.lagom.devmode.Reloader.DevServer
+import com.lightbend.lagom.devmode.ConsoleHelper
+import com.lightbend.lagom.devmode.Colors
+import com.lightbend.lagom.devmode._
 import com.lightbend.lagom.sbt.run.RunSupport
 import com.typesafe.sbt.packager.archetypes.JavaAppPackaging
 import play.dev.filewatch.FileWatchService

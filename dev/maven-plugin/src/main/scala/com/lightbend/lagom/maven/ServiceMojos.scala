@@ -6,12 +6,12 @@ package com.lightbend.lagom.maven
 
 import java.io.File
 import java.util.Collections
-import java.util.{ List => JList }
+import java.util.{List => JList}
 
-import com.lightbend.lagom.dev.PortAssigner.ProjectName
-import com.lightbend.lagom.dev.Colors
-import com.lightbend.lagom.dev.ConsoleHelper
-import com.lightbend.lagom.dev.ServiceBindingInfo
+import com.lightbend.lagom.devmode.PortAssigner.ProjectName
+import com.lightbend.lagom.devmode.Colors
+import com.lightbend.lagom.devmode.ConsoleHelper
+import com.lightbend.lagom.devmode.ServiceBindingInfo
 import javax.inject.Inject
 import org.apache.maven.RepositoryUtils
 import org.apache.maven.execution.MavenSession

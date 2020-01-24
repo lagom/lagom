@@ -8,12 +8,12 @@ import java.io.File
 
 import javax.inject.Inject
 import com.lightbend.lagom.core.LagomVersion
-import com.lightbend.lagom.dev.Servers
-import com.lightbend.lagom.dev.StaticServiceLocations
+import com.lightbend.lagom.devmode.Servers
+import com.lightbend.lagom.devmode.StaticServiceLocations
 import org.eclipse.aether.artifact.DefaultArtifact
 import java.util.Collections
-import java.util.{ List => JList }
-import java.util.{ Map => JMap }
+import java.util.{List => JList}
+import java.util.{Map => JMap}
 
 import org.codehaus.plexus.logging.Logger
 import org.codehaus.plexus.logging.LoggerManager

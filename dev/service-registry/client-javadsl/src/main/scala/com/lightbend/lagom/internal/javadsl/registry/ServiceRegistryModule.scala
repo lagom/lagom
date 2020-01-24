@@ -7,7 +7,7 @@ package com.lightbend.lagom.internal.javadsl.registry
 import java.net.URI
 import java.util.Optional
 import java.util.concurrent.CompletionStage
-import java.util.function.{ Function => JFunction }
+import java.util.function.{Function => JFunction}
 
 import javax.inject.Inject
 import javax.inject.Provider
@@ -15,11 +15,11 @@ import javax.inject.Singleton
 import akka.actor.ActorSystem
 import akka.discovery.ServiceDiscovery
 import akka.stream.Materializer
+import com.lightbend.lagom.devmode.internal.registry.DevModeServiceDiscovery
 import com.lightbend.lagom.internal.javadsl.api.broker.NoTopicFactoryProvider
 import com.lightbend.lagom.internal.javadsl.client.JavadslServiceClientImplementor
 import com.lightbend.lagom.internal.javadsl.client.JavadslWebSocketClient
 import com.lightbend.lagom.internal.javadsl.client.ServiceClientLoader
-import com.lightbend.lagom.internal.registry.DevModeServiceDiscovery
 import com.lightbend.lagom.internal.registry.ServiceRegistryClient
 import com.lightbend.lagom.javadsl.api.Descriptor.Call
 import com.lightbend.lagom.javadsl.api.ServiceInfo

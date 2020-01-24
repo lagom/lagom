@@ -4,7 +4,7 @@
 
 package com.lightbend.lagom.maven
 
-import com.lightbend.lagom.dev.Reloader.DevServerBinding
+import com.lightbend.lagom.devmode.Reloader.DevServerBinding
 import org.apache.maven.project.MavenProject
 
 /**
