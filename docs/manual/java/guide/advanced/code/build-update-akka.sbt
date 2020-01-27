@@ -1,6 +1,6 @@
 // #akka-update
 // The newer Akka version you want to use.
-val akkaVersion = "2.6.0-RC2"
+val akkaVersion = "2.6.1"
 
 // Akka dependencies used by Lagom
 dependencyOverrides ++= Seq(
