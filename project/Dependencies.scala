@@ -564,6 +564,8 @@ object Dependencies {
     scalaXml,
     akkaStream,
     akkaActor,
+    akkaActorTyped,
+    akkaJackson,
     akkaSlf4j,
     akkaProtobuf_v3,
     guava,
