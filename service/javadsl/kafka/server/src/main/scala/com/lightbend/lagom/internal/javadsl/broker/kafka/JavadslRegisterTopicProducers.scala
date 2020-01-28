@@ -99,8 +99,9 @@ class JavadslRegisterTopicProducers @Inject() (
                 )
 
               case null =>
-                log.error (
-                  s"Expected Topic type ${classOf[MethodTopicHolder]}, but null instance was passed" ,new NullPointerException()
+                log.error(
+                  s"Expected an instance of ${classOf[MethodTopicHolder]}, but 'null' was passed",
+                  new NullPointerException(s"expected an instance of ${classOf[MethodTopicHolder]}, but 'null' was passed")
                 )
             }
 
