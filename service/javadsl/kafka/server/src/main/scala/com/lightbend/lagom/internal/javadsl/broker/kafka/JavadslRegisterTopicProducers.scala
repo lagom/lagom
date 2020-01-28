@@ -98,11 +98,8 @@ class JavadslRegisterTopicProducers @Inject() (
                   projectionRegistryImpl
                 )
 
-              case null =>
-                log.error(
-                  s"Expected an instance of ${classOf[MethodTopicHolder]}, but 'null' was passed",
-                  new NullPointerException(s"expected an instance of ${classOf[MethodTopicHolder]}, but 'null' was passed")
-                )
+              case null => log.error(s"Expected an instance of ${classOf[MethodTopicHolder]}, but 'null' was passed",
+                  new NullPointerException(s"expected an instance of ${classOf[MethodTopicHolder]}, but 'null' was passed"))
             }
 
           case otherTopicImpl =>

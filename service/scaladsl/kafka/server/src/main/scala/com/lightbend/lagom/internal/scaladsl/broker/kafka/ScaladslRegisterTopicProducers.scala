@@ -82,11 +82,8 @@ class ScaladslRegisterTopicProducers(
                   projectionRegistryImpl
                 )
 
-              case null =>
-                log.error(
-                  s"Expected an instance of ${classOf[ScalaMethodTopic[_]]}, but 'null' was passed",
-                  new NullPointerException(s"expected an instance of ${classOf[ScalaMethodTopic[_]]}, but 'null' was passed")
-                )
+              case null => log.error(s"Expected an instance of ${classOf[ScalaMethodTopic[_]]}, but 'null' was passed",
+                  new NullPointerException(s"expected an instance of ${classOf[ScalaMethodTopic[_]]}, but 'null' was passed"))
             }
 
           case otherTopicImpl =>
