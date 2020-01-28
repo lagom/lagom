@@ -100,7 +100,7 @@ class JavadslRegisterTopicProducers @Inject() (
 
               case other =>
                 log.warn {
-                  s"Unknown topic producer ${other.getClass.getName}. " +
+                  s"Expected Topic type ${classOf[MethodTopicHolder].getName}, but found incompatible type ${other.getClass.getName}." +
                     s"This will likely result in no events published to topic ${topicId.value} by service ${info.serviceName}."
                 }
             }
