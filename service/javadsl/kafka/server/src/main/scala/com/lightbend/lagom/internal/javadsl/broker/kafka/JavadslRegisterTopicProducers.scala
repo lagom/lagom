@@ -98,11 +98,10 @@ class JavadslRegisterTopicProducers @Inject() (
                   projectionRegistryImpl
                 )
 
-              case other =>
-                log.warn {
-                  s"Expected Topic type ${classOf[MethodTopicHolder].getName}, but found incompatible type ${other.getClass.getName}." +
-                    s"This will likely result in no events published to topic ${topicId.value} by service ${info.serviceName}."
-                }
+              case null =>
+                log.error (
+                  s"Expected Topic type ${classOf[MethodTopicHolder]}, but null instance was passed" ,new NullPointerException()
+                )
             }
 
           case otherTopicImpl =>
