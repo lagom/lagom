@@ -71,7 +71,7 @@ private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
 
   private def locatingService(name: String): Receive = {
     case Status.Failure(e) =>
-      log.error(s"Error locating Kafka service named [$name]", e)
+      log.error(s"Error locating Kafka service named [{}]", e)
       throw e
 
     case None =>
