@@ -81,6 +81,10 @@ class ScaladslRegisterTopicProducers(
                   offsetStore,
                   projectionRegistryImpl
                 )
+              case null =>
+                val message =
+                  s"Expected an instance of ${classOf[TaggedOffsetTopicProducer[_, _]]}, but 'null' was passed"
+                log.error(message, new NullPointerException(message))
 
               case other =>
                 log.warn {
