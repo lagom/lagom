@@ -2,7 +2,7 @@
 
 addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.9.0")
 
-addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.4.2")
+addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.4.3")
 
 // the plugins used during release can have an impact on default values
 // of the build. To validate your changes on the release plugins don't
