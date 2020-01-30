@@ -2,30 +2,26 @@
  * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.scaladsl.devmode
+package com.lightbend.lagom.devmode.scaladsl
 
 import java.net.URI
 
-import akka.actor.ActorSystem
-import akka.actor.CoordinatedShutdown
+import akka.actor.{ActorSystem, CoordinatedShutdown}
 import akka.discovery.ServiceDiscovery
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.registry.DevModeServiceDiscovery
+import com.lightbend.lagom.devmode.internal.registry.DevModeServiceDiscovery
+import com.lightbend.lagom.devmode.internal.scaladsl.registry.ServiceRegistry
 import com.lightbend.lagom.internal.registry.ServiceRegistryClient
-import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceClient
-import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceResolver
-import com.lightbend.lagom.internal.scaladsl.client.ScaladslWebSocketClient
+import com.lightbend.lagom.internal.scaladsl.client.{ScaladslServiceClient, ScaladslServiceResolver, ScaladslWebSocketClient}
 import com.lightbend.lagom.internal.scaladsl.registry._
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
-import com.lightbend.lagom.scaladsl.api.ServiceInfo
-import com.lightbend.lagom.scaladsl.api.ServiceLocator
+import com.lightbend.lagom.scaladsl.api.{ServiceInfo, ServiceLocator}
 import com.lightbend.lagom.scaladsl.client.CircuitBreakerComponents
 import play.api.Environment
 import play.api.libs.ws.WSClient
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * Provides the Lagom dev mode components.
