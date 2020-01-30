@@ -11,7 +11,6 @@ To use this feature add the following in your project's build.
 
 When importing the Lagom Kafka Broker module keep in mind that the Lagom Kafka Broker module requires one implementation of a Lagom Persistence so make sure your dependencies include either [[Lagom Persistence Cassandra|PersistentEntityCassandra]] or [[Lagom Persistence JDBC|PersistentEntityRDBMS]]
 
-
 ## Configuration
 
 After adding the dependency you also need to mix-in the `LagomKafkaComponents` trait on your `Application` to ensure it is enabled and usable at runtime.
@@ -30,9 +29,9 @@ Third, the consumer has a few more configuration keys allowing you to decide how
 
 ### Alpakka Kafka configuration
 
-See the [Alpakka Kafka producer settings](https://doc.akka.io/docs/alpakka-kafka/1.0/producer.html#settings) and [Alpakka Kafka consumer settings](https://doc.akka.io/docs/alpakka-kafka/1.0/consumer.html#settings) to find out about the available configuration parameters.
+See the [Alpakka Kafka producer settings](https://doc.akka.io/docs/alpakka-kafka/2.0/producer.html#settings) and [Alpakka Kafka consumer settings](https://doc.akka.io/docs/alpakka-kafka/2.0/consumer.html#settings) to find out about the available configuration parameters.
 
-Please refer to [production considerations](https://doc.akka.io/docs/alpakka-kafka/1.0/production.html) for other things to keep in mind when using Alpakka Kafka.
+Please refer to [production considerations](https://doc.akka.io/docs/alpakka-kafka/2.0/production.html) for other things to keep in mind when using Alpakka Kafka.
 
 ### Apache Java Kafka Client
 
