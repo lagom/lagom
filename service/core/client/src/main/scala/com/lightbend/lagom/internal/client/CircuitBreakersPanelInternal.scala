@@ -5,11 +5,10 @@
 package com.lightbend.lagom.internal.client
 
 import java.util.concurrent.TimeUnit.MILLISECONDS
+import java.util.concurrent.CompletionException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeoutException
 import java.util.function.{ Function => JFunction }
-import javax.inject.Inject
-import javax.inject.Singleton
 
 import akka.actor.ActorSystem
 import akka.pattern.CircuitBreakerOpenException
@@ -17,6 +16,8 @@ import akka.pattern.{ CircuitBreaker => AkkaCircuitBreaker }
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetrics
 import com.lightbend.lagom.internal.spi.CircuitBreakerMetricsProvider
 import com.typesafe.config.Config
+import javax.inject.Inject
+import javax.inject.Singleton
 import play.api.Configuration
 
 import scala.concurrent.Future
@@ -55,10 +56,11 @@ private[lagom] class CircuitBreakersPanelInternal(
 
         val result: Future[T] = b.withCircuitBreaker(body, failedCallDefinition)
         result.onComplete {
-          case Success(_)                              => metrics.onCallSuccess(elapsed)
-          case Failure(_: CircuitBreakerOpenException) => metrics.onCallBreakerOpenFailure()
-          case Failure(_: TimeoutException)            => metrics.onCallTimeoutFailure(elapsed)
-          case Failure(_)                              => metrics.onCallFailure(elapsed)
+          case Success(_)                                                   => metrics.onCallSuccess(elapsed)
+          case failure @ Failure(_) if !failedCallDefinition.apply(failure) => metrics.onCallSuccess(elapsed)
+          case Failure(_: CircuitBreakerOpenException)                      => metrics.onCallBreakerOpenFailure()
+          case Failure(_: TimeoutException)                                 => metrics.onCallTimeoutFailure(elapsed)
+          case Failure(_)                                                   => metrics.onCallFailure(elapsed)
         }(system.dispatcher)
         result
       case None => body
@@ -72,10 +74,15 @@ private[lagom] class CircuitBreakersPanelInternal(
       case _             => true
     }
 
+    private def ignoredException(ex: Any, whitelist: Set[String]): Boolean = ex match {
+      case ce: CompletionException => ce.getCause != null && whitelist.contains(ce.getCause.getClass.getName)
+      case _                       => whitelist.contains(ex.getClass.getName)
+    }
+
     private def failureDefinition(whitelist: Set[String]): Try[_] => Boolean = {
-      case _: Success[_]                                        => false
-      case Failure(t) if whitelist.contains(t.getClass.getName) => false
-      case _                                                    => true
+      case _: Success[_]                                => false
+      case Failure(t) if ignoredException(t, whitelist) => false
+      case _                                            => true
     }
 
     override def apply(id: String): Option[CircuitBreakerHolder] = {
