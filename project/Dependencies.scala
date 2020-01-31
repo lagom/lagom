@@ -4,6 +4,7 @@
 package lagom.build
 
 import lagom.build.Dependencies.akkaActorTyped
+import lagom.build.Dependencies.junit
 import sbt.Keys._
 import sbt._
 
@@ -592,7 +593,10 @@ object Dependencies {
   )
 
   val `client-javadsl` = libraryDependencies ++= Seq(
-    scalaTest % Test
+    akkaTestkit   % Test,
+    scalaTest     % Test,
+    junit         % Test,
+    "org.mockito" % "mockito-core" % "3.2.4" % Test
   )
 
   val `client-scaladsl` = libraryDependencies ++= Seq(
