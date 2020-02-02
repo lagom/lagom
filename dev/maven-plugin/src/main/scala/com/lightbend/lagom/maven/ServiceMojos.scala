@@ -6,7 +6,7 @@ package com.lightbend.lagom.maven
 
 import java.io.File
 import java.util.Collections
-import java.util.{List => JList}
+import java.util.{ List => JList }
 
 import com.lightbend.lagom.devmode.PortAssigner.ProjectName
 import com.lightbend.lagom.devmode.Colors
