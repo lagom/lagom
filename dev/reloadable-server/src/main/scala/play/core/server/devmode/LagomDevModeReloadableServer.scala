@@ -1,22 +1,34 @@
+/*
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
+ */
+
 package play.core.server.devmode
 
 import java.io.File
 import java.net.InetAddress
 
 import akka.Done
-import akka.actor.{ActorSystem, CoordinatedShutdown}
+import akka.actor.ActorSystem
+import akka.actor.CoordinatedShutdown
 import akka.stream.Materializer
 import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLHolder
 import play.api.ApplicationLoader.DevContext
 import play.api._
-import play.core.server.{RealServerProcess, ReloadableServer, ServerConfig, ServerProvider}
-import play.core.{ApplicationProvider, BuildLink, SourceMapper}
+import play.core.server.RealServerProcess
+import play.core.server.ReloadableServer
+import play.core.server.ServerConfig
+import play.core.server.ServerProvider
+import play.core.ApplicationProvider
+import play.core.BuildLink
+import play.core.SourceMapper
 import play.utils.Threads
 
+import scala.collection.JavaConverters._
 import scala.concurrent.Future
 import scala.util.control.NonFatal
-import scala.util.{Failure, Success, Try}
-import scala.collection.JavaConverters._
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 /**
  * Used to start servers in 'dev' mode, a mode where the application

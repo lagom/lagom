@@ -7,7 +7,7 @@ package com.lightbend.lagom.internal.javadsl.registry
 import java.net.URI
 import java.util.Optional
 import java.util.concurrent.CompletionStage
-import java.util.function.{Function => JFunction}
+import java.util.function.{ Function => JFunction }
 
 import javax.inject.Inject
 import javax.inject.Provider

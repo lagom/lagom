@@ -9,10 +9,16 @@ import java.net.URI
 import akka.NotUsed
 import akka.util.ByteString
 import com.lightbend.lagom.internal.registry.ServiceRegistryClient
-import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.{NegotiatedDeserializer, NegotiatedSerializer}
-import com.lightbend.lagom.scaladsl.api.deser.{MessageSerializer, StrictMessageSerializer}
-import com.lightbend.lagom.scaladsl.api.transport.{MessageProtocol, Method}
-import com.lightbend.lagom.scaladsl.api.{Descriptor, Service, ServiceAcl, ServiceCall}
+import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.NegotiatedDeserializer
+import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.NegotiatedSerializer
+import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer
+import com.lightbend.lagom.scaladsl.api.deser.StrictMessageSerializer
+import com.lightbend.lagom.scaladsl.api.transport.MessageProtocol
+import com.lightbend.lagom.scaladsl.api.transport.Method
+import com.lightbend.lagom.scaladsl.api.Descriptor
+import com.lightbend.lagom.scaladsl.api.Service
+import com.lightbend.lagom.scaladsl.api.ServiceAcl
+import com.lightbend.lagom.scaladsl.api.ServiceCall
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 

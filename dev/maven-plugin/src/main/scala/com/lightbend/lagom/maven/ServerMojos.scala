@@ -12,8 +12,8 @@ import com.lightbend.lagom.devmode.Servers
 import com.lightbend.lagom.devmode.StaticServiceLocations
 import org.eclipse.aether.artifact.DefaultArtifact
 import java.util.Collections
-import java.util.{List => JList}
-import java.util.{Map => JMap}
+import java.util.{ List => JList }
+import java.util.{ Map => JMap }
 
 import org.codehaus.plexus.logging.Logger
 import org.codehaus.plexus.logging.LoggerManager

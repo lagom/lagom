@@ -4,14 +4,20 @@
 
 package com.lightbend.lagom.devmode.internal.registry
 
-import java.net.{InetAddress, URI}
+import java.net.InetAddress
+import java.net.URI
 
 import akka.actor.ActorSystem
-import akka.discovery.{Discovery, Lookup, ServiceDiscovery}
 import akka.discovery.ServiceDiscovery._
+import akka.discovery.Discovery
+import akka.discovery.Lookup
+import akka.discovery.ServiceDiscovery
+
 import com.lightbend.lagom.internal.registry.ServiceRegistryClient
 
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.Promise
 import scala.concurrent.duration.FiniteDuration
 
 private[lagom] class DevModeServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {

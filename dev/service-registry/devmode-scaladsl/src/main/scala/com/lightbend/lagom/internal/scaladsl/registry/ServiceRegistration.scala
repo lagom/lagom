@@ -6,8 +6,9 @@ package com.lightbend.lagom.internal.scaladsl.registry
 
 import akka.Done
 import akka.actor.CoordinatedShutdown
-import com.lightbend.lagom.devmode.internal.scaladsl.registry.{ServiceRegistry, ServiceRegistryService}
 import com.lightbend.lagom.internal.registry.serviceDnsRecords
+import com.lightbend.lagom.devmode.internal.scaladsl.registry.ServiceRegistry
+import com.lightbend.lagom.devmode.internal.scaladsl.registry.ServiceRegistryService
 import com.lightbend.lagom.scaladsl.api.ServiceInfo
 import com.typesafe.config.Config
 import play.api.Logger
@@ -15,6 +16,7 @@ import play.api.Logger
 import scala.concurrent.ExecutionContext
 import scala.util.Failure
 import scala.util.Success
+
 import scala.collection._
 
 class ServiceRegistration(

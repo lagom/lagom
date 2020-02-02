@@ -5,12 +5,15 @@
 package com.lightbend.lagom.devmode
 
 import java.io.Closeable
-import java.util.concurrent.{Executors, TimeUnit}
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 import com.lightbend.lagom.devmode.Reloader.DevServerBinding
 import play.dev.filewatch.LoggerProxy
 
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 /**

@@ -11,11 +11,12 @@ import java.util.Optional
 import akka.actor.ActorSystem
 import akka.testkit.TestKit
 import akka.util.ByteString
-import com.lightbend.lagom.devmode.internal.scaladsl.registry.{RegisteredService, ServiceRegistryService}
-import com.lightbend.lagom.internal.javadsl.registry.{RegisteredService => jRegisteredService}
-import com.lightbend.lagom.internal.javadsl.registry.{ServiceRegistryService => jServiceRegistryService}
+import com.lightbend.lagom.devmode.internal.scaladsl.registry.RegisteredService
+import com.lightbend.lagom.devmode.internal.scaladsl.registry.ServiceRegistryService
+import com.lightbend.lagom.internal.javadsl.registry.{ RegisteredService => jRegisteredService }
+import com.lightbend.lagom.internal.javadsl.registry.{ ServiceRegistryService => jServiceRegistryService }
 import com.lightbend.lagom.devmode.internal.scaladsl.registry.{ RegisteredService => sRegisteredService }
-import com.lightbend.lagom.devmode.internal.scaladsl.registry.{ServiceRegistryService => sServiceRegistryService}
+import com.lightbend.lagom.devmode.internal.scaladsl.registry.{ ServiceRegistryService => sServiceRegistryService }
 import com.lightbend.lagom.javadsl.api.ServiceAcl
 import com.lightbend.lagom.javadsl.api.deser.MessageSerializer
 import com.lightbend.lagom.javadsl.api.deser.StrictMessageSerializer
