@@ -1196,7 +1196,7 @@ object Dependencies {
 
   val validateDependencies = taskKey[Unit]("Validate Lagom dependencies to ensure they are allowed")
   val allowedDependencies  = settingKey[Seq[ModuleID]]("The allowed dependencies")
-  val allowedPrune       = taskKey[Unit]("List items that can be pruned from the allowed ")
+  val allowedPrune         = taskKey[Unit]("List items that can be pruned from the allowed ")
 
   val validateDependenciesTask: Def.Initialize[Task[Unit]] = Def.task {
     // We validate compile dependencies to ensure that whatever we are exporting, we are exporting the right
@@ -1299,10 +1299,9 @@ object Dependencies {
       log.error(s"${name.value} needs a complete allowList.")
     }
   }
-  val allowedPruneSetting = allowedPrune := allowedPruneTask.value
-
+  val allowedPruneSetting         = allowedPrune := allowedPruneTask.value
   val validateDependenciesSetting = validateDependencies := validateDependenciesTask.value
-  val allowDependenciesSetting  = allowedDependencies := AllowedDependencies.value
+  val allowDependenciesSetting    = allowedDependencies := AllowedDependencies.value
 
   private class AllowDependenciesValidationFailed extends RuntimeException with FeedbackProvidedException {
     override def toString = "Allow Dependencies validation failed!"
