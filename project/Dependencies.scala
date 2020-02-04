@@ -1223,7 +1223,7 @@ object Dependencies {
           val revsS = revs.mkString("[", ", ", "]")
           log.error(s"[${name.value}] dependency $org:$id in allowList with multiple versions: $revsS")
       }
-      throw new allowDependenciesValidationFailed
+      throw new AllowDependenciesValidationFailed
     }
 
     def collectProblems(scope: String, classpath: Classpath) = {
@@ -1269,7 +1269,7 @@ object Dependencies {
           )
       }
       if (sys.env.get("TRAVIS_EVENT_TYPE") != Some("cron"))
-        throw new allowDependenciesValidationFailed
+        throw new AllowDependenciesValidationFailed
     }
   }
 
@@ -1304,7 +1304,7 @@ object Dependencies {
   val validateDependenciesSetting = validateDependencies := validateDependenciesTask.value
   val allowDependenciesSetting  = allowedDependencies := AllowedDependencies.value
 
-  private class allowDependenciesValidationFailed extends RuntimeException with FeedbackProvidedException {
+  private class AllowDependenciesValidationFailed extends RuntimeException with FeedbackProvidedException {
     override def toString = "Allow Dependencies validation failed!"
   }
 }
