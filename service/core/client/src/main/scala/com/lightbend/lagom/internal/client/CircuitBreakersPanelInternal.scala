@@ -87,7 +87,7 @@ private[lagom] class CircuitBreakersPanelInternal(
         val resetTimeout = breakerConfig.getDuration("reset-timeout", MILLISECONDS).millis
 
         import scala.collection.JavaConverters.asScalaBufferConverter
-        val exceptionWhitelist: Set[String] = breakerConfig.getStringList("allowed-exceptions").asScala.toSet
+        val exceptionWhitelist: Set[String] = breakerConfig.getStringList("exception-whitelist").asScala.toSet
 
         val definitionOfFailure =
           if (exceptionWhitelist.isEmpty) allExceptionAsFailure else failureDefinition(exceptionWhitelist)
