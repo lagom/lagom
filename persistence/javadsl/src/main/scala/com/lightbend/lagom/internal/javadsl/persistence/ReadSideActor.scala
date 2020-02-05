@@ -4,21 +4,24 @@
 
 package com.lightbend.lagom.internal.javadsl.persistence
 
+import akka.Done
+import akka.NotUsed
 import akka.actor.Actor
 import akka.actor.ActorLogging
 import akka.actor.Props
 import akka.actor.Status
-import akka.stream.javadsl.Source
-import akka.stream.scaladsl.Keep
-import akka.stream.scaladsl.RestartSource
-import akka.stream.scaladsl.Sink
+import akka.japi
+import akka.persistence.query.EventEnvelope
 import akka.stream.KillSwitch
 import akka.stream.KillSwitches
 import akka.stream.Materializer
+import akka.stream.javadsl.Flow
+import akka.stream.javadsl.Source
 import akka.stream.scaladsl
+import akka.stream.scaladsl.Keep
+import akka.stream.scaladsl.RestartSource
+import akka.stream.scaladsl.Sink
 import akka.util.Timeout
-import akka.Done
-import akka.NotUsed
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.javadsl.persistence._
@@ -32,7 +35,7 @@ private[lagom] object ReadSideActor {
       config: ReadSideConfig,
       clazz: Class[Event],
       globalPrepareTask: ClusterStartupTask,
-      eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[akka.japi.Pair[Event, Offset], NotUsed],
+      eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[EventEnvelope, NotUsed],
       processor: () => ReadSideProcessor[Event]
   )(implicit mat: Materializer) =
     Props(
@@ -57,7 +60,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
     config: ReadSideConfig,
     clazz: Class[Event],
     globalPrepareTask: ClusterStartupTask,
-    eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[akka.japi.Pair[Event, Offset], NotUsed],
+    eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[EventEnvelope, NotUsed],
     processorFactory: () => ReadSideProcessor[Event]
 )(implicit mat: Materializer)
     extends Actor
@@ -99,9 +102,17 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
             .fromFuture(futureOffset)
             .initialTimeout(config.offsetTimeout)
             .flatMapConcat { offset =>
-              val eventStreamSource = eventStreamFactory(tag, offset).asScala
-              val usersFlow         = handler.handle()
-              eventStreamSource.via(usersFlow)
+              val envelopeStreamSource: scaladsl.Source[EventEnvelope, NotUsed] =
+                eventStreamFactory(tag, offset).asScala
+              val toLagom: EventEnvelope => japi.Pair[Event, Offset] =
+                AbstractPersistentEntityRegistry.toStreamElement
+              val usersFlow: Flow[japi.Pair[Event, Offset], Done, _] = handler.handle()
+
+              envelopeStreamSource
+                .map(identity) // TODO: use the supporting actor
+                .map(toLagom)
+                .via(usersFlow)
+
             }
         }
 
@@ -122,4 +133,5 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
       // This actor will be restarted by WorkerCoordinator
       throw cause
   }
+
 }

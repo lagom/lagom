@@ -16,18 +16,18 @@ import com.lightbend.lagom.scaladsl.api.broker.Topic.TopicId
 
 import scala.concurrent.ExecutionContext
 
-private[lagom] class ScaladslKafkaTopic[Message](
+private[lagom] class ScaladslKafkaTopic[BrokerEvent](
     kafkaConfig: KafkaConfig,
-    topicCall: TopicCall[Message],
+    topicCall: TopicCall[BrokerEvent],
     info: ServiceInfo,
     system: ActorSystem,
     serviceLocator: ServiceLocator
 )(implicit mat: Materializer, ec: ExecutionContext)
-    extends Topic[Message] {
+    extends Topic[BrokerEvent] {
   override def topicId: TopicId = topicCall.topicId
 
-  override def subscribe: Subscriber[Message] =
-    new ScaladslKafkaSubscriber[Message, Message](
+  override def subscribe: Subscriber[BrokerEvent] =
+    new ScaladslKafkaSubscriber[BrokerEvent, BrokerEvent](
       kafkaConfig,
       topicCall,
       ScaladslKafkaSubscriber.GroupId.default(info),

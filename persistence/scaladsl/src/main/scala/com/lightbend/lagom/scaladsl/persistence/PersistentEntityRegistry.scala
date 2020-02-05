@@ -6,11 +6,10 @@ package com.lightbend.lagom.scaladsl.persistence
 
 import akka.persistence.query.Offset
 import akka.stream.scaladsl
-import akka.Done
 import akka.NotUsed
+import akka.annotation.InternalApi
+import akka.persistence.query.EventEnvelope
 
-import scala.concurrent.Future
-import scala.concurrent.duration._
 import scala.reflect.ClassTag
 
 /**
@@ -62,4 +61,10 @@ trait PersistentEntityRegistry {
       aggregateTag: AggregateEventTag[Event],
       fromOffset: Offset
   ): scaladsl.Source[EventStreamElement[Event], NotUsed]
+
+  @InternalApi
+  private[lagom] def eventEnvelopeStream[Event <: AggregateEvent[Event]](
+      aggregateTag: AggregateEventTag[Event],
+      fromOffset: Offset
+  ): scaladsl.Source[EventEnvelope, NotUsed]
 }

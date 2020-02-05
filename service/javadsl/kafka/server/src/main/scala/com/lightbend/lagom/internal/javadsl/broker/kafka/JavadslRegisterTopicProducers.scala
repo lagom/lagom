@@ -6,33 +6,37 @@ package com.lightbend.lagom.internal.javadsl.broker.kafka
 
 import java.net.URI
 
-import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import org.slf4j.LoggerFactory
-import com.lightbend.lagom.javadsl.api.ServiceInfo
-import com.lightbend.lagom.javadsl.api.ServiceLocator
-import akka.stream.Materializer
-import javax.inject.Inject
 import akka.actor.ActorSystem
-import akka.persistence.query.Offset
-import akka.stream.scaladsl.Source
+import akka.stream.Materializer
+import com.lightbend.lagom.internal.broker.DelegatedTopicProducer
+import com.lightbend.lagom.internal.broker.TaggedInternalTopic
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
+import com.lightbend.lagom.internal.broker.kafka.ClassicLagomEventStreamFactory
+import com.lightbend.lagom.internal.broker.kafka.DelegatedEventStreamFactory
+import com.lightbend.lagom.internal.broker.kafka.EventStreamFactory
 import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
 import com.lightbend.lagom.internal.broker.kafka.Producer
-import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.javadsl.api.MethodTopicHolder
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
+import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
+import com.lightbend.lagom.javadsl.api.ServiceInfo
+import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.api.broker.kafka.KafkaProperties
+import com.lightbend.lagom.javadsl.persistence.AggregateEvent
+import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
 import com.lightbend.lagom.spi.persistence.OffsetStore
+import javax.inject.Inject
+import org.slf4j.LoggerFactory
 
-import scala.collection.immutable
+import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
-class JavadslRegisterTopicProducers @Inject() (
+class JavadslRegisterTopicProducers[BrokerMessage, Event <: AggregateEvent[Event]] @Inject() (
     resolvedServices: ResolvedServices,
     topicFactory: TopicFactory,
     info: ServiceInfo,
@@ -41,7 +45,7 @@ class JavadslRegisterTopicProducers @Inject() (
     serviceLocator: ServiceLocator,
     projectionRegistryImpl: ProjectionRegistry
 )(implicit ec: ExecutionContext, mat: Materializer) {
-  private val log         = LoggerFactory.getLogger(classOf[JavadslRegisterTopicProducers])
+  private val log         = LoggerFactory.getLogger(classOf[JavadslRegisterTopicProducers[_, _]])
   private val kafkaConfig = KafkaConfig(actorSystem.settings.config)
 
   // Goes through the services' descriptors and publishes the streams registered in
@@ -49,7 +53,7 @@ class JavadslRegisterTopicProducers @Inject() (
   for {
     service <- resolvedServices.services
     tc      <- service.descriptor.topicCalls().asScala
-    topicCall = tc.asInstanceOf[TopicCall[AnyRef]]
+    topicCall = tc.asInstanceOf[TopicCall[BrokerMessage]]
   } {
     topicCall.topicHolder match {
       case holder: MethodTopicHolder =>
@@ -57,28 +61,44 @@ class JavadslRegisterTopicProducers @Inject() (
         val topicId       = topicCall.topicId
 
         topicFactory.create(topicCall) match {
-          case topicImpl: JavadslKafkaTopic[AnyRef] =>
+          case topicImpl: JavadslKafkaTopic[BrokerMessage] =>
             topicProducer match {
-              case tagged: TaggedOffsetTopicProducer[AnyRef, _] =>
+              case tagged: TaggedInternalTopic[BrokerMessage, Event] =>
                 val tags = tagged.tags.asScala.toIndexedSeq
 
-                val eventStreamFactory: (String, Offset) => Source[(AnyRef, Offset), _] = { (tag, offset) =>
-                  tags.find(_.tag == tag) match {
-                    case Some(aggregateTag) =>
-                      tagged
-                        .readSideStream(
-                          aggregateTag,
-                          OffsetAdapter.offsetToDslOffset(offset)
-                        )
-                        .asScala
-                        .map { pair =>
-                          pair.first -> OffsetAdapter.dslOffsetToOffset(pair.second)
+                val eventStreamFactory: EventStreamFactory[BrokerMessage] =
+                  tagged match {
+                    case producer: DelegatedTopicProducer[BrokerMessage, Event] =>
+                      DelegatedEventStreamFactory((tag, offset) =>
+                        tags.find(_.tag == tag) match {
+                          case Some(aggregateTag) =>
+                            val lagomOffset = OffsetAdapter.offsetToDslOffset(offset)
+                            producer
+                              .persistentEntityRegistry
+                              .eventEnvelopeStream(
+                                aggregateTag,
+                                lagomOffset)
+                              .asScala
+                          case None => throw new RuntimeException("Unknown tag: " + tag)
                         }
-                    case None => throw new RuntimeException("Unknown tag: " + tag)
+                      )
+                    case producer: TaggedOffsetTopicProducer[BrokerMessage, Event] =>
+                      ClassicLagomEventStreamFactory((tag, offset) =>
+                        tags.find(_.tag == tag) match {
+                          case Some(aggregateTag) =>
+                            val lagomOffset = OffsetAdapter.offsetToDslOffset(offset)
+                            producer
+                              .readSideStream(aggregateTag, lagomOffset)
+                              .asScala
+                              .map { pair =>
+                                pair.first -> OffsetAdapter.dslOffsetToOffset(pair.second)
+                              }
+                          case None => throw new RuntimeException("Unknown tag: " + tag)
+                        }
+                      )
                   }
-                }
 
-                val partitionKeyStrategy: Option[AnyRef => String] = {
+                val partitionKeyStrategy: Option[BrokerMessage => String] = {
                   val javaPKS = topicCall.properties().getValueOf(KafkaProperties.partitionKeyStrategy())
                   if (javaPKS != null) {
                     Some(message => javaPKS.computePartitionKey(message))

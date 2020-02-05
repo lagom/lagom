@@ -63,7 +63,7 @@ private[lagom] class ReadSideImpl(
         config,
         eventClass,
         globalPrepareTask,
-        persistentEntityRegistry.eventStream[Event],
+        persistentEntityRegistry.eventEnvelopeStream[Event],
         processorFactory
       )
 

@@ -8,40 +8,41 @@ import java.util.Optional
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.atomic.AtomicBoolean
 
+import akka.Done
+import akka.NotUsed
 import akka.actor.Actor
+import akka.actor.ActorLogging
 import akka.actor.ActorRef
 import akka.actor.Props
 import akka.actor.Status
+import akka.pattern._
 import akka.pattern.pipe
+import akka.persistence.query.EventEnvelope
 import akka.stream.ActorMaterializer
 import akka.stream.javadsl.Source
 import akka.testkit.ImplicitSender
+import akka.testkit.TestProbe
 import akka.util.Timeout
-import akka.Done
-import akka.NotUsed
-import akka.actor.ActorLogging
+import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.javadsl.persistence.PersistentEntityActor
 import com.lightbend.lagom.internal.javadsl.persistence.ReadSideActor
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
-import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTaskActor.Execute
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
+import com.lightbend.lagom.internal.projection.WorkerConfig
+import com.lightbend.lagom.internal.projection.WorkerCoordinator
 import com.lightbend.lagom.javadsl.persistence.TestEntity.Mode
 import com.lightbend.lagom.persistence.ActorSystemSpec
+import com.lightbend.lagom.projection.Started
 import org.scalatest.BeforeAndAfter
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.ScalaFutures
-import akka.pattern._
-import akka.testkit.TestProbe
-import com.lightbend.lagom.internal.projection.ProjectionRegistryActor
-import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
-import com.lightbend.lagom.internal.projection.WorkerCoordinator
-import com.lightbend.lagom.projection.Started
 
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.duration._
 import scala.util.control.NoStackTrace
-import com.lightbend.lagom.internal.projection.WorkerConfig
 
 trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventually with BeforeAndAfter {
   spec: ActorSystemSpec =>
@@ -58,14 +59,14 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
   def eventStream[Event <: AggregateEvent[Event]](
       aggregateTag: AggregateEventTag[Event],
       fromOffset: Offset
-  ): Source[akka.japi.Pair[Event, Offset], NotUsed] =
-    persistentEntityRegistry.eventStream(aggregateTag, fromOffset)
+  ): Source[EventEnvelope, NotUsed] =
+    persistentEntityRegistry.eventEnvelopeStream(aggregateTag, fromOffset)
 
   def processorFactory(): ReadSideProcessor[TestEntity.Evt]
 
   def getAppendCount(id: String): CompletionStage[java.lang.Long]
 
-  private def tag(id: String) = TestEntity.Evt.AGGREGATE_EVENT_SHARDS.forEntityId(id)
+  private def tag(id: String): AggregateEventTag[TestEntity.Evt] = TestEntity.Evt.AGGREGATE_EVENT_SHARDS.forEntityId(id)
 
   private var projectionRegistryProbe: Option[TestProbe] = None
 

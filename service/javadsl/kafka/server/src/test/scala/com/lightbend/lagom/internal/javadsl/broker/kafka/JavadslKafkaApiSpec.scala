@@ -22,6 +22,7 @@ import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.SourceQueue
 import akka.Done
 import akka.NotUsed
+import akka.persistence.query.EventEnvelope
 import com.google.inject.AbstractModule
 import com.lightbend.lagom.dev.MiniLogger
 import com.lightbend.lagom.dev.Servers.KafkaServer
@@ -492,6 +493,12 @@ object JavadslKafkaApiSpec {
         aggregateTag: AggregateEventTag[Event],
         fromOffset: JOffset
     ): JSource[JPair[Event, JOffset], NotUsed] =
+      JSource.empty()
+
+    private[lagom] override def eventEnvelopeStream[Event <: AggregateEvent[Event]](
+        aggregateTag: AggregateEventTag[Event],
+        fromOffset: JOffset
+    ): JSource[EventEnvelope, NotUsed] =
       JSource.empty()
 
     override def refFor[C](

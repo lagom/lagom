@@ -19,6 +19,7 @@ import akka.stream.Materializer
 import akka.util.Timeout
 import akka.Done
 import akka.NotUsed
+import akka.persistence.query.EventEnvelope
 import akka.stream.scaladsl.Flow
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
@@ -32,7 +33,7 @@ private[lagom] object ReadSideActor {
       config: ReadSideConfig,
       clazz: Class[Event],
       globalPrepareTask: ClusterStartupTask,
-      eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[EventStreamElement[Event], NotUsed],
+      eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[EventEnvelope, NotUsed],
       processor: () => ReadSideProcessor[Event]
   )(implicit mat: Materializer) =
     Props(
@@ -58,7 +59,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
     config: ReadSideConfig,
     clazz: Class[Event],
     globalPrepareTask: ClusterStartupTask,
-    eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[EventStreamElement[Event], NotUsed],
+    eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[EventEnvelope, NotUsed],
     processor: () => ReadSideProcessor[Event]
 )(implicit mat: Materializer)
     extends Actor
@@ -98,12 +99,19 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
           val futureOffset: Future[Offset]                      = handler.prepare(tag)
 
           Source
-            .fromFuture(futureOffset)
+            .future(futureOffset)
             .initialTimeout(config.offsetTimeout)
             .flatMapConcat { offset =>
-              val eventStreamSource = eventStreamFactory(tag, offset)
-              val usersFlow         = handler.handle()
-              eventStreamSource.via(usersFlow)
+              val envelopeSource: Source[EventEnvelope, NotUsed] = eventStreamFactory(tag, offset)
+              val toLagom: EventEnvelope => EventStreamElement[Event] =
+                AbstractPersistentEntityRegistry.toStreamElement
+              val usersFlow: Flow[EventStreamElement[Event], Done, NotUsed] = handler.handle()
+
+              envelopeSource
+                .map(identity) // TODO: use the supporting actor
+                .map(toLagom)
+                .via(usersFlow)
+
             }
         }
 

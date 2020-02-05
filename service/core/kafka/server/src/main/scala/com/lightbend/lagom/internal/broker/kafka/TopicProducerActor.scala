@@ -4,42 +4,42 @@
 
 package com.lightbend.lagom.internal.broker.kafka
 
-import akka.kafka.ProducerSettings
-import akka.kafka.scaladsl.{ Producer => ReactiveProducer }
-import akka.stream.scaladsl.GraphDSL
-import akka.actor.Status
-import akka.stream.scaladsl.Source
-import akka.pattern.pipe
-import akka.stream.scaladsl.Flow
-
-import scala.concurrent.Future
-import akka.stream.scaladsl.Sink
-
-import scala.concurrent.ExecutionContext
-import com.lightbend.lagom.internal.api.UriUtils
-import com.lightbend.lagom.spi.persistence.OffsetDao
-import akka.NotUsed
-import akka.actor.ActorLogging
-import akka.stream.scaladsl.Unzip
-import org.apache.kafka.clients.producer.ProducerRecord
-import akka.persistence.query.Offset
-import akka.stream.Materializer
-import akka.stream.scaladsl.Keep
-import akka.stream.KillSwitches
-import org.apache.kafka.common.serialization.StringSerializer
-import akka.actor.Props
-import org.apache.kafka.common.serialization.Serializer
-import akka.stream.KillSwitch
-import com.lightbend.lagom.spi.persistence.OffsetStore
-import akka.stream.FlowShape
-import akka.Done
-import akka.actor.Actor
-import akka.stream.scaladsl.Zip
 import java.net.URI
 
+import akka.Done
+import akka.NotUsed
+import akka.actor.Actor
+import akka.actor.ActorLogging
+import akka.actor.Props
+import akka.actor.Status
 import akka.kafka.ProducerMessage
+import akka.kafka.ProducerSettings
+import akka.kafka.scaladsl.{Producer => ReactiveProducer}
+import akka.pattern.pipe
+import akka.persistence.query.EventEnvelope
+import akka.persistence.query.{Offset => AkkaOffset}
+import akka.stream.FlowShape
+import akka.stream.KillSwitch
+import akka.stream.KillSwitches
+import akka.stream.Materializer
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.GraphDSL
+import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.RestartSource
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.Unzip
+import akka.stream.scaladsl.Zip
+import com.lightbend.lagom.internal.api.UriUtils
 import com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.Start
+import com.lightbend.lagom.spi.persistence.OffsetDao
+import com.lightbend.lagom.spi.persistence.OffsetStore
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.serialization.Serializer
+import org.apache.kafka.common.serialization.StringSerializer
+
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 private[lagom] object TopicProducerActor {
   def props[Message](
@@ -48,7 +48,7 @@ private[lagom] object TopicProducerActor {
       producerConfig: ProducerConfig,
       locateService: String => Future[Seq[URI]],
       topicId: String,
-      eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+      eventStreamFactory: EventStreamFactory[Message],
       partitionKeyStrategy: Option[Message => String],
       serializer: Serializer[Message],
       offsetStore: OffsetStore
@@ -70,6 +70,15 @@ private[lagom] object TopicProducerActor {
   case object Start
 }
 
+sealed trait EventStreamFactory[Message]
+
+case class ClassicLagomEventStreamFactory[Message](factory: (String, AkkaOffset) => Source[(Message, AkkaOffset), _])
+    extends EventStreamFactory[Message]
+
+case class DelegatedEventStreamFactory[Message](
+    factory: (String, AkkaOffset) => Source[EventEnvelope, NotUsed]
+) extends EventStreamFactory[Message]
+
 /**
  * The ProducerActor is activated remotely by a message with a tagname. That tagname identifies a shard
  * of a Persistent Entity which this actor will poll, then feed on a user Flow and finally publish into
@@ -81,7 +90,7 @@ private[lagom] class TopicProducerActor[Message](
     producerConfig: ProducerConfig,
     locateService: String => Future[Seq[URI]],
     topicId: String,
-    eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+    eventStreamFactory: EventStreamFactory[Message],
     partitionKeyStrategy: Option[Message => String],
     serializer: Serializer[Message],
     offsetStore: OffsetStore
@@ -103,7 +112,7 @@ private[lagom] class TopicProducerActor[Message](
 
   def receive: Receive = {
     case Start => {
-      val backoffSource: Source[Future[Done], NotUsed] = {
+      val backoffSource: Source[Future[AkkaOffset], NotUsed] = {
         RestartSource.withBackoff(
           producerConfig.minBackoff,
           producerConfig.maxBackoff,
@@ -114,12 +123,23 @@ private[lagom] class TopicProducerActor[Message](
             .fromFuture(brokersAndOffset)
             .initialTimeout(producerConfig.offsetTimeout)
             .flatMapConcat {
-              case (endpoints, offset) =>
+              case (endpoints, offsetDao) =>
                 val serviceName = kafkaConfig.serviceName.map(name => s"[$name]").getOrElse("")
                 log.debug("Kafka service {} located at URIs [{}] for producer of [{}]", serviceName, endpoints, topicId)
-                val eventStreamSource: Source[(Message, Offset), _]       = eventStreamFactory(tagName, offset.loadedOffset)
-                val usersFlow: Flow[(Message, Offset), Future[Done], Any] = eventsPublisherFlow(endpoints, offset)
-                eventStreamSource.via(usersFlow)
+                val streamSource: Source[(Message, AkkaOffset), _] =
+                  eventStreamFactory match {
+                    case ClassicLagomEventStreamFactory(factory) =>
+                      log.debug("Building TopicProducer with classic API for {}", tagName)
+                      factory(tagName, offsetDao.loadedOffset)
+                    case DelegatedEventStreamFactory(factory) =>
+                      log.debug("Building TopicProducer with delegated API for {}", tagName)
+                      factory(tagName, offsetDao.loadedOffset)
+                        .map(identity) // TODO: use the supporting actor
+                        .map(ee => ee.event.asInstanceOf[Message] -> ee.offset)
+                  }
+                val usersFlow: Flow[(Message, AkkaOffset), Future[AkkaOffset], Any] = eventsPublisherFlow(endpoints, offsetDao)
+
+                streamSource.via(usersFlow)
             }
         }
       }
@@ -191,13 +211,13 @@ private[lagom] class TopicProducerActor[Message](
     brokerList.zip(daoFuture)
   }
 
-  private def eventsPublisherFlow(endpoints: String, offsetDao: OffsetDao) =
+  private def eventsPublisherFlow(endpoints: String, offsetDao: OffsetDao): Flow[(Message, AkkaOffset), Future[AkkaOffset], Any] =
     Flow.fromGraph(GraphDSL.create(kafkaFlowPublisher(endpoints)) { implicit builder => publishFlow =>
       import GraphDSL.Implicits._
-      val unzip = builder.add(Unzip[Message, Offset])
-      val zip   = builder.add(Zip[Any, Offset])
-      val offsetCommitter = builder.add(Flow.fromFunction { e: (Any, Offset) =>
-        offsetDao.saveOffset(e._2)
+      val unzip = builder.add(Unzip[Message, AkkaOffset])
+      val zip   = builder.add(Zip[Any, AkkaOffset])
+      val offsetCommitter = builder.add(Flow.fromFunction { e: (Any, AkkaOffset) =>
+        offsetDao.saveOffset(e._2).map(_ => e._2)
       })
 
       unzip.out0 ~> publishFlow ~> zip.in0

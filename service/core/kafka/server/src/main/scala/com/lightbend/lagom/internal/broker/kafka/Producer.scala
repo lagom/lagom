@@ -6,7 +6,9 @@ package com.lightbend.lagom.internal.broker.kafka
 
 import java.net.URI
 
+import akka.NotUsed
 import akka.actor.ActorSystem
+import akka.persistence.query.EventEnvelope
 import akka.persistence.query.Offset
 import akka.stream.Materializer
 import akka.stream.scaladsl._
@@ -29,7 +31,7 @@ private[lagom] object Producer {
       kafkaConfig: KafkaConfig,
       locateService: String => Future[Seq[URI]],
       topicId: String,
-      eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+      eventStreamFactory: EventStreamFactory[Message],
       partitionKeyStrategy: Option[Message => String],
       serializer: Serializer[Message],
       offsetStore: OffsetStore,

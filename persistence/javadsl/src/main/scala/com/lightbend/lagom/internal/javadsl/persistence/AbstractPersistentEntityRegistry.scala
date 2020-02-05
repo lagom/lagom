@@ -5,31 +5,31 @@
 package com.lightbend.lagom.internal.javadsl.persistence
 
 import java.util.Optional
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionStage
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
+import akka.NotUsed
 import akka.actor.ActorSystem
+import akka.annotation.InternalApi
 import akka.cluster.Cluster
 import akka.cluster.sharding.ClusterSharding
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.cluster.sharding.ShardRegion
-import akka.event.Logging
-import akka.japi.Pair
-import akka.persistence.query.scaladsl.EventsByTagQuery
+import akka.japi
+import akka.japi.function
+import akka.persistence.query.EventEnvelope
 import akka.persistence.query.PersistenceQuery
-import akka.persistence.query.{ Offset => AkkaOffset }
+import akka.persistence.query.scaladsl.EventsByTagQuery
+import akka.persistence.query.{Offset => AkkaOffset}
 import akka.stream.javadsl
-import akka.Done
-import akka.NotUsed
+import akka.stream.scaladsl
 import com.lightbend.lagom.javadsl.persistence._
 import play.api.inject.Injector
 
+import scala.compat.java8.OptionConverters._
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
-import scala.compat.java8.OptionConverters._
 
 /**
  * Provides shared functionality for implementing a persistent entity registry.
@@ -144,18 +144,26 @@ class AbstractPersistentEntityRegistry(
   override def eventStream[Event <: AggregateEvent[Event]](
       aggregateTag: AggregateEventTag[Event],
       fromOffset: Offset
-  ): javadsl.Source[Pair[Event, Offset], NotUsed] = {
+  ): javadsl.Source[japi.Pair[Event, Offset], NotUsed] = {
+    eventEnvelopeStream(aggregateTag, fromOffset)
+      .map( env =>
+        japi.Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset))
+      )
+
+  }
+
+
+  @InternalApi
+  private[lagom] override def eventEnvelopeStream[Event <: AggregateEvent[Event]](
+                                                                                   aggregateTag: AggregateEventTag[Event],
+                                                                                   fromOffset: Offset
+                                                                                 ): javadsl.Source[EventEnvelope, NotUsed] = {
     eventsByTagQuery match {
       case Some(queries) =>
-        val tag = aggregateTag.tag
-
         val startingOffset = mapStartingOffset(fromOffset)
 
         queries
-          .eventsByTag(tag, startingOffset)
-          .map { env =>
-            Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset))
-          }
+          .eventsByTag(aggregateTag.tag, startingOffset)
           .asJava
 
       case None =>
@@ -182,4 +190,13 @@ class AbstractPersistentEntityRegistry(
    *         retrieve only unseen events
    */
   protected def mapStartingOffset(storedOffset: Offset): AkkaOffset = OffsetAdapter.dslOffsetToOffset(storedOffset)
+}
+
+private[lagom] object AbstractPersistentEntityRegistry {
+
+  @InternalApi
+  def toStreamElement[Event <: AggregateEvent[Event]](env: EventEnvelope): japi.Pair[Event, Offset] =
+    japi.Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset))
+
+
 }

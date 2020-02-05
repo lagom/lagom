@@ -4,11 +4,6 @@
 
 package com.lightbend.lagom.scaladsl.persistence.cassandra
 
-import akka.persistence.query.TimeBasedUUID
-
-import scala.concurrent.Future
-import scala.concurrent.duration._
-import com.typesafe.config.ConfigFactory
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSettings
 import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.CassandraPersistentEntityRegistry
@@ -16,6 +11,9 @@ import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.CassandraRead
 import com.lightbend.lagom.internal.scaladsl.persistence.cassandra.ScaladslCassandraOffsetStore
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence._
+import com.typesafe.config.ConfigFactory
+
+import scala.concurrent.Future
 
 object CassandraReadSideSpec {
   val defaultConfig      = ConfigFactory.parseString("akka.loglevel = INFO")

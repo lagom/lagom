@@ -45,6 +45,11 @@ public final class TopicProducer {
 
   private interface SingletonEvent extends AggregateEvent<SingletonEvent> {}
 
+  // When the tagger is not sharded, the user provided Flow is already closing on the actual Tag
+  // they want to consume, the TopicProducer API doesn't even allow the user to pass that Tag
+  // as an argument so that we can use it inside the TaggedOffsetTopicProducer instance.
+  // As a consequence, we use a _fake_ SINGLETON_TAG that will be used as a placeholder
+  // internally by Lagom but never actually used on a queryByTag
   private static final PSequence<AggregateEventTag<SingletonEvent>> SINGLETON_TAG =
       TreePVector.singleton(AggregateEventTag.of(SingletonEvent.class, "singleton"));
 
@@ -68,7 +73,7 @@ public final class TopicProducer {
           PSequence<AggregateEventTag<Event>> tags,
           BiFunction<AggregateEventTag<Event>, Offset, Source<Pair<Message, Offset>, ?>>
               eventStream) {
-    return new TaggedOffsetTopicProducer<>(tags, eventStream);
+    return new TaggedOffsetTopicProducer<Message, Event>(tags, eventStream);
   }
 
   /**
@@ -91,6 +96,6 @@ public final class TopicProducer {
           AggregateEventShards<Event> shards,
           BiFunction<AggregateEventTag<Event>, Offset, Source<Pair<Message, Offset>, ?>>
               eventStream) {
-    return new TaggedOffsetTopicProducer<>(shards.allTags(), eventStream);
+    return new TaggedOffsetTopicProducer<Message, Event>(shards.allTags(), eventStream);
   }
 }

@@ -7,18 +7,17 @@ package com.lightbend.lagom.internal.javadsl.persistence
 import java.net.URLEncoder
 import java.util.Optional
 
-import javax.inject.Inject
-import javax.inject.Provider
-import javax.inject.Singleton
 import akka.actor.ActorSystem
-import akka.cluster.Cluster
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
+import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.javadsl.persistence._
 import com.typesafe.config.Config
+import javax.inject.Inject
+import javax.inject.Provider
+import javax.inject.Singleton
 import play.api.inject.Injector
 
 import scala.collection.JavaConverters._
@@ -101,7 +100,7 @@ private[lagom] class ReadSideImpl @Inject() (
         config,
         eventClass,
         globalPrepareTask,
-        persistentEntityRegistry.eventStream[Event],
+        persistentEntityRegistry.eventEnvelopeStream[Event],
         processorFactory
       )
 
