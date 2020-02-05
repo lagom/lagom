@@ -26,14 +26,14 @@ class CircuitBreakersPanelInternalSpec extends AsyncFlatSpec with Matchers with 
 
   behavior.of("CircuitBreakersPanelInternal")
 
-  it should "keep the circuit closed on allowed exceptions" in {
+  it should "keep the circuit closed on whitelisted exceptions" in {
     val fakeExceptionName = new FakeException("").getClass.getName
-    val allowList         = Array(fakeExceptionName)
+    val whitelist         = Array(fakeExceptionName)
 
     // This CircuitBreakersPanelInternal has 'FakeException' whitelisted so when it's thrown on
     // the 2nd step it won't open the circuit.
     // NOTE the panel is configured to trip on a single exception (see config below)
-    val panel: CircuitBreakersPanelInternal = panelWith(allowList)
+    val panel: CircuitBreakersPanelInternal = panelWith(whitelist)
 
     val actual: Future[String] = for {
       _ <- successfulCall(panel, "123")
@@ -46,14 +46,14 @@ class CircuitBreakersPanelInternalSpec extends AsyncFlatSpec with Matchers with 
     }
   }
 
-  it should "open the circuit when the exception is not allowed" in {
-    val allowList = Array.empty[String]
+  it should "open the circuit when the exception is not whitelisted" in {
+    val whitelist = Array.empty[String]
 
     // This CircuitBreakersPanelInternal has nothing whitelisted so when a FakeException
     // is thrown on the 2nd step it will open. That will cause the third call to fail
     // which is what we expect.
     // NOTE the panel is configured to trip on a single exception (see config below)
-    val panel: CircuitBreakersPanelInternal = panelWith(allowList)
+    val panel: CircuitBreakersPanelInternal = panelWith(whitelist)
 
     // Expect a CircuitBreakerOpenException
     recoverToSucceededIf[CircuitBreakerOpenException] {
@@ -82,8 +82,8 @@ class CircuitBreakersPanelInternalSpec extends AsyncFlatSpec with Matchers with 
       }
   }
 
-  private def panelWith(allowList: Array[String]) = {
-    val config                                         = configWithAllowList(allowList: _*)
+  private def panelWith(whitelist: Array[String]) = {
+    val config                                         = configWithWhiteList(whitelist: _*)
     val cbConfig: CircuitBreakerConfig                 = new CircuitBreakerConfig(config)
     val metricsProvider: CircuitBreakerMetricsProvider = new CircuitBreakerMetricsProviderImpl(actorSystem)
     new CircuitBreakersPanelInternal(actorSystem, cbConfig, metricsProvider)
@@ -91,7 +91,7 @@ class CircuitBreakersPanelInternalSpec extends AsyncFlatSpec with Matchers with 
 
   // This configuration is prepared for the tests so that it opens the Circuit Breaker
   // after a single failure.
-  private def configWithAllowList(allowedExceptions: String*) = ConfigFactory.parseString(
+  private def configWithWhiteList(whitelistedExceptions: String*) = ConfigFactory.parseString(
     s"""
        |lagom.circuit-breaker {
        |  default {
@@ -99,7 +99,7 @@ class CircuitBreakersPanelInternalSpec extends AsyncFlatSpec with Matchers with 
        |    ## Set failures to '1' so a single exception trips the breaker.
        |    max-failures = 1
        |
-       |    allowed-exceptions = [${allowedExceptions.mkString(",")}]
+       |    exception-whitelist = [${whitelistedExceptions.mkString(",")}]
        |
        |
        |    enabled = on
