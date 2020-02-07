@@ -33,6 +33,8 @@ branches:
       enforce_admins: null  
 
 labels:
+  - coloer: e11d21
+    name: "failed"
   - color: f9d0c4
     name: "closed:declined"
   - color: f9d0c4
