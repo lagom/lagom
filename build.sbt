@@ -167,8 +167,8 @@ def sbtScalaSettings: Seq[Setting[_]] = Seq(
 
 def runtimeLibCommon: Seq[Setting[_]] = common ++ sonatypeSettings ++ runtimeScalaSettings ++ Seq(
   Dependencies.validateDependenciesSetting,
-  Dependencies.pruneWhitelistSetting,
-  Dependencies.dependencyWhitelistSetting,
+  Dependencies.allowedPruneSetting,
+  Dependencies.allowDependenciesSetting,
   // show full stack traces and test case durations
   testOptions in Test += Tests.Argument("-oDF"),
   // -v Log "test run started" / "test started" / "test run finished" events on log level "info" instead of "debug".
@@ -920,7 +920,7 @@ lazy val `persistence-jpa-javadsl` = (project in file("persistence-jpa/javadsl")
   .settings(
     name := "lagom-javadsl-persistence-jpa",
     Dependencies.`persistence-jpa-javadsl`,
-    Dependencies.dependencyWhitelist ++= Dependencies.JpaTestWhitelist
+    Dependencies.allowedDependencies ++= Dependencies.JpaTestWhitelist
   )
 
 lazy val `broker-javadsl` = (project in file("service/javadsl/broker"))
@@ -1363,7 +1363,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
             {
         // here we generate all non-Lagom dependencies
         // some are cross compiled, others are simply java deps.
-        Dependencies.DependencyWhitelist.value
+        Dependencies.AllowedDependencies.value
         // remove any scala-lang deps, they must be included transitively
           .filterNot(_.organization.startsWith("org.scala-lang"))
           .map {
