@@ -17,6 +17,11 @@ teams:
     permission: admin
   - name: integrators
     permission: admin
+  - name: akka-team
+    permission: admin    
+  - name: external-collaborators
+    permission: maintain
+    
 
 branches:
   - name: "*"
