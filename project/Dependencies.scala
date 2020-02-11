@@ -786,6 +786,8 @@ object Dependencies {
     akkaDistributedData,
     akkaPersistence,
     akkaClusterTools
+  ) ++ Seq("logback-core", "logback-classic").map(
+    "ch.qos.logback" % _ % Versions.Logback % Test
   )
 
   val `cluster-javadsl` = libraryDependencies ++= Seq(

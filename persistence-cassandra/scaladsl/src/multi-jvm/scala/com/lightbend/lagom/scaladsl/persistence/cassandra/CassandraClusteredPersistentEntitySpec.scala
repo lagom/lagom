@@ -26,7 +26,6 @@ import play.api.inject.DefaultApplicationLifecycle
 import play.api.Configuration
 import play.api.Environment
 import play.api.Mode
-
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
