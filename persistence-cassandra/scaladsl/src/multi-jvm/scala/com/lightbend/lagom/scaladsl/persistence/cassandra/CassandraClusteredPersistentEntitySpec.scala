@@ -25,14 +25,15 @@ import play.api.inject.DefaultApplicationLifecycle
 import play.api.Configuration
 import play.api.Environment
 import play.api.Mode
-
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
-  override def additionalCommonConfig(databasePort: Int): Config =
+  override def additionalCommonConfig(databasePort: Int): Config = {
     cassandraConfigOnly("CassandraClusteredPersistentEntityConfig", databasePort)
+      .withFallback(CassandraReadSideSpec.readSideConfig)
+  }
 }
 
 class CassandraClusteredPersistentEntitySpecMultiJvmNode1 extends CassandraClusteredPersistentEntitySpec
