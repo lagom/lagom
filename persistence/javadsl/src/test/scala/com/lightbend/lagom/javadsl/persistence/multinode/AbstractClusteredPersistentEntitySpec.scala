@@ -30,7 +30,6 @@ import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import com.lightbend.lagom.internal.cluster.STMultiNodeSpec
 import com.lightbend.lagom.javadsl.persistence.multinode.AbstractClusteredPersistentEntityConfig.Ports.SpecPorts
 
 abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {

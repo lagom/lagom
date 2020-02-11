@@ -26,7 +26,6 @@ import play.api.Environment
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import scala.concurrent.Future
-import com.lightbend.lagom.internal.cluster.STMultiNodeSpec
 import com.lightbend.lagom.scaladsl.persistence.multinode.AbstractClusteredPersistentEntitySpec.Ports.SpecPorts
 
 abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {

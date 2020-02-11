@@ -24,7 +24,7 @@ object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersist
   override def specPorts: SpecPorts = Ports.cassandraSpecPorts
 
   override def additionalCommonConfig: Config = {
-    cassandraConfigOnly("ClusteredPersistentEntitySpec", specPorts.database)
+    cassandraConfig("ClusteredPersistentEntitySpec", specPorts.database)
       .withFallback(CassandraReadSideSpec.readSideConfig)
   }
 }

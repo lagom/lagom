@@ -26,7 +26,6 @@ import play.api.inject.DefaultApplicationLifecycle
 import play.api.Configuration
 import play.api.Environment
 import play.api.Mode
-
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -35,7 +34,7 @@ object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersist
   override def specPorts: Ports.SpecPorts = Ports.cassandraSpecPorts
 
   override def additionalCommonConfig: Config = {
-    cassandraConfigOnly("CassandraClusteredPersistentEntityConfig", specPorts.database)
+    cassandraConfig("CassandraClusteredPersistentEntityConfig", specPorts.database)
       .withFallback(CassandraReadSideSpec.readSideConfig)
   }
 

@@ -4,6 +4,9 @@
 
 package com.lightbend.lagom.javadsl.persistence.cassandra
 
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.CompletionStage
 
 import com.google.inject.Guice
@@ -16,13 +19,32 @@ import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
 import com.lightbend.lagom.javadsl.persistence._
 import com.typesafe.config.ConfigFactory
 import play.api.inject.guice.GuiceInjectorBuilder
-
 import scala.concurrent.duration._
 
 object CassandraReadSideSpec {
+  def firstTimeBucket: String = {
+    val today                                = LocalDateTime.now(ZoneOffset.UTC)
+    val firstBucketFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HH:mm")
+    today.minusHours(3).format(firstBucketFormat)
+  }
+  val readSideConfig = ConfigFactory.parseString(s"""
+    # speed up read-side queries
+    cassandra-query-journal {
+      first-time-bucket = "$firstTimeBucket"
+      refresh-interval = 1s
+      events-by-tag.eventual-consistency-delay = 1s
+    }
+    """)
 
-  val defaultConfig      = ConfigFactory.parseString("akka.loglevel = INFO")
-  val noAutoCreateConfig = ConfigFactory.parseString("lagom.persistence.read-side.cassandra.tables-autocreate = false")
+  val defaultConfig =
+    ConfigFactory
+      .parseString("akka.loglevel = INFO")
+      .withFallback(readSideConfig)
+
+  val noAutoCreateConfig =
+    ConfigFactory
+      .parseString("lagom.persistence.read-side.cassandra.tables-autocreate = false")
+      .withFallback(defaultConfig)
 }
 
 class CassandraReadSideSpec
