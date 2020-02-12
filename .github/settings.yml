@@ -38,6 +38,8 @@ branches:
       enforce_admins: null  
 
 labels:
+  - color: ededed
+    name: triage
   - color: e11d21
     name: "failed"
   - color: f9d0c4
