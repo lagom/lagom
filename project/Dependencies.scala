@@ -195,7 +195,7 @@ object Dependencies {
 
   private val jffi         = "com.github.jnr" % "jffi"          % "1.2.23"
   private val jnrConstants = "com.github.jnr" % "jnr-constants" % "0.9.14"
-  private val jnrFfi       = "com.github.jnr" % "jnr-ffi"       % "2.1.10"
+  private val jnrFfi       = "com.github.jnr" % "jnr-ffi"       % "2.1.12"
   private val jnrPosix     = "com.github.jnr" % "jnr-posix"     % "3.0.52"
   private val jnra64asm    = "com.github.jnr" % "jnr-a64asm"    % "1.0.0"
   private val jnrx86asm    = "com.github.jnr" % "jnr-x86asm"    % "1.0.2"
