@@ -281,8 +281,10 @@ val mimaSettings: Seq[Setting[_]] = {
       else moduleID
     }.toSet,
     mimaBinaryIssueFilters ++= Seq(
-      // Add mima filters here.
-
+      // Some general filters first.
+      ProblemFilters.exclude[Problem]("com.lightbend.internal.*"),
+      ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal.*"),
+      // Non-general mima filters here.
       // Remove CassandraReadSide legacy implementation
       ProblemFilters
         .exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor"),
@@ -303,6 +305,13 @@ val mimaSettings: Seq[Setting[_]] = {
       ),
       ProblemFilters.exclude[MissingClassProblem](
         "com.lightbend.lagom.internal.javadsl.persistence.cassandra.LegacyCassandraReadSideHandler"
+      ),
+      // TopicProducer API with delegated stream construction (adds PersistentEntityRegistry.eventEnvelopeStream)
+      ProblemFilters.exclude[ReversedMissingMethodProblem](
+        "com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry.eventEnvelopeStream"
+      ),
+      ProblemFilters.exclude[ReversedMissingMethodProblem](
+        "com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry.eventEnvelopeStream"
       ),
     )
   )
