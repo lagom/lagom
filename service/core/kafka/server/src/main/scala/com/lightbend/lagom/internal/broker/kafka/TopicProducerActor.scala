@@ -124,8 +124,6 @@ private[lagom] class TopicProducerActor[BrokerMessage](
                     case DelegatedEventStreamFactory(factory, userFlow) =>
                       log.debug("Building TopicProducer with delegated API for {}", tagName)
                       factory(tagName, offsetDao.loadedOffset)
-                        .map(identity) // TODO: use the supporting actor
-                        //                        .map(ee => ee.event.asInstanceOf[BrokerMessage] -> ee.offset)
                         .via(userFlow)
                   }
                 val publisherFlow: Flow[(BrokerMessage, AkkaOffset), Future[AkkaOffset], Any] =

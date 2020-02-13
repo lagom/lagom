@@ -16,13 +16,11 @@ import akka.cluster.sharding.ClusterSharding
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.cluster.sharding.ShardRegion
 import akka.japi
-import akka.japi.function
 import akka.persistence.query.EventEnvelope
 import akka.persistence.query.PersistenceQuery
 import akka.persistence.query.scaladsl.EventsByTagQuery
-import akka.persistence.query.{ Offset => AkkaOffset }
+import akka.persistence.query.{Offset => AkkaOffset}
 import akka.stream.javadsl
-import akka.stream.scaladsl
 import com.lightbend.lagom.javadsl.persistence._
 import play.api.inject.Injector
 
