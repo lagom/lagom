@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.javadsl.pubsub;
 
+import akka.stream.SystemMaterializer;
 import com.lightbend.lagom.internal.javadsl.pubsub.PubSubRegistryImpl;
 
 import com.typesafe.config.Config;
@@ -21,7 +22,6 @@ import scala.concurrent.duration.Duration;
 
 import akka.actor.ActorSystem;
 import akka.cluster.Cluster;
-import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
@@ -75,7 +75,7 @@ public class PubSubTest {
       new GuiceInjectorBuilder()
           .bindings(
               bind(ActorSystem.class).toInstance(system),
-              bind(Materializer.class).toInstance(ActorMaterializer.create(system)),
+              bind(Materializer.class).toInstance(SystemMaterializer.get(system).materializer()),
               bind(ExecutionContext.class).toInstance(system.dispatcher()))
           .bindings(new PubSubModule())
           .build();
@@ -85,16 +85,13 @@ public class PubSubTest {
   }
 
   @Test
-  public void testSimplePubSub() throws Exception {
-    final Materializer mat = ActorMaterializer.create(system);
+  public void testSimplePubSub() {
     final TopicId<Notification> topic = new TopicId<>(Notification.class, "");
     final PubSubRef<Notification> ref = registry().refFor(topic);
 
     final Source<Notification, ?> sub = ref.subscriber();
     final TestSubscriber.Probe<String> probe =
-        sub.map(notification -> notification.getMsg())
-            .runWith(TestSink.probe(system), mat)
-            .request(2);
+        sub.map(Notification::getMsg).runWith(TestSink.probe(system), system).request(2);
 
     awaitHasSubscribers(ref, true);
 
@@ -106,16 +103,13 @@ public class PubSubTest {
   }
 
   @Test
-  public void testStreamingPublish() throws Exception {
-    final Materializer mat = ActorMaterializer.create(system);
+  public void testStreamingPublish() {
     final TopicId<Notification> topic = new TopicId<>(Notification.class, "1");
     final PubSubRef<Notification> ref = registry().refFor(topic);
 
     final Source<Notification, ?> sub = ref.subscriber();
     final TestSubscriber.Probe<String> probe =
-        sub.map(notification -> notification.getMsg())
-            .runWith(TestSink.probe(system), mat)
-            .request(2);
+        sub.map(Notification::getMsg).runWith(TestSink.probe(system), system).request(2);
 
     awaitHasSubscribers(ref, true);
 
@@ -125,7 +119,7 @@ public class PubSubTest {
                 new Notification("hello-1"),
                 new Notification("hello-2"),
                 new Notification("hello-3")))
-        .runWith(pub, mat);
+        .runWith(pub, system);
 
     probe.expectNext("hello-1");
     probe.expectNext("hello-2");
@@ -136,14 +130,15 @@ public class PubSubTest {
   }
 
   @Test
-  public void testSubscribeMaterializeTwo() throws Exception {
-    final Materializer mat = ActorMaterializer.create(system);
+  public void testSubscribeMaterializeTwo() {
     final TopicId<Notification> topic = new TopicId<>(Notification.class, "2");
     final PubSubRef<Notification> ref = registry().refFor(topic);
 
-    final Source<String, ?> src = ref.subscriber().map(notification -> notification.getMsg());
-    final TestSubscriber.Probe<String> probe1 = src.runWith(TestSink.probe(system), mat).request(2);
-    final TestSubscriber.Probe<String> probe2 = src.runWith(TestSink.probe(system), mat).request(2);
+    final Source<String, ?> src = ref.subscriber().map(Notification::getMsg);
+    final TestSubscriber.Probe<String> probe1 =
+        src.runWith(TestSink.probe(system), system).request(2);
+    final TestSubscriber.Probe<String> probe2 =
+        src.runWith(TestSink.probe(system), system).request(2);
 
     awaitHasSubscribers(ref, true);
 
@@ -154,13 +149,13 @@ public class PubSubTest {
   }
 
   @Test
-  public void testSubscribeMaterializeMoreThanOnce() throws Exception {
-    final Materializer mat = ActorMaterializer.create(system);
+  public void testSubscribeMaterializeMoreThanOnce() {
     final TopicId<Notification> topic = new TopicId<>(Notification.class, "3");
     final PubSubRef<Notification> ref = registry().refFor(topic);
 
-    final Source<String, ?> src = ref.subscriber().map(notification -> notification.getMsg());
-    final TestSubscriber.Probe<String> probe1 = src.runWith(TestSink.probe(system), mat).request(2);
+    final Source<String, ?> src = ref.subscriber().map(Notification::getMsg);
+    final TestSubscriber.Probe<String> probe1 =
+        src.runWith(TestSink.probe(system), system).request(2);
 
     awaitHasSubscribers(ref, true);
 
@@ -169,22 +164,20 @@ public class PubSubTest {
     probe1.expectNext("hello");
     probe1.cancel();
 
-    final TestSubscriber.Probe<String> probe2 = src.runWith(TestSink.probe(system), mat).request(2);
+    final TestSubscriber.Probe<String> probe2 =
+        src.runWith(TestSink.probe(system), system).request(2);
     ref.publish(new Notification("hello2"));
     probe2.expectNext("hello2");
   }
 
   @Test
-  public void testPublishMaterializeTwo() throws Exception {
-    final Materializer mat = ActorMaterializer.create(system);
+  public void testPublishMaterializeTwo() {
     final TopicId<Notification> topic = new TopicId<>(Notification.class, "4");
     final PubSubRef<Notification> ref = registry().refFor(topic);
 
     final Source<Notification, ?> sub = ref.subscriber();
     TestSubscriber.Probe<String> subProbe =
-        sub.map(notification -> notification.getMsg())
-            .runWith(TestSink.probe(system), mat)
-            .request(10);
+        sub.map(Notification::getMsg).runWith(TestSink.probe(system), system).request(10);
 
     awaitHasSubscribers(ref, true);
 
@@ -194,29 +187,26 @@ public class PubSubTest {
                 new Notification("hello-1a"),
                 new Notification("hello-2a"),
                 new Notification("hello-3a")))
-        .runWith(pub, mat);
+        .runWith(pub, system);
     Source.from(
             Arrays.asList(
                 new Notification("hello-1b"),
                 new Notification("hello-2b"),
                 new Notification("hello-3b")))
-        .runWith(pub, mat);
+        .runWith(pub, system);
 
     subProbe.expectNextUnordered(
         "hello-1a", "hello-1b", "hello-2a", "hello-2b", "hello-3a", "hello-3b");
   }
 
   @Test
-  public void testPublishMaterializeMoreThanOnce() throws Exception {
-    final Materializer mat = ActorMaterializer.create(system);
+  public void testPublishMaterializeMoreThanOnce() {
     final TopicId<Notification> topic = new TopicId<>(Notification.class, "5");
     final PubSubRef<Notification> ref = registry().refFor(topic);
 
     final Source<Notification, ?> sub = ref.subscriber();
     final TestSubscriber.Probe<String> probe1 =
-        sub.map(notification -> notification.getMsg())
-            .runWith(TestSink.probe(system), mat)
-            .request(10);
+        sub.map(Notification::getMsg).runWith(TestSink.probe(system), system).request(10);
 
     awaitHasSubscribers(ref, true);
 
@@ -226,7 +216,7 @@ public class PubSubTest {
                 new Notification("hello-1a"),
                 new Notification("hello-2a"),
                 new Notification("hello-3a")))
-        .runWith(pub, mat);
+        .runWith(pub, system);
 
     probe1.expectNext("hello-1a");
     probe1.expectNext("hello-2a");
@@ -234,23 +224,20 @@ public class PubSubTest {
     probe1.cancel();
 
     final TestSubscriber.Probe<String> probe2 =
-        sub.map(notification -> notification.getMsg())
-            .runWith(TestSink.probe(system), mat)
-            .request(10);
+        sub.map(Notification::getMsg).runWith(TestSink.probe(system), system).request(10);
     Source.from(
             Arrays.asList(
                 new Notification("hello-1b"),
                 new Notification("hello-2b"),
                 new Notification("hello-3b")))
-        .runWith(pub, mat);
+        .runWith(pub, system);
     probe2.expectNext("hello-1b");
     probe2.expectNext("hello-2b");
     probe2.expectNext("hello-3b");
   }
 
   @Test
-  public void testDropOldestWhenBufferOverflow() throws Exception {
-    final Materializer mat = ActorMaterializer.create(system);
+  public void testDropOldestWhenBufferOverflow() {
     final TopicId<Notification> topic = new TopicId<>(Notification.class, "7");
     final Config conf =
         ConfigFactory.parseString("subscriber-buffer-size = 3")
@@ -262,7 +249,7 @@ public class PubSubTest {
     // important to not use any intermediate stages (such as map) here, because then
     // internal buffering comes into play
     final TestSubscriber.Probe<Notification> probe =
-        src.runWith(TestSink.probe(system), mat).request(2);
+        src.runWith(TestSink.probe(system), system).request(2);
 
     awaitHasSubscribers(ref, true);
 
