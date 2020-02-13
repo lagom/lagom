@@ -104,8 +104,8 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
             .flatMapConcat { offset =>
               val envelopeStreamSource: scaladsl.Source[EventEnvelope, NotUsed] =
                 eventStreamFactory(tag, offset).asScala
-              val toLagom: EventEnvelope => japi.Pair[Event, Offset] =
-                AbstractPersistentEntityRegistry.toStreamElement
+              val toLagom: EventEnvelope => japi.Pair[Event, Offset] = ee =>
+                AbstractPersistentEntityRegistry.toStreamElement(ee)
               val usersFlow: Flow[japi.Pair[Event, Offset], Done, _] = handler.handle()
 
               envelopeStreamSource

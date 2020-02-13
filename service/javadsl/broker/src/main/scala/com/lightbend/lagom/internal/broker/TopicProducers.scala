@@ -8,6 +8,7 @@ import java.util.function.BiFunction
 
 import akka.NotUsed
 import akka.japi.Pair
+import akka.japi.function
 import akka.persistence.query.EventEnvelope
 import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.javadsl.Flow
@@ -38,7 +39,7 @@ final class TaggedOffsetTopicProducer[BrokerMessage, Event <: AggregateEvent[Eve
       }
 }
 
-// An InternalTopic used by the legacy TopicProducer API. This provides the pieces to create the Source, map it
+// An InternalTopic used by the TopicProducer API. This provides the pieces to create the Source, map it
 // to the Lagom API and connect it to the user-provided flow so the ProducerActor can handle that
 // and instrument it internally.
 final class DelegatedTopicProducer[BrokerMessage, Event <: AggregateEvent[Event]](
@@ -47,15 +48,17 @@ final class DelegatedTopicProducer[BrokerMessage, Event <: AggregateEvent[Event]
     val clusterShardEntityIds: PSequence[String],
     userFlow: Flow[Pair[Event, Offset], Pair[BrokerMessage, Offset], NotUsed]
 ) extends TaggedInternalTopic[BrokerMessage, Event] {
-  private val f1: Flow[EventEnvelope, Pair[Event, Offset], NotUsed] = Flow
-    .create[EventEnvelope]
-    .map { eventEnvelope =>
-      val lagomOffset = OffsetAdapter.offsetToDslOffset(eventEnvelope.offset)
-      Pair(eventEnvelope.event.asInstanceOf[Event], lagomOffset)
-    }
-  val userFlowAkka: Flow[EventEnvelope, (BrokerMessage, AkkaOffset), NotUsed] =
-    f1.via(userFlow)
+
+  def userFlowAkka(
+      toUserApi: function.Function[EventEnvelope, Pair[Event, Offset]]
+  ): Flow[EventEnvelope, (BrokerMessage, AkkaOffset), NotUsed] = {
+    Flow
+      .create[EventEnvelope]
+      .map(toUserApi)
+      .via(userFlow)
       .map { pair =>
         pair.first -> OffsetAdapter.dslOffsetToOffset(pair.second)
       }
+  }
+
 }

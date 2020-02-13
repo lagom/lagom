@@ -191,7 +191,7 @@ class AbstractPersistentEntityRegistry(
 private[lagom] object AbstractPersistentEntityRegistry {
 
   @InternalApi
-  def toStreamElement[Event <: AggregateEvent[Event]](env: EventEnvelope): japi.Pair[Event, Offset] =
-    japi.Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset))
+  def toStreamElement[Event <: AggregateEvent[Event]]: japi.function.Function[EventEnvelope, japi.Pair[Event, Offset]] =
+    env => japi.Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset))
 
 }

@@ -108,7 +108,6 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
               val usersFlow: Flow[EventStreamElement[Event], Done, NotUsed] = handler.handle()
 
               envelopeSource
-                .map(identity) // TODO: use the supporting actor
                 .map(toLagom)
                 .via(usersFlow)
 

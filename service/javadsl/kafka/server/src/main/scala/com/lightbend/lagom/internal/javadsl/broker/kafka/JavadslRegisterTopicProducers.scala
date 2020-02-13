@@ -22,6 +22,7 @@ import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
 import com.lightbend.lagom.internal.broker.kafka.Producer
 import com.lightbend.lagom.internal.javadsl.api.MethodTopicHolder
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
+import com.lightbend.lagom.internal.javadsl.persistence.AbstractPersistentEntityRegistry
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
@@ -83,7 +84,10 @@ class JavadslRegisterTopicProducers[BrokerMessage, Event <: AggregateEvent[Event
                               .asScala
                           case None => throw new RuntimeException("Unknown tag: " + tag)
                         }
-                      DelegatedEventStreamFactory(sourceFactory, producer.userFlowAkka.asScala)
+                      DelegatedEventStreamFactory(
+                        sourceFactory,
+                        producer.userFlowAkka(AbstractPersistentEntityRegistry.toStreamElement).asScala
+                      )
                     case producer: TaggedOffsetTopicProducer[BrokerMessage, Event] =>
                       ClassicLagomEventStreamFactory((tag, offset) =>
                         tags.find(_.tag == tag) match {
