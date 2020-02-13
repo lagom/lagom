@@ -59,10 +59,6 @@ class ScaladslRegisterTopicProducers[BrokerMessage, Event <: AggregateEvent[Even
   } {
     topicCall.topicHolder match {
       case holder: ScalaMethodTopic[BrokerMessage] =>
-        // `topicProducer` is the user-provided method (implemented in a ServiceImp). Before Lago 1.6.2 only
-        // `TaggedOffsetTopicProducer` was supported. `TaggedOffsetTopicProducer` wraps the collection
-        // of `tags` to fetch and the a factory:
-        //    (tag, fromOffset) => Source[(Message, Offset), _]
         val topicProducer: AnyRef  = holder.method.invoke(service.service)
         val topicId: Topic.TopicId = topicCall.topicId
 

@@ -6,7 +6,6 @@ import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Source
 
-
 sealed trait EventStreamFactory[BrokerMessage]
 
 case class ClassicLagomEventStreamFactory[BrokerMessage](

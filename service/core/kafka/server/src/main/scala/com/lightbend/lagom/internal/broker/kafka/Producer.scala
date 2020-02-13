@@ -6,12 +6,8 @@ package com.lightbend.lagom.internal.broker.kafka
 
 import java.net.URI
 
-import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.persistence.query.EventEnvelope
-import akka.persistence.query.Offset
 import akka.stream.Materializer
-import akka.stream.scaladsl._
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.spi.persistence.OffsetStore

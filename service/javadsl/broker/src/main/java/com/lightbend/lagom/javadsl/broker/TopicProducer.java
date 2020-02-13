@@ -5,6 +5,7 @@
 package com.lightbend.lagom.javadsl.broker;
 
 import akka.NotUsed;
+import akka.annotation.ApiMayChange;
 import akka.japi.Pair;
 import akka.stream.javadsl.Flow;
 import akka.stream.javadsl.Source;
@@ -50,13 +51,10 @@ public final class TopicProducer {
   // When the tagger is not sharded, the user provided Flow is already closing on the actual Tag
   // they want to consume, the (classic) TopicProducer API doesn't  allow the user to pass that Tag
   // as an argument. As a consequence, we use a fake SINGLETON_TAG that will be used as a
-  // placeholder
-  // internally by Lagom but never actually used on a queryByTag.
-  // In the DelegatedTopicProducer API (aka .fromTaggedEntity) the user code is not closing on the
-  // actual
-  // tag so we need to distinguish between what will be used when invoking queryByTag and what will
-  // be
-  // used as an entityId when sharding the actors.
+  // placeholder internally by Lagom but never actually used on a queryByTag.  In the
+  // DelegatedTopicProducer API (aka .fromTaggedEntity) the user code is not closing on the
+  // actual tag so we need to distinguish between what will be used when invoking queryByTag and
+  // what will be used as an entityId when sharding the actors.
   private static final PSequence<AggregateEventTag<SingletonEvent>> SINGLETON_TAG =
       TreePVector.singleton(AggregateEventTag.of(SingletonEvent.class, "singleton"));
 
@@ -106,18 +104,7 @@ public final class TopicProducer {
     return new TaggedOffsetTopicProducer<Message, Event>(shards.allTags(), eventStream);
   }
 
-  //  // Requires fixing https://github.com/lagom/lagom/issues/2699 first
-  //  public static <Message, Event extends AggregateEvent<Event>> Topic<Message> fromTaggedEntity(
-  //      PersistentEntityRegistry persistentEntityRegistry,
-  //      AggregateEventTag<Event> tag,
-  //      Flow<Pair<Event, Offset>, Pair<Message, Offset>, NotUsed> userFlow) {
-  //    return new DelegatedTopicProducer<Message, Event>(
-  //        persistentEntityRegistry,
-  //        TreePVector.singleton(tag),
-  //        TreePVector.singleton(SINGLETON_TAG_NAME),
-  //        userFlow);
-  //  }
-
+  @ApiMayChange
   public static <Message, Event extends AggregateEvent<Event>> Topic<Message> fromTaggedEntity(
       PersistentEntityRegistry persistentEntityRegistry,
       AggregateEventShards<Event> shards,

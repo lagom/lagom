@@ -30,7 +30,7 @@ trait TaggedInternalTopic[BrokerMessage, Event <: AggregateEvent[Event]] extends
   val tags: immutable.Seq[AggregateEventTag[Event]]
 }
 
-// An InternalTopic used by the legacy TopicProducer API. This creates the Source, maps it to
+// An InternalTopic used by the TopicProducer API. This creates the Source, maps it to
 // Lagom API and also connects it to the user-provided flow in a single shot.
 final class TaggedOffsetTopicProducer[BrokerMessage, Event <: AggregateEvent[Event]](
     val tags: immutable.Seq[AggregateEventTag[Event]],

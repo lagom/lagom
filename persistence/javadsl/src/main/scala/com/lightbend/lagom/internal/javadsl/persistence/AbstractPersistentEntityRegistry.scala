@@ -19,7 +19,7 @@ import akka.japi
 import akka.persistence.query.EventEnvelope
 import akka.persistence.query.PersistenceQuery
 import akka.persistence.query.scaladsl.EventsByTagQuery
-import akka.persistence.query.{Offset => AkkaOffset}
+import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.javadsl
 import com.lightbend.lagom.javadsl.persistence._
 import play.api.inject.Injector

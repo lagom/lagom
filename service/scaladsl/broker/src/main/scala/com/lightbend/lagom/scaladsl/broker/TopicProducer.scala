@@ -5,6 +5,7 @@
 package com.lightbend.lagom.scaladsl.broker
 
 import akka.NotUsed
+import akka.annotation.ApiMayChange
 import akka.persistence.query.Offset
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Source
@@ -87,19 +88,7 @@ object TopicProducer {
   ): Topic[Message] =
     new TaggedOffsetTopicProducer[Message, Event](shards.allTags.toList, eventStream)
 
-//  // Requires fixing https://github.com/lagom/lagom/issues/2699 first
-//  def fromTaggedEntity[BrokerMessage, Event <: AggregateEvent[Event]](
-//                        registry: PersistentEntityRegistry,
-//                        tag: AggregateEventTag[Event])(
-//                        userFlow: Flow[EventStreamElement[Event], (BrokerMessage, Offset), NotUsed]
-//                      ): Topic[BrokerMessage] = {
-//    // The legacy implementation used the SINGLETON_TAG while we use the user-provided tag this time.
-//    // We need the user provided tag because the invocation to `registry.eventStream` (which now happens on the actor)
-//    // will require the user provided tag so we must make sure the internal implementation will continue to
-//    // use SINGLETON_TAG for the cluster distribution.
-//    new DelegatedTopicProducer(registry, immutable.Seq(tag), "singleton", userFlow)
-//  }
-
+  @ApiMayChange
   def fromTaggedEntity[BrokerMessage, Event <: AggregateEvent[Event]](
       registry: PersistentEntityRegistry,
       tags: AggregateEventShards[Event]
