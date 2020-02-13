@@ -146,7 +146,7 @@ class AbstractPersistentEntityRegistry(
       fromOffset: Offset
   ): javadsl.Source[japi.Pair[Event, Offset], NotUsed] = {
     eventEnvelopeStream(aggregateTag, fromOffset)
-      .map(env => japi.Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset)))
+      .map(AbstractPersistentEntityRegistry.toStreamElement)
 
   }
   @InternalApi
