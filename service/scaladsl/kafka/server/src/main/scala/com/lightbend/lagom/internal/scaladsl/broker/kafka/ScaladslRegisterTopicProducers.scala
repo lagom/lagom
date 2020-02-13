@@ -4,9 +4,12 @@
 
 package com.lightbend.lagom.internal.scaladsl.broker.kafka
 
+import akka.NotUsed
 import akka.actor.ActorSystem
+import akka.persistence.query.EventEnvelope
 import akka.persistence.query.Offset
 import akka.stream.Materializer
+import akka.stream.scaladsl.Source
 import com.lightbend.internal.broker.DelegatedTopicProducer
 import com.lightbend.internal.broker.TaggedInternalTopic
 import com.lightbend.internal.broker.TaggedOffsetTopicProducer
@@ -17,6 +20,7 @@ import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
 import com.lightbend.lagom.internal.broker.kafka.Producer
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactory
+import com.lightbend.lagom.internal.scaladsl.persistence.AbstractPersistentEntityRegistry
 import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.scaladsl.api.ServiceInfo
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
@@ -24,11 +28,13 @@ import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodTopic
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.broker.kafka.KafkaProperties
 import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
+import com.lightbend.lagom.scaladsl.persistence.AggregateEventTag
 import com.lightbend.lagom.scaladsl.server.LagomServer
 import com.lightbend.lagom.scaladsl.server.LagomServiceBinding
 import com.lightbend.lagom.spi.persistence.OffsetStore
 import org.slf4j.LoggerFactory
 
+import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 
 class ScaladslRegisterTopicProducers[BrokerMessage, Event <: AggregateEvent[Event]](
@@ -53,8 +59,8 @@ class ScaladslRegisterTopicProducers[BrokerMessage, Event <: AggregateEvent[Even
   } {
     topicCall.topicHolder match {
       case holder: ScalaMethodTopic[BrokerMessage] =>
-        // `topicProducer` is the user-provided method (implemented in a ServiceImp). Currently only
-        // `TaggedOffsetTopicProducer` is supported. `TaggedOffsetTopicProducer` wraps the collection
+        // `topicProducer` is the user-provided method (implemented in a ServiceImp). Before Lago 1.6.2 only
+        // `TaggedOffsetTopicProducer` was supported. `TaggedOffsetTopicProducer` wraps the collection
         // of `tags` to fetch and the a factory:
         //    (tag, fromOffset) => Source[(Message, Offset), _]
         val topicProducer: AnyRef  = holder.method.invoke(service.service)
@@ -71,12 +77,15 @@ class ScaladslRegisterTopicProducers[BrokerMessage, Event <: AggregateEvent[Even
                 val eventStreamFactory: EventStreamFactory[BrokerMessage] =
                   tagged match {
                     case producer: DelegatedTopicProducer[BrokerMessage, Event] =>
-                      DelegatedEventStreamFactory((tag, offset: Offset) =>
+                      val sourceFactory: (String, Offset) => Source[EventEnvelope, NotUsed] = (tag, offset: Offset) =>
                         tags.find(_.tag == tag) match {
                           case Some(aggregateTag) =>
                             producer.persistentEntityRegistry.eventEnvelopeStream(aggregateTag, offset)
                           case None => throw new RuntimeException("Unknown tag: " + tag)
                         }
+                      DelegatedEventStreamFactory[BrokerMessage, Event](
+                        sourceFactory,
+                        producer.userFlowAkka(AbstractPersistentEntityRegistry.toStreamElement)
                       )
                     case producer: TaggedOffsetTopicProducer[BrokerMessage, Event] =>
                       ClassicLagomEventStreamFactory((tag, offset: Offset) =>
@@ -88,6 +97,11 @@ class ScaladslRegisterTopicProducers[BrokerMessage, Event <: AggregateEvent[Even
                       )
                   }
 
+                val shardEntityIds: immutable.Seq[String] = tagged match {
+                  case producer: DelegatedTopicProducer[_, _]    => producer.clusterShardEntityIds
+                  case producer: TaggedOffsetTopicProducer[_, _] => producer.tags.map(_.tag)
+                }
+
                 val partitionKeyStrategy: Option[BrokerMessage => String] = {
                   topicCall.properties.get(KafkaProperties.partitionKeyStrategy).map { pks => message =>
                     pks.computePartitionKey(message)
@@ -96,7 +110,7 @@ class ScaladslRegisterTopicProducers[BrokerMessage, Event <: AggregateEvent[Even
 
                 Producer.startTaggedOffsetProducer(
                   actorSystem,
-                  tags.map(_.tag),
+                  shardEntityIds,
                   kafkaConfig,
                   serviceLocator.locateAll,
                   topicId.name,

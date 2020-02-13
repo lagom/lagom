@@ -36,17 +36,19 @@ object TopicProducer {
    * @param eventStream A function to create the event stream given the last offset that was published.
    * @return The topic producer.
    */
-  @deprecated("Prefer .fromTaggedEntity instead", "1.6.2")
   def singleStreamWithOffset[Message](eventStream: Offset => Source[(Message, Offset), Any]): Topic[Message] =
     taggedStreamWithOffset(SINGLETON_TAG)((tag, offset) => eventStream(offset))
 
   private trait SingletonEvent extends AggregateEvent[TopicProducer.SingletonEvent] {}
 
+  // See https://github.com/lagom/lagom/issues/2699 first
   // When the tagger is not sharded, the user provided Flow is already closing on the actual Tag
-  // they want to consume, the TopicProducer API doesn't even allow the user to pass that Tag
-  // as an argument so that we can use it inside the TaggedOffsetTopicProducer instance.
-  // As a consequence, we use a _fake_ SINGLETON_TAG that will be used as a placeholder
-  // internally by Lagom but never actually used on a queryByTag
+  // they want to consume, the (classic) TopicProducer API doesn't  allow the user to pass that Tag
+  // as an argument. As a consequence, we use a fake SINGLETON_TAG that will be used as a placeholder
+  // internally by Lagom but never actually used on a queryByTag.
+  // In the DelegatedTopicProducer API (aka .fromTaggedEntity) the user code is not closing on the actual
+  // tag so we need to distinguish between what will be used when invoking queryByTag and what will be
+  // used as an entityId when sharding the actors.
   private val SINGLETON_TAG = List(AggregateEventTag[TopicProducer.SingletonEvent]("singleton"))
 
   /**
@@ -62,7 +64,6 @@ object TopicProducer {
    * @param eventStream A function event stream for a given shard given the last offset that was published.
    * @return The topic producer.
    */
-  @deprecated("Prefer .fromTaggedEntity instead", "1.6.2")
   def taggedStreamWithOffset[Message, Event <: AggregateEvent[Event]](tags: immutable.Seq[AggregateEventTag[Event]])(
       eventStream: (AggregateEventTag[Event], Offset) => Source[(Message, Offset), Any]
   ): Topic[Message] =
@@ -81,35 +82,32 @@ object TopicProducer {
    * @param eventStream A function event stream for a given shard given the last offset that was published.
    * @return The topic producer.
    */
-  @deprecated("Prefer .fromTaggedEntity instead", "1.6.2")
   def taggedStreamWithOffset[Message, Event <: AggregateEvent[Event]](shards: AggregateEventShards[Event])(
       eventStream: (AggregateEventTag[Event], Offset) => Source[(Message, Offset), Any]
   ): Topic[Message] =
     new TaggedOffsetTopicProducer[Message, Event](shards.allTags.toList, eventStream)
 
+//  // Requires fixing https://github.com/lagom/lagom/issues/2699 first
+//  def fromTaggedEntity[BrokerMessage, Event <: AggregateEvent[Event]](
+//                        registry: PersistentEntityRegistry,
+//                        tag: AggregateEventTag[Event])(
+//                        userFlow: Flow[EventStreamElement[Event], (BrokerMessage, Offset), NotUsed]
+//                      ): Topic[BrokerMessage] = {
+//    // The legacy implementation used the SINGLETON_TAG while we use the user-provided tag this time.
+//    // We need the user provided tag because the invocation to `registry.eventStream` (which now happens on the actor)
+//    // will require the user provided tag so we must make sure the internal implementation will continue to
+//    // use SINGLETON_TAG for the cluster distribution.
+//    new DelegatedTopicProducer(registry, immutable.Seq(tag), "singleton", userFlow)
+//  }
 
   def fromTaggedEntity[BrokerMessage, Event <: AggregateEvent[Event]](
-                        registry: PersistentEntityRegistry,
-                        tag: AggregateEventTag[Event])(
-                        userFlow: Flow[EventStreamElement[Event], (BrokerMessage, Offset), NotUsed]
-                      ): Topic[BrokerMessage] = {
-    // It is unclear what to do with the `tag` we're passing ar an argument here. The legacy implementation used
-    // the SINGLETON_TAG while we use the user-provided tag this time.
-    // We need the user provided tag because the invocation to `registry.eventStream` (which now happens on the actor)
-    // will require the user provided tag so we must make sure the internal implementation will continue to
-    // use SINGLETON_TAG for the cluster distribution.
-    new DelegatedTopicProducer(registry, immutable.Seq(tag), SINGLETON_TAG, userFlow)
-  }
-
-  @deprecated("Prefer .fromTaggedEntity instead", "1.6.2")
-  def fromTaggedEntity[BrokerMessage, Event <: AggregateEvent[Event]](
-                        registry: PersistentEntityRegistry,
-                        tags: AggregateEventShards[Event])(
-                        userFlow: Flow[EventStreamElement[Event], (BrokerMessage, Offset), NotUsed]
-                      ): Topic[BrokerMessage] = {
+      registry: PersistentEntityRegistry,
+      tags: AggregateEventShards[Event]
+  )(
+      userFlow: Flow[EventStreamElement[Event], (BrokerMessage, Offset), NotUsed]
+  ): Topic[BrokerMessage] = {
     val seqTags = tags.allTags.toIndexedSeq
-    new DelegatedTopicProducer(registry, seqTags, seqTags, userFlow)
+    new DelegatedTopicProducer(registry, seqTags, seqTags.map(_.tag), userFlow)
   }
-
 
 }

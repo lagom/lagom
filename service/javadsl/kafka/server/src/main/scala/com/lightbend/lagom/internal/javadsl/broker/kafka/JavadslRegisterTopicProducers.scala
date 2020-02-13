@@ -6,8 +6,12 @@ package com.lightbend.lagom.internal.javadsl.broker.kafka
 
 import java.net.URI
 
+import akka.NotUsed
 import akka.actor.ActorSystem
+import akka.persistence.query.EventEnvelope
+import akka.persistence.query.Offset
 import akka.stream.Materializer
+import akka.stream.scaladsl.Source
 import com.lightbend.lagom.internal.broker.DelegatedTopicProducer
 import com.lightbend.lagom.internal.broker.TaggedInternalTopic
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
@@ -32,6 +36,7 @@ import javax.inject.Inject
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
+import scala.collection.immutable
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -69,34 +74,33 @@ class JavadslRegisterTopicProducers[BrokerMessage, Event <: AggregateEvent[Event
                 val eventStreamFactory: EventStreamFactory[BrokerMessage] =
                   tagged match {
                     case producer: DelegatedTopicProducer[BrokerMessage, Event] =>
-                      DelegatedEventStreamFactory((tag, offset) =>
+                      val sourceFactory: (String, Offset) => Source[EventEnvelope, NotUsed] = (tag, offset) =>
                         tags.find(_.tag == tag) match {
                           case Some(aggregateTag) =>
                             val lagomOffset = OffsetAdapter.offsetToDslOffset(offset)
-                            producer
-                              .persistentEntityRegistry
-                              .eventEnvelopeStream(
-                                aggregateTag,
-                                lagomOffset)
+                            producer.persistentEntityRegistry
+                              .eventEnvelopeStream(aggregateTag, lagomOffset)
                               .asScala
                           case None => throw new RuntimeException("Unknown tag: " + tag)
                         }
-                      )
+                      DelegatedEventStreamFactory(sourceFactory, producer.userFlowAkka.asScala)
                     case producer: TaggedOffsetTopicProducer[BrokerMessage, Event] =>
                       ClassicLagomEventStreamFactory((tag, offset) =>
                         tags.find(_.tag == tag) match {
                           case Some(aggregateTag) =>
                             val lagomOffset = OffsetAdapter.offsetToDslOffset(offset)
                             producer
-                              .readSideStream(aggregateTag, lagomOffset)
+                              .readSideStreamAkka(aggregateTag, lagomOffset)
                               .asScala
-                              .map { pair =>
-                                pair.first -> OffsetAdapter.dslOffsetToOffset(pair.second)
-                              }
                           case None => throw new RuntimeException("Unknown tag: " + tag)
                         }
                       )
                   }
+
+                val shardEntityIds = tagged match {
+                  case producer: DelegatedTopicProducer[_, _]    => producer.clusterShardEntityIds.asScala.toList
+                  case producer: TaggedOffsetTopicProducer[_, _] => producer.tags.asScala.map(_.tag).toList
+                }
 
                 val partitionKeyStrategy: Option[BrokerMessage => String] = {
                   val javaPKS = topicCall.properties().getValueOf(KafkaProperties.partitionKeyStrategy())
@@ -107,7 +111,7 @@ class JavadslRegisterTopicProducers[BrokerMessage, Event <: AggregateEvent[Event
 
                 Producer.startTaggedOffsetProducer(
                   actorSystem,
-                  tags.map(_.tag),
+                  shardEntityIds,
                   kafkaConfig,
                   locateService,
                   topicId.value(),

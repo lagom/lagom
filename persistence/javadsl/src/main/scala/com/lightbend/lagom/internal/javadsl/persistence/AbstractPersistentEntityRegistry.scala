@@ -20,7 +20,7 @@ import akka.japi.function
 import akka.persistence.query.EventEnvelope
 import akka.persistence.query.PersistenceQuery
 import akka.persistence.query.scaladsl.EventsByTagQuery
-import akka.persistence.query.{Offset => AkkaOffset}
+import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.javadsl
 import akka.stream.scaladsl
 import com.lightbend.lagom.javadsl.persistence._
@@ -146,18 +146,14 @@ class AbstractPersistentEntityRegistry(
       fromOffset: Offset
   ): javadsl.Source[japi.Pair[Event, Offset], NotUsed] = {
     eventEnvelopeStream(aggregateTag, fromOffset)
-      .map( env =>
-        japi.Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset))
-      )
+      .map(env => japi.Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset)))
 
   }
-
-
   @InternalApi
   private[lagom] override def eventEnvelopeStream[Event <: AggregateEvent[Event]](
-                                                                                   aggregateTag: AggregateEventTag[Event],
-                                                                                   fromOffset: Offset
-                                                                                 ): javadsl.Source[EventEnvelope, NotUsed] = {
+      aggregateTag: AggregateEventTag[Event],
+      fromOffset: Offset
+  ): javadsl.Source[EventEnvelope, NotUsed] = {
     eventsByTagQuery match {
       case Some(queries) =>
         val startingOffset = mapStartingOffset(fromOffset)
@@ -197,6 +193,5 @@ private[lagom] object AbstractPersistentEntityRegistry {
   @InternalApi
   def toStreamElement[Event <: AggregateEvent[Event]](env: EventEnvelope): japi.Pair[Event, Offset] =
     japi.Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset))
-
 
 }

@@ -5,6 +5,7 @@
 package com.lightbend.internal.broker
 
 import akka.NotUsed
+import akka.persistence.query.EventEnvelope
 import akka.persistence.query.Offset
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Source
@@ -25,7 +26,7 @@ trait InternalTopic[BrokerMessage] extends Topic[BrokerMessage] {
     throw new UnsupportedOperationException("Topic#subscribe is not permitted in the service's topic implementation.")
 }
 
-trait TaggedInternalTopic[BrokerMessage, Event <: AggregateEvent[Event]] extends InternalTopic[BrokerMessage]{
+trait TaggedInternalTopic[BrokerMessage, Event <: AggregateEvent[Event]] extends InternalTopic[BrokerMessage] {
   val tags: immutable.Seq[AggregateEventTag[Event]]
 }
 
@@ -53,6 +54,13 @@ final class TaggedOffsetTopicProducer[BrokerMessage, Event <: AggregateEvent[Eve
 final class DelegatedTopicProducer[BrokerMessage, Event <: AggregateEvent[Event]](
     val persistentEntityRegistry: PersistentEntityRegistry,
     val tags: immutable.Seq[AggregateEventTag[Event]],
-    val clusterShardEntityIds: immutable.Seq[AggregateEventTag[_]],
-    val userFlow: Flow[EventStreamElement[Event], (BrokerMessage, Offset), NotUsed]
-) extends TaggedInternalTopic[BrokerMessage, Event]
+    val clusterShardEntityIds: immutable.Seq[String],
+    userFlow: Flow[EventStreamElement[Event], (BrokerMessage, Offset), NotUsed]
+) extends TaggedInternalTopic[BrokerMessage, Event] {
+  def userFlowAkka(
+      toUserApi: EventEnvelope => EventStreamElement[Event]
+  ): Flow[EventEnvelope, (BrokerMessage, Offset), NotUsed] =
+    Flow[EventEnvelope]
+      .map(toUserApi)
+      .via(userFlow)
+}
