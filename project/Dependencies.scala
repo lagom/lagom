@@ -21,7 +21,7 @@ object Dependencies {
     val TargetSbt1 = "1.2.8"
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.8.0" // sync with docs/build.sbt
+    val Play             = "2.8.1" // sync with docs/build.sbt
     val PlayJson         = "2.8.1"
     val PlayStandaloneWs = "2.1.2"
     val Twirl            = "1.5.0" // sync with docs/project/plugins.sbt
@@ -193,9 +193,9 @@ object Dependencies {
     "asm-util"
   )
 
-  private val jffi         = "com.github.jnr" % "jffi"          % "1.2.22"
+  private val jffi         = "com.github.jnr" % "jffi"          % "1.2.23"
   private val jnrConstants = "com.github.jnr" % "jnr-constants" % "0.9.14"
-  private val jnrFfi       = "com.github.jnr" % "jnr-ffi"       % "2.1.10"
+  private val jnrFfi       = "com.github.jnr" % "jnr-ffi"       % "2.1.12"
   private val jnrPosix     = "com.github.jnr" % "jnr-posix"     % "3.0.53"
   private val jnra64asm    = "com.github.jnr" % "jnr-a64asm"    % "1.0.0"
   private val jnrx86asm    = "com.github.jnr" % "jnr-x86asm"    % "1.0.2"
