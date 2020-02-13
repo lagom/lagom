@@ -7,7 +7,6 @@ package com.lightbend.lagom.scaladsl.pubsub
 import akka.actor.ActorSystem
 import akka.actor.BootstrapSetup
 import akka.cluster.Cluster
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestKit
@@ -23,7 +22,7 @@ import scala.concurrent.duration._
 
 class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
   val app = new PubSubComponents {
-    override lazy val actorSystem = {
+    override lazy val actorSystem: ActorSystem = {
       val config = ConfigFactory.parseString("""
       akka.actor.provider = cluster
       akka.remote.artery.canonical.port = 0
@@ -37,10 +36,9 @@ class PubSubSpec extends WordSpec with Matchers with BeforeAndAfterAll {
       ActorSystem("PubSubTest", bootstrapSetup.and(serializerSetup))
     }
   }
-  val system = app.actorSystem
+  implicit val system = app.actorSystem
   Cluster.get(system).join(Cluster.get(system).selfAddress)
-  implicit val mat = ActorMaterializer.create(system)
-  val registry     = app.pubSubRegistry
+  val registry = app.pubSubRegistry
 
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(actorSystem = system, verifySystemShutdown = true)
