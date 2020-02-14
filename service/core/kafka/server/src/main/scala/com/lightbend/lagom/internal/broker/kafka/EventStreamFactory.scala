@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
+ */
+
 package com.lightbend.lagom.internal.broker.kafka
 
 import akka.NotUsed
