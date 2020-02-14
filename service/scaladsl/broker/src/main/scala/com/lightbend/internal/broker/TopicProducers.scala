@@ -5,7 +5,6 @@
 package com.lightbend.internal.broker
 
 import akka.NotUsed
-import akka.persistence.query.EventEnvelope
 import akka.persistence.query.Offset
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Source
@@ -55,12 +54,5 @@ final class DelegatedTopicProducer[BrokerMessage, Event <: AggregateEvent[Event]
     val persistentEntityRegistry: PersistentEntityRegistry,
     val tags: immutable.Seq[AggregateEventTag[Event]],
     val clusterShardEntityIds: immutable.Seq[String],
-    userFlow: Flow[EventStreamElement[Event], (BrokerMessage, Offset), NotUsed]
-) extends TaggedInternalTopic[BrokerMessage, Event] {
-  def userFlowAkka(
-      toUserApi: EventEnvelope => EventStreamElement[Event]
-  ): Flow[EventEnvelope, (BrokerMessage, Offset), NotUsed] =
-    Flow[EventEnvelope]
-      .map(toUserApi)
-      .via(userFlow)
-}
+    val userFlow: Flow[EventStreamElement[Event], (BrokerMessage, Offset), NotUsed]
+) extends TaggedInternalTopic[BrokerMessage, Event] {}

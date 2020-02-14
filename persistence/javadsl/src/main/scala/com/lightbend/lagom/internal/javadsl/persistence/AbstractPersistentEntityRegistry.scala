@@ -142,11 +142,10 @@ class AbstractPersistentEntityRegistry(
   override def eventStream[Event <: AggregateEvent[Event]](
       aggregateTag: AggregateEventTag[Event],
       fromOffset: Offset
-  ): javadsl.Source[japi.Pair[Event, Offset], NotUsed] = {
+  ): javadsl.Source[japi.Pair[Event, Offset], NotUsed] =
     eventEnvelopeStream(aggregateTag, fromOffset)
-      .map(AbstractPersistentEntityRegistry.toStreamElement)
+      .map(AbstractPersistentEntityRegistry.toStreamElement[Event])
 
-  }
   @InternalApi
   private[lagom] override def eventEnvelopeStream[Event <: AggregateEvent[Event]](
       aggregateTag: AggregateEventTag[Event],
@@ -155,7 +154,6 @@ class AbstractPersistentEntityRegistry(
     eventsByTagQuery match {
       case Some(queries) =>
         val startingOffset = mapStartingOffset(fromOffset)
-
         queries
           .eventsByTag(aggregateTag.tag, startingOffset)
           .asJava
@@ -189,7 +187,7 @@ class AbstractPersistentEntityRegistry(
 private[lagom] object AbstractPersistentEntityRegistry {
 
   @InternalApi
-  def toStreamElement[Event <: AggregateEvent[Event]]: japi.function.Function[EventEnvelope, japi.Pair[Event, Offset]] =
-    env => japi.Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset))
+  def toStreamElement[Event <: AggregateEvent[Event]](env: EventEnvelope): japi.Pair[Event, Offset] =
+    japi.Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset))
 
 }

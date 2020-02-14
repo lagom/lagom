@@ -8,13 +8,9 @@ import java.util.function.BiFunction
 
 import akka.NotUsed
 import akka.japi.Pair
-import akka.japi.function
-import akka.persistence.query.EventEnvelope
-import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.javadsl.Flow
 import akka.stream.javadsl.{ Source => JSource }
 import com.lightbend.lagom.internal.javadsl.api.InternalTopic
-import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
 import com.lightbend.lagom.javadsl.persistence.Offset
@@ -29,15 +25,8 @@ trait TaggedInternalTopic[BrokerMessage, Event <: AggregateEvent[Event]] extends
 // Lagom API and also connects it to the user-provided flow in a single shot.
 final class TaggedOffsetTopicProducer[BrokerMessage, Event <: AggregateEvent[Event]](
     val tags: PSequence[AggregateEventTag[Event]],
-    @deprecated("Prefer readSideStreamAkka instead", "1.6.2")
     val readSideStream: BiFunction[AggregateEventTag[Event], Offset, JSource[Pair[BrokerMessage, Offset], _]]
-) extends TaggedInternalTopic[BrokerMessage, Event] {
-  val readSideStreamAkka: BiFunction[AggregateEventTag[Event], Offset, JSource[(BrokerMessage, AkkaOffset), _]] =
-    (tag, offset) =>
-      readSideStream(tag, offset).map { pair =>
-        pair.first -> OffsetAdapter.dslOffsetToOffset(pair.second)
-      }
-}
+) extends TaggedInternalTopic[BrokerMessage, Event]
 
 // An InternalTopic used by the TopicProducer API. This provides the pieces to create the Source, map it
 // to the Lagom API and connect it to the user-provided flow so the ProducerActor can handle that
@@ -46,19 +35,5 @@ final class DelegatedTopicProducer[BrokerMessage, Event <: AggregateEvent[Event]
     val persistentEntityRegistry: PersistentEntityRegistry,
     val tags: PSequence[AggregateEventTag[Event]],
     val clusterShardEntityIds: PSequence[String],
-    userFlow: Flow[Pair[Event, Offset], Pair[BrokerMessage, Offset], NotUsed]
-) extends TaggedInternalTopic[BrokerMessage, Event] {
-
-  def userFlowAkka(
-      toUserApi: function.Function[EventEnvelope, Pair[Event, Offset]]
-  ): Flow[EventEnvelope, (BrokerMessage, AkkaOffset), NotUsed] = {
-    Flow
-      .create[EventEnvelope]
-      .map(toUserApi)
-      .via(userFlow)
-      .map { pair =>
-        pair.first -> OffsetAdapter.dslOffsetToOffset(pair.second)
-      }
-  }
-
-}
+    val userFlow: Flow[Pair[Event, Offset], Pair[BrokerMessage, Offset], NotUsed]
+) extends TaggedInternalTopic[BrokerMessage, Event]

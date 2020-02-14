@@ -147,6 +147,7 @@ class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEn
 }
 
 private[lagom] object AbstractPersistentEntityRegistry {
+
   @InternalApi
   def toStreamElement[Event <: AggregateEvent[Event]](env: EventEnvelope): EventStreamElement[Event] =
     new EventStreamElement[Event](

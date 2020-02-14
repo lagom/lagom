@@ -9,6 +9,7 @@ import akka.actor.ActorSystem
 import akka.persistence.query.EventEnvelope
 import akka.persistence.query.Offset
 import akka.stream.Materializer
+import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Source
 import com.lightbend.internal.broker.DelegatedTopicProducer
 import com.lightbend.internal.broker.TaggedInternalTopic
@@ -79,9 +80,14 @@ class ScaladslRegisterTopicProducers[BrokerMessage, Event <: AggregateEvent[Even
                             producer.persistentEntityRegistry.eventEnvelopeStream(aggregateTag, offset)
                           case None => throw new RuntimeException("Unknown tag: " + tag)
                         }
+                      val userFlow =
+                        Flow[EventEnvelope]
+                          .map(AbstractPersistentEntityRegistry.toStreamElement[Event])
+                          .via(producer.userFlow)
+
                       DelegatedEventStreamFactory[BrokerMessage, Event](
                         sourceFactory,
-                        producer.userFlowAkka(AbstractPersistentEntityRegistry.toStreamElement)
+                        userFlow
                       )
                     case producer: TaggedOffsetTopicProducer[BrokerMessage, Event] =>
                       ClassicLagomEventStreamFactory((tag, offset: Offset) =>

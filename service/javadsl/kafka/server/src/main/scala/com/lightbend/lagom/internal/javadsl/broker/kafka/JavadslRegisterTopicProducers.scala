@@ -9,8 +9,9 @@ import java.net.URI
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.persistence.query.EventEnvelope
-import akka.persistence.query.Offset
+import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.Materializer
+import akka.stream.javadsl.Flow
 import akka.stream.scaladsl.Source
 import com.lightbend.lagom.internal.broker.DelegatedTopicProducer
 import com.lightbend.lagom.internal.broker.TaggedInternalTopic
@@ -32,6 +33,7 @@ import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.api.broker.kafka.KafkaProperties
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
+import com.lightbend.lagom.javadsl.persistence.Offset
 import com.lightbend.lagom.spi.persistence.OffsetStore
 import javax.inject.Inject
 import org.slf4j.LoggerFactory
@@ -75,7 +77,7 @@ class JavadslRegisterTopicProducers[BrokerMessage, Event <: AggregateEvent[Event
                 val eventStreamFactory: EventStreamFactory[BrokerMessage] =
                   tagged match {
                     case producer: DelegatedTopicProducer[BrokerMessage, Event] =>
-                      val sourceFactory: (String, Offset) => Source[EventEnvelope, NotUsed] = (tag, offset) =>
+                      val sourceFactory: (String, AkkaOffset) => Source[EventEnvelope, NotUsed] = (tag, offset) =>
                         tags.find(_.tag == tag) match {
                           case Some(aggregateTag) =>
                             val lagomOffset = OffsetAdapter.offsetToDslOffset(offset)
@@ -84,9 +86,18 @@ class JavadslRegisterTopicProducers[BrokerMessage, Event <: AggregateEvent[Event
                               .asScala
                           case None => throw new RuntimeException("Unknown tag: " + tag)
                         }
+
+                      val userFlow: Flow[EventEnvelope, (BrokerMessage, AkkaOffset), NotUsed] = Flow
+                        .create[EventEnvelope]
+                        .map(AbstractPersistentEntityRegistry.toStreamElement[Event])
+                        .via(producer.userFlow)
+                        .map { pair =>
+                          pair.first -> OffsetAdapter.dslOffsetToOffset(pair.second)
+                        }
+
                       DelegatedEventStreamFactory(
                         sourceFactory,
-                        producer.userFlowAkka(AbstractPersistentEntityRegistry.toStreamElement).asScala
+                        userFlow.asScala
                       )
                     case producer: TaggedOffsetTopicProducer[BrokerMessage, Event] =>
                       ClassicLagomEventStreamFactory((tag, offset) =>
@@ -94,7 +105,10 @@ class JavadslRegisterTopicProducers[BrokerMessage, Event <: AggregateEvent[Event
                           case Some(aggregateTag) =>
                             val lagomOffset = OffsetAdapter.offsetToDslOffset(offset)
                             producer
-                              .readSideStreamAkka(aggregateTag, lagomOffset)
+                              .readSideStream(aggregateTag, lagomOffset)
+                              .map { pair =>
+                                pair.first -> OffsetAdapter.dslOffsetToOffset(pair.second)
+                              }
                               .asScala
                           case None => throw new RuntimeException("Unknown tag: " + tag)
                         }
