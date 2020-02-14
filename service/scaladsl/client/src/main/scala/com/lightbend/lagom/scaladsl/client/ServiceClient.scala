@@ -10,8 +10,8 @@ import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.actor.ActorSystem
 import akka.actor.CoordinatedShutdown
-import akka.stream.ActorMaterializer
 import akka.stream.Materializer
+import akka.stream.SystemMaterializer
 import com.lightbend.lagom.internal.client.CircuitBreakerMetricsProviderImpl
 import com.lightbend.lagom.internal.client.WebSocketClientConfig
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
@@ -30,7 +30,6 @@ import play.api.inject.DefaultApplicationLifecycle
 import play.api.libs.concurrent.ActorSystemProvider
 import play.api.libs.concurrent.CoordinatedShutdownProvider
 import play.api.internal.libs.concurrent.CoordinatedShutdownSupport
-import play.api.internal.libs.concurrent.CoordinatedShutdownSupport.asyncShutdown
 import play.api.libs.ws.WSClient
 import play.api.Configuration
 import play.api.Environment
@@ -224,7 +223,7 @@ abstract class StandaloneLagomClientFactory(
   override lazy val actorSystem: ActorSystem = new ActorSystemProvider(environment, configuration).get
   lazy val coordinatedShutdown: CoordinatedShutdown =
     new CoordinatedShutdownProvider(actorSystem, applicationLifecycle).get
-  override lazy val materializer: Materializer = ActorMaterializer.create(actorSystem)
+  override lazy val materializer: Materializer = SystemMaterializer(actorSystem).materializer
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
@@ -299,7 +298,7 @@ case object ClientStoppedReason extends CoordinatedShutdown.Reason
  * import com.lightbend.lagom.scaladsl.client._
  * import play.api.libs.ws.ahc.AhcWSComponents
  *
- * class MyLagomClientFactory(val actorSystem: ActorSystem, val materialzer: Materializer)
+ * class MyLagomClientFactory(val actorSystem: ActorSystem, val materializer: Materializer)
  *   extends LagomClientFactory("my-client")
  *   with StaticServiceLocatorComponents
  *   with AhcWSComponents {
@@ -309,7 +308,7 @@ case object ClientStoppedReason extends CoordinatedShutdown.Reason
  *
  *
  * val actorSystem = ActorSystem("my-app")
- * val materializer = ActorMaterializer()(actorSystem)
+ * val materializer = SystemMaterializer(actorSystem).materializer
  * val clientFactory = new MyLagomClientFactory(actorSystem, materializer)
  * }}}
  *
