@@ -20,13 +20,13 @@ object OffsetAdapter {
     case TimeBasedUUID(uuid) => LagomJavaDslOffset.timeBasedUUID(uuid)
     case Sequence(value)     => LagomJavaDslOffset.sequence(value)
     case NoOffset            => LagomJavaDslOffset.NONE
-    case _                   => throw new IllegalArgumentException("Unsuppoerted offset type " + offset.getClass.getName)
+    case _                   => throw new IllegalArgumentException("Unsupported offset type " + offset.getClass.getName)
   }
 
   def dslOffsetToOffset(dslOffset: LagomJavaDslOffset): Offset = dslOffset match {
     case uuid: LagomJavaDslOffset.TimeBasedUUID => TimeBasedUUID(uuid.value())
     case seq: LagomJavaDslOffset.Sequence       => Sequence(seq.value())
     case LagomJavaDslOffset.NONE                => NoOffset
-    case _                                      => throw new IllegalArgumentException("Unsuppoerted offset type " + dslOffset.getClass.getName)
+    case _                                      => throw new IllegalArgumentException("Unsupported offset type " + dslOffset.getClass.getName)
   }
 }
