@@ -11,8 +11,6 @@ import akka.actor.ActorSystem
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
-import akka.stream.ActorMaterializer
-import akka.stream.Materializer
 import com.lightbend.lagom.internal.scaladsl.server.ScaladslServiceRouter
 import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.api.transport._
@@ -39,9 +37,8 @@ import scala.concurrent.duration._
  * status code of the response (won't be 200) and locate the suspect line of code where that status code is launched.
  */
 class ScaladslStreamedServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeAndAfterAll {
-  private val system                        = ActorSystem("ScaladslServiceRouterSpec")
+  private implicit val system               = ActorSystem("ScaladslServiceRouterSpec")
   private implicit val ec: ExecutionContext = system.dispatcher
-  private implicit val mat: Materializer    = ActorMaterializer.create(system)
 
   protected override def afterAll(): Unit = {
     Await.ready(system.terminate(), 10.seconds)

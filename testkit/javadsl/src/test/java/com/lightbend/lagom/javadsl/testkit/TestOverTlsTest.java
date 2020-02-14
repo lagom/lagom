@@ -5,13 +5,8 @@
 package com.lightbend.lagom.javadsl.testkit;
 
 import akka.actor.ActorSystem;
-import akka.stream.ActorMaterializer;
-import akka.stream.ActorMaterializerSettings;
-import akka.stream.javadsl.Sink;
-import akka.stream.javadsl.Source;
-import com.google.inject.AbstractModule;
-import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
-import com.typesafe.sslconfig.ssl.SSLContextBuilder;
+import akka.stream.Materializer;
+import akka.stream.SystemMaterializer;
 import org.junit.Test;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
@@ -24,8 +19,6 @@ import play.shaded.ahc.org.asynchttpclient.DefaultAsyncHttpClient;
 import play.shaded.ahc.org.asynchttpclient.DefaultAsyncHttpClientConfig;
 
 import javax.net.ssl.SSLContext;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -65,9 +58,7 @@ public class TestOverTlsTest {
 
   private WSClient buildCustomWS(SSLContext sslContext, ActorSystem system) {
     // Set up Akka
-    String name = "test-client";
-    ActorMaterializerSettings settings = ActorMaterializerSettings.create(system);
-    ActorMaterializer materializer = ActorMaterializer.create(settings, system, name);
+    Materializer materializer = SystemMaterializer.get(system).materializer();
 
     // Setup the client to use the custom SSLContext
     JdkSslContext jdkSslContext = new JdkSslContext(sslContext, true, ClientAuth.NONE);

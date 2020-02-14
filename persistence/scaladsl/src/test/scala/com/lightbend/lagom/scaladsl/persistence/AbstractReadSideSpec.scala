@@ -12,7 +12,6 @@ import akka.actor.Props
 import akka.actor.Status
 import akka.pattern.pipe
 import akka.persistence.query.Offset
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.testkit.ImplicitSender
 import akka.Done
@@ -49,8 +48,6 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
 
   // patience config for all async code
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(60.seconds, 150.millis)
-
-  implicit val mat = ActorMaterializer()
 
   protected val persistentEntityRegistry: PersistentEntityRegistry
 
