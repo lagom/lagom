@@ -15,6 +15,7 @@ import com.lightbend.lagom.javadsl.persistence.Offset;
 import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
 
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -39,7 +40,7 @@ public final class TopicProducer {
    * @return The topic producer.
    */
   public static <Message> Topic<Message> singleStreamWithOffset(
-      Function<Offset, Source<Pair<Message, Offset>, ?>> eventStream) {
+      Function<Offset, Source<Pair<Optional<Message>, Offset>, ?>> eventStream) {
     return taggedStreamWithOffset(SINGLETON_TAG, (tag, offset) -> eventStream.apply(offset));
   }
 
@@ -66,7 +67,7 @@ public final class TopicProducer {
   public static <Message, Event extends AggregateEvent<Event>>
       Topic<Message> taggedStreamWithOffset(
           PSequence<AggregateEventTag<Event>> tags,
-          BiFunction<AggregateEventTag<Event>, Offset, Source<Pair<Message, Offset>, ?>>
+          BiFunction<AggregateEventTag<Event>, Offset, Source<Pair<Optional<Message>, Offset>, ?>>
               eventStream) {
     return new TaggedOffsetTopicProducer<>(tags, eventStream);
   }
@@ -89,7 +90,7 @@ public final class TopicProducer {
   public static <Message, Event extends AggregateEvent<Event>>
       Topic<Message> taggedStreamWithOffset(
           AggregateEventShards<Event> shards,
-          BiFunction<AggregateEventTag<Event>, Offset, Source<Pair<Message, Offset>, ?>>
+          BiFunction<AggregateEventTag<Event>, Offset, Source<Pair<Optional<Message>, Offset>, ?>>
               eventStream) {
     return new TaggedOffsetTopicProducer<>(shards.allTags(), eventStream);
   }

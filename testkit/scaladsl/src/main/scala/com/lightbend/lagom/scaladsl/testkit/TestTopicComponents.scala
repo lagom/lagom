@@ -94,6 +94,10 @@ private[lagom] class TestTopic[Payload, Event <: AggregateEvent[Event]](
         .flatMapMerge(topicProducer.tags.size, { tag =>
           topicProducer.readSideStream.apply(tag, Offset.noOffset).map(_._1)
         })
+        .flatMapConcat {
+          case Some(payload) => Source.single(payload)
+          case None          => Source.empty[Payload]
+        }
         .map { evt =>
           serializer.serializerForRequest.serialize(evt)
         }

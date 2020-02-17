@@ -404,7 +404,7 @@ object ScaladslKafkaApiSpec {
       TopicProducer.singleStreamWithOffset { fromOffset =>
         eventJournal
           .eventStream(fromOffset)
-          .map(element => (messageTransformer(element._1), element._2))
+          .map(element => (Some(messageTransformer(element._1)), element._2))
       }
     }
   }

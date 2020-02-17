@@ -21,6 +21,8 @@ import com.lightbend.lagom.spi.persistence.OffsetDao
 import akka.NotUsed
 import akka.actor.ActorLogging
 import akka.stream.scaladsl.Unzip
+import akka.stream.scaladsl.Partition
+import akka.stream.scaladsl.Merge
 import org.apache.kafka.clients.producer.ProducerRecord
 import akka.persistence.query.Offset
 import akka.stream.Materializer
@@ -48,7 +50,7 @@ private[lagom] object TopicProducerActor {
       producerConfig: ProducerConfig,
       locateService: String => Future[Seq[URI]],
       topicId: String,
-      eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+      eventStreamFactory: (String, Offset) => Source[(Option[Message], Offset), _],
       partitionKeyStrategy: Option[Message => String],
       serializer: Serializer[Message],
       offsetStore: OffsetStore
@@ -81,7 +83,7 @@ private[lagom] class TopicProducerActor[Message](
     producerConfig: ProducerConfig,
     locateService: String => Future[Seq[URI]],
     topicId: String,
-    eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+    eventStreamFactory: (String, Offset) => Source[(Option[Message], Offset), _],
     partitionKeyStrategy: Option[Message => String],
     serializer: Serializer[Message],
     offsetStore: OffsetStore
@@ -117,8 +119,10 @@ private[lagom] class TopicProducerActor[Message](
               case (endpoints, offset) =>
                 val serviceName = kafkaConfig.serviceName.map(name => s"[$name]").getOrElse("")
                 log.debug("Kafka service {} located at URIs [{}] for producer of [{}]", serviceName, endpoints, topicId)
-                val eventStreamSource: Source[(Message, Offset), _]       = eventStreamFactory(tagName, offset.loadedOffset)
-                val usersFlow: Flow[(Message, Offset), Future[Done], Any] = eventsPublisherFlow(endpoints, offset)
+                val eventStreamSource: Source[(Option[Message], Offset), _] =
+                  eventStreamFactory(tagName, offset.loadedOffset)
+                val usersFlow: Flow[(Option[Message], Offset), Future[Done], Any] =
+                  eventsPublisherFlow(endpoints, offset)
                 eventStreamSource.via(usersFlow)
             }
         }
@@ -194,13 +198,22 @@ private[lagom] class TopicProducerActor[Message](
   private def eventsPublisherFlow(endpoints: String, offsetDao: OffsetDao) =
     Flow.fromGraph(GraphDSL.create(kafkaFlowPublisher(endpoints)) { implicit builder => publishFlow =>
       import GraphDSL.Implicits._
-      val unzip = builder.add(Unzip[Message, Offset])
+      val unzip = builder.add(Unzip[Option[Message], Offset])
+      val partition = builder.add(Partition[Option[Message]](2, {
+        case Some(_) => 0
+        case None    => 1
+      }))
+      val merge = builder.add(Merge[Any](2))
       val zip   = builder.add(Zip[Any, Offset])
       val offsetCommitter = builder.add(Flow.fromFunction { e: (Any, Offset) =>
         offsetDao.saveOffset(e._2)
       })
 
-      unzip.out0 ~> publishFlow ~> zip.in0
+      unzip.out0 ~> partition.in
+      partition.out(0).map(_.get) ~> publishFlow ~> merge.in(0)
+      partition.out(1) ~> merge.in(1)
+
+      merge.out ~> zip.in0
       unzip.out1 ~> zip.in1
       zip.out ~> offsetCommitter.in
       FlowShape(unzip.in, offsetCommitter.out)

@@ -12,4 +12,6 @@ ideatarget
 logs
 .idea
 .DS_Store
-
+.metals
+project/metals.sbt
+.bloop

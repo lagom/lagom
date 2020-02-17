@@ -31,7 +31,7 @@ object TopicProducer {
    * @param eventStream A function to create the event stream given the last offset that was published.
    * @return The topic producer.
    */
-  def singleStreamWithOffset[Message](eventStream: Offset => Source[(Message, Offset), Any]): Topic[Message] =
+  def singleStreamWithOffset[Message](eventStream: Offset => Source[(Option[Message], Offset), Any]): Topic[Message] =
     taggedStreamWithOffset(SINGLETON_TAG)((tag, offset) => eventStream(offset))
 
   private trait SingletonEvent extends AggregateEvent[TopicProducer.SingletonEvent] {}
@@ -52,7 +52,7 @@ object TopicProducer {
    * @return The topic producer.
    */
   def taggedStreamWithOffset[Message, Event <: AggregateEvent[Event]](tags: immutable.Seq[AggregateEventTag[Event]])(
-      eventStream: (AggregateEventTag[Event], Offset) => Source[(Message, Offset), Any]
+      eventStream: (AggregateEventTag[Event], Offset) => Source[(Option[Message], Offset), Any]
   ): Topic[Message] =
     new TaggedOffsetTopicProducer[Message, Event](tags, eventStream)
 
@@ -70,7 +70,7 @@ object TopicProducer {
    * @return The topic producer.
    */
   def taggedStreamWithOffset[Message, Event <: AggregateEvent[Event]](shards: AggregateEventShards[Event])(
-      eventStream: (AggregateEventTag[Event], Offset) => Source[(Message, Offset), Any]
+      eventStream: (AggregateEventTag[Event], Offset) => Source[(Option[Message], Offset), Any]
   ): Topic[Message] =
     new TaggedOffsetTopicProducer[Message, Event](shards.allTags.toList, eventStream)
 }

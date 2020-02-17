@@ -23,5 +23,5 @@ trait InternalTopic[Message] extends Topic[Message] {
 
 final class TaggedOffsetTopicProducer[Message, Event <: AggregateEvent[Event]](
     val tags: immutable.Seq[AggregateEventTag[Event]],
-    val readSideStream: (AggregateEventTag[Event], Offset) => Source[(Message, Offset), _]
+    val readSideStream: (AggregateEventTag[Event], Offset) => Source[(Option[Message], Offset), _]
 ) extends InternalTopic[Message]

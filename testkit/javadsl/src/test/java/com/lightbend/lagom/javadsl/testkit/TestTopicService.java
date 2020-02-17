@@ -13,6 +13,7 @@ import com.lightbend.lagom.javadsl.broker.TopicProducer;
 import com.lightbend.lagom.javadsl.persistence.Offset;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
@@ -31,8 +32,9 @@ public interface TestTopicService extends Service {
           offset ->
               Source.from(
                   Arrays.asList(
-                      Pair.create("message1", new Offset.Sequence(1)),
-                      Pair.create("message2", new Offset.Sequence(2)))));
+                      Pair.create(Optional.of("message1"), new Offset.Sequence(1)),
+                      Pair.create(Optional.empty(), new Offset.Sequence(2)),
+                      Pair.create(Optional.of("message2"), new Offset.Sequence(3)))));
     }
   }
 }
