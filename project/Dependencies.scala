@@ -58,7 +58,7 @@ object Dependencies {
     val HibernateCore = "5.4.12.Final"
     val PCollections  = "3.1.2"
 
-    val ScalaJava8Compat = "0.9.0"
+    val ScalaJava8Compat = "0.9.1"
     val ScalaXml         = "1.2.0"
     val Slick            = "3.3.2"
     val JUnit            = "4.12"
