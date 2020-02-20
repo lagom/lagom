@@ -8,7 +8,8 @@
 printMessage "VALIDATE FRAMEWORK CODE"
 sbt +headerCheckAll \
   scalafmtCheckAll scalafmtSbtCheck \
-  javafmtCheckAll
+  javafmtCheckAll \
+  +mimaReportBinaryIssues
 
 printMessage "VALIDATE DOCS CODE"
 pushd docs

@@ -35,7 +35,6 @@ trait LagomKafkaComponents extends LagomKafkaClientComponents with ProjectionCom
     serviceInfo,
     actorSystem,
     offsetStore,
-    serviceLocator,
     projectionRegistry
   )(
     executionContext,

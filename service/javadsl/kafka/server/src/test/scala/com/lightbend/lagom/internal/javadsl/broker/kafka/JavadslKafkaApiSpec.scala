@@ -95,7 +95,10 @@ class JavadslKafkaApiSpec
         "lagom.cluster.join-self"                       -> "on",
         "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
         "lagom.cluster.bootstrap.enabled"               -> "off",
-        "lagom.services.kafka_native"                   -> s"tcp://localhost:$kafkaPort"
+        "akka.discovery.method"                         -> "config",
+        "akka.discovery.config.services.kafka_native.endpoints" -> Seq(
+          Map("host" -> "localhost", "port" -> kafkaPort)
+        )
       )
       .build()
   }

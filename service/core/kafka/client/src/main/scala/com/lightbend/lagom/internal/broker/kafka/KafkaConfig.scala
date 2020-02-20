@@ -12,26 +12,6 @@ import com.typesafe.config.Config
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
-import scala.util.control.NoStackTrace
-
-sealed trait KafkaConfig {
-
-  /** The name of the Kafka server to look up out of the service locator. */
-  def serviceName: Option[String]
-
-  /** A comma separated list of Kafka brokers. Will be ignored if serviceName is defined. */
-  def brokers: String
-}
-
-object KafkaConfig {
-  def apply(conf: Config): KafkaConfig =
-    new KafkaConfigImpl(conf.getConfig("lagom.broker.kafka"))
-
-  private final class KafkaConfigImpl(conf: Config) extends KafkaConfig {
-    override val brokers: String             = conf.getString("brokers")
-    override val serviceName: Option[String] = Some(conf.getString("service-name")).filter(_.nonEmpty)
-  }
-}
 
 sealed trait ClientConfig {
   def offsetTimeout: FiniteDuration
@@ -88,7 +68,3 @@ object ConsumerConfig {
       .withParallelism(conf.getInt("batching-parallelism"))
   }
 }
-
-private[lagom] final class NoKafkaBrokersException(serviceName: String)
-    extends RuntimeException(s"No Kafka brokers found in service locator for Kafka service name [$serviceName]")
-    with NoStackTrace
