@@ -1086,17 +1086,17 @@ lazy val `server-containers` = (project in file("dev") / "server-containers")
   )
 
 def withLagomVersion(p: Project): Project =
-  p .settings(
-      sourceGenerators in Compile += Def.task {
-        Generators.version(
-          version.value,
-          Dependencies.Versions.Akka,
-          Dependencies.Versions.AkkaHttp,
-          Dependencies.Versions.Play,
-          (sourceManaged in Compile).value
-        )
-      }.taskValue,
-    )
+  p.settings(
+    sourceGenerators in Compile += Def.task {
+      Generators.version(
+        version.value,
+        Dependencies.Versions.Akka,
+        Dependencies.Versions.AkkaHttp,
+        Dependencies.Versions.Play,
+        (sourceManaged in Compile).value
+      )
+    }.taskValue,
+  )
 
 def sharedBuildToolSupportSetup(p: Project): Project =
   withLagomVersion(p)
