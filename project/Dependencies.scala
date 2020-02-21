@@ -19,7 +19,7 @@ object Dependencies {
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.8.0" // sync with docs/build.sbt
+    val Play             = "2.8.1" // sync with docs/build.sbt
     val PlayJson         = "2.8.1"
     val PlayStandaloneWs = "2.1.2"
     val Twirl            = "1.5.0" // sync with docs/project/plugins.sbt
@@ -66,7 +66,8 @@ object Dependencies {
 
     val jetty = "9.4.20.v20190813"
 
-    val Selenium = "3.141.59"
+    val Selenium  = "3.141.59"
+    val ByteBuddy = "1.10.5"
   }
 
   // Some setup before we start creating ModuleID vals
@@ -90,7 +91,7 @@ object Dependencies {
   private val scalaCollectionCompat  = "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.2"
   private val scalaXml               = "org.scala-lang.modules" %% "scala-xml" % Versions.ScalaXml
   private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
-  private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.10.5"
+  private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % Versions.ByteBuddy
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
   private val typesafeConfig         = "com.typesafe" % "config" % "1.4.0"
   private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.1"
@@ -373,7 +374,7 @@ object Dependencies {
       "com.thoughtworks.paranamer" % "paranamer"              % "2.8",
       mockitoCore,
       "org.objenesis" % "objenesis"        % "2.6",
-      "net.bytebuddy" % "byte-buddy-agent" % "1.10.5"
+      "net.bytebuddy" % "byte-buddy-agent" % Versions.ByteBuddy
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
       "akka-actor",
       "akka-actor-typed",
