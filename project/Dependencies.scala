@@ -36,10 +36,10 @@ object Dependencies {
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
     val ScalaTest            = "3.0.8"
-    val Jackson              = "2.10.1"
+    val Jackson              = "2.10.2"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
-    val JacksonDatabind      = "2.10.1"
+    val JacksonDatabind      = "2.10.2"
     val Guava                = "28.1-jre"
     val Maven                = "3.6.2"
     val MavenWagon           = "3.3.3"
@@ -60,7 +60,7 @@ object Dependencies {
     val JUnit            = "4.12"
     val JUnitInterface   = "0.11"
 
-    val Slf4j   = "1.7.29"
+    val Slf4j   = "1.7.30"
     val Logback = "1.2.3"
     val Log4j   = "2.12.1"
 
@@ -90,7 +90,7 @@ object Dependencies {
   private val scalaCollectionCompat  = "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.2"
   private val scalaXml               = "org.scala-lang.modules" %% "scala-xml" % Versions.ScalaXml
   private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
-  private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.10.2"
+  private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.10.5"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
   private val typesafeConfig         = "com.typesafe" % "config" % "1.4.0"
   private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.1"
@@ -195,6 +195,8 @@ object Dependencies {
   private val jnrPosix     = "com.github.jnr" % "jnr-posix"     % "3.0.50"
   private val jnra64asm    = "com.github.jnr" % "jnr-a64asm"    % "1.0.0"
   private val jnrx86asm    = "com.github.jnr" % "jnr-x86asm"    % "1.0.2"
+
+  private val mockitoCore = "org.mockito" % "mockito-core" % "3.2.4"
 
   private val jacksonFamily =
     libraryFamily("com.fasterxml.jackson.core", Versions.JacksonCore)(
@@ -338,7 +340,7 @@ object Dependencies {
       "net.jodah"           % "typetools"               % "0.5.0",
       "org.lz4"             % "lz4-java"                % "1.5.0",
       "com.github.luben"    % "zstd-jni"                % "1.3.7-1",
-      "org.agrona"          % "agrona"                  % "1.1.0",
+      "org.agrona"          % "agrona"                  % "1.3.0",
       commonsLang,
       kafkaClients,
       "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.18",
@@ -369,6 +371,9 @@ object Dependencies {
       "javax.activation"           % "javax.activation-api"   % "1.2.0",
       "jakarta.activation"         % "jakarta.activation-api" % "1.2.1",
       "com.thoughtworks.paranamer" % "paranamer"              % "2.8",
+      mockitoCore,
+      "org.objenesis" % "objenesis"        % "2.6",
+      "net.bytebuddy" % "byte-buddy-agent" % "1.10.5"
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
       "akka-actor",
       "akka-actor-typed",
@@ -593,10 +598,10 @@ object Dependencies {
   )
 
   val `client-javadsl` = libraryDependencies ++= Seq(
-    akkaTestkit   % Test,
-    scalaTest     % Test,
-    junit         % Test,
-    "org.mockito" % "mockito-core" % "3.2.4" % Test
+    akkaTestkit % Test,
+    scalaTest   % Test,
+    junit       % Test,
+    mockitoCore % Test
   )
 
   val `client-scaladsl` = libraryDependencies ++= Seq(
