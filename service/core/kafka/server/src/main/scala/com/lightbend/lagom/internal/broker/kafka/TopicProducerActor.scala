@@ -22,7 +22,6 @@ import akka.NotUsed
 import akka.actor.ActorLogging
 import akka.stream.scaladsl.Unzip
 import org.apache.kafka.clients.producer.ProducerRecord
-import akka.persistence.query.Offset
 import akka.stream.Materializer
 import akka.stream.scaladsl.Keep
 import akka.stream.KillSwitches
@@ -37,9 +36,12 @@ import akka.actor.Actor
 import akka.stream.scaladsl.Zip
 import java.net.URI
 
+import akka.annotation.InternalStableApi
 import akka.kafka.ProducerMessage
+import akka.persistence.query.Offset
 import akka.stream.scaladsl.RestartSource
 import com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.Start
+import com.lightbend.lagom.internal.spi.projections.ProjectionsSpi
 
 private[lagom] object TopicProducerActor {
   def props[Message](
@@ -103,7 +105,7 @@ private[lagom] class TopicProducerActor[Message](
 
   def receive: Receive = {
     case Start => {
-      val backoffSource: Source[Future[Done], NotUsed] = {
+      val backoffSource: Source[Future[Offset], NotUsed] = {
         RestartSource.withBackoff(
           producerConfig.minBackoff,
           producerConfig.maxBackoff,
@@ -117,9 +119,13 @@ private[lagom] class TopicProducerActor[Message](
               case (endpoints, offset) =>
                 val serviceName = kafkaConfig.serviceName.map(name => s"[$name]").getOrElse("")
                 log.debug("Kafka service {} located at URIs [{}] for producer of [{}]", serviceName, endpoints, topicId)
-                val eventStreamSource: Source[(Message, Offset), _]       = eventStreamFactory(tagName, offset.loadedOffset)
-                val usersFlow: Flow[(Message, Offset), Future[Done], Any] = eventsPublisherFlow(endpoints, offset)
-                eventStreamSource.via(usersFlow)
+                val eventStreamSource: Source[(Message, Offset), _] = eventStreamFactory(tagName, offset.loadedOffset)
+                val eventPublisherFlow: Flow[(Message, Offset), Future[Offset], Any] =
+                  eventsPublisherFlow(endpoints, offset)
+                eventStreamSource
+                  .map(ProjectionsSpi.afterUserFlow)
+                  .via(eventPublisherFlow)
+                  .map(o => ProjectionsSpi.completedProcessing(o, context.dispatcher))
             }
         }
       }
@@ -197,7 +203,7 @@ private[lagom] class TopicProducerActor[Message](
       val unzip = builder.add(Unzip[Message, Offset])
       val zip   = builder.add(Zip[Any, Offset])
       val offsetCommitter = builder.add(Flow.fromFunction { e: (Any, Offset) =>
-        offsetDao.saveOffset(e._2)
+        offsetDao.saveOffset(e._2).map(done => e._2)
       })
 
       unzip.out0 ~> publishFlow ~> zip.in0
