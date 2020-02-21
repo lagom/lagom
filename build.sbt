@@ -403,6 +403,7 @@ def SonatypeOnly      = Sonatype && PluginsAccessor.exclude(BintrayPlugin)
 def RuntimeLibPlugins = SonatypeOnly && HeaderPlugin && Unidoc
 
 lazy val api = (project in file("service/core/api"))
+  .configure(withLagomVersion)
   .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -693,6 +694,7 @@ lazy val `akka-management-scaladsl` = (project in file("akka-management/scaladsl
   )
 
 lazy val `cluster-core` = (project in file("cluster/core"))
+  .configure(withLagomVersion)
   .dependsOn(`akka-management-core`)
   .settings(runtimeLibCommon, mimaSettings, Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
@@ -1083,20 +1085,25 @@ lazy val `server-containers` = (project in file("dev") / "server-containers")
     crossScalaVersions := (Dependencies.Versions.Scala ++ Dependencies.Versions.SbtScala).distinct,
   )
 
+def withLagomVersion(p: Project): Project =
+  p.settings(
+    sourceGenerators in Compile += Def.task {
+      Generators.version(
+        version.value,
+        Dependencies.Versions.Akka,
+        Dependencies.Versions.AkkaHttp,
+        Dependencies.Versions.Play,
+        (sourceManaged in Compile).value
+      )
+    }.taskValue,
+  )
+
 def sharedBuildToolSupportSetup(p: Project): Project =
-  p.enablePlugins(HeaderPlugin, SonatypeOnly)
+  withLagomVersion(p)
+    .enablePlugins(HeaderPlugin, SonatypeOnly)
     .settings(sonatypeSettings, common, mimaSettings)
     .settings(
       name := s"lagom-${thisProject.value.id}",
-      sourceGenerators in Compile += Def.task {
-        Generators.version(
-          version.value,
-          Dependencies.Versions.Akka,
-          Dependencies.Versions.AkkaHttp,
-          Dependencies.Versions.Play,
-          (sourceManaged in Compile).value
-        )
-      }.taskValue,
       Dependencies.`build-tool-support`,
     )
     .dependsOn(`server-containers`)
