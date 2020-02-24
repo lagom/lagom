@@ -620,6 +620,7 @@ object Dependencies {
     scalaCollectionCompat,
     // update to enforce using snapshots in nightly jobs
     akkaActorTyped % Test,
+    akkaJackson
   )
 
   val server = libraryDependencies ++= Nil
@@ -651,7 +652,10 @@ object Dependencies {
     scalaXml,
     jffi,
     jnrConstants,
-    jnrPosix
+    jnrPosix,
+    // update to enforce using snapshots in nightly jobs
+    akkaActorTyped,
+    akkaJackson
   ) ++ ow2asmDeps // to match whitelist versions
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
@@ -718,7 +722,9 @@ object Dependencies {
 
   val `lagom-akka-discovery-service-locator-scaladsl` = libraryDependencies ++= Seq(
     scalaTest          % Test,
-    playAkkaHttpServer % Test
+    playAkkaHttpServer % Test,
+    // update to enforce using snapshots in nightly jobs
+    akkaStream
   )
 
   val `akka-management-core` = libraryDependencies ++= Seq(
