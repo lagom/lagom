@@ -264,7 +264,7 @@ def macroCompileSettings: Seq[Setting[_]] = Seq(
   }
 )
 
-val previousVersions = Seq("1.6.0")
+val previousVersions = Seq("1.6.1")
 
 val noMima = mimaPreviousArtifacts := Set.empty
 val mimaSettings: Seq[Setting[_]] = {
@@ -282,28 +282,6 @@ val mimaSettings: Seq[Setting[_]] = {
     }.toSet,
     mimaBinaryIssueFilters ++= Seq(
       // Add mima filters here.
-
-      // Remove CassandraReadSide legacy implementation
-      ProblemFilters
-        .exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor"),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide.register"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor$EventHandlersBuilder"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor$EventHandlers"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor$EventHandlers$"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.javadsl.persistence.cassandra.CassandraReadSideImpl.register"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "com.lightbend.lagom.internal.javadsl.persistence.cassandra.LegacyCassandraReadSideHandler"
-      ),
     )
   )
 }
