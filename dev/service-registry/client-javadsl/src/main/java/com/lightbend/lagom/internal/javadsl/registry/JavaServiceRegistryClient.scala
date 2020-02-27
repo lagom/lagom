@@ -9,7 +9,7 @@ import java.util.Optional
 
 import javax.inject.Inject
 import javax.inject.Singleton
-import com.lightbend.lagom.internal.registry.AbstractLoggingServiceRegistryClient
+import com.lightbend.lagom.devmode.internal.registry.AbstractLoggingServiceRegistryClient
 import com.lightbend.lagom.javadsl.api.transport.NotFound
 
 import scala.collection.immutable

@@ -13,7 +13,7 @@ import akka.NotUsed
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistry
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
-import com.lightbend.lagom.internal.registry.serviceDnsRecords
+import com.lightbend.lagom.devmode.internal.registry.registry.serviceDnsRecords
 import com.typesafe.config.Config
 import javax.inject.Inject
 import javax.inject.Provider

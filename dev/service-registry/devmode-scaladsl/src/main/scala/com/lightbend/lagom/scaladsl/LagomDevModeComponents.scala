@@ -2,7 +2,7 @@
  * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.devmode.scaladsl
+package com.lightbend.lagom.scaladsl
 
 import java.net.URI
 
@@ -10,9 +10,9 @@ import akka.actor.ActorSystem
 import akka.actor.CoordinatedShutdown
 import akka.discovery.ServiceDiscovery
 import akka.stream.Materializer
-import com.lightbend.lagom.devmode.internal.registry.DevModeServiceDiscovery
 import com.lightbend.lagom.devmode.internal.scaladsl.registry.ServiceRegistry
-import com.lightbend.lagom.internal.registry.ServiceRegistryClient
+import com.lightbend.lagom.devmode.internal.registry.DevModeServiceDiscovery
+import com.lightbend.lagom.devmode.internal.registry.ServiceRegistryClient
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceClient
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceResolver
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslWebSocketClient

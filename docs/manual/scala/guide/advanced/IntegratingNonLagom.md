@@ -66,7 +66,7 @@ When running your service in development, you can tell the service to use Lagom'
 
 @[dev-mode-dependency](code/integrating-non-lagom.sbt)
 
-Then, when you instantiate your factory client, rather than mixing in your production service locator, you can mix in the [`LagomDevModeServiceLocatorComponents`](api/com/lightbend/lagom/devmode/scaladsl/LagomDevModeServiceLocatorComponents.html) trait to get the dev mode service locator:
+Then, when you instantiate your factory client, rather than mixing in your production service locator, you can mix in the [`LagomDevModeServiceLocatorComponents`](api/com/lightbend/lagom/scaladsl/devmode/LagomDevModeServiceLocatorComponents.html) trait to get the dev mode service locator:
 
 @[dev-mode](code/IntegratingNonLagom.scala)
 

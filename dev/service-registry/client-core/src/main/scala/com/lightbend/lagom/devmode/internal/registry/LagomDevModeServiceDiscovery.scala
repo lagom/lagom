@@ -13,8 +13,6 @@ import akka.discovery.Discovery
 import akka.discovery.Lookup
 import akka.discovery.ServiceDiscovery
 
-import com.lightbend.lagom.internal.registry.ServiceRegistryClient
-
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise

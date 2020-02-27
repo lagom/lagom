@@ -8,7 +8,7 @@ import java.net.URI
 
 import akka.NotUsed
 import akka.util.ByteString
-import com.lightbend.lagom.internal.registry.ServiceRegistryClient
+import com.lightbend.lagom.devmode.internal.registry.ServiceRegistryClient
 import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.NegotiatedDeserializer
 import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer.NegotiatedSerializer
 import com.lightbend.lagom.scaladsl.api.deser.MessageSerializer
@@ -70,6 +70,7 @@ object ServiceRegistry {
 case class RegisteredService(name: String, url: URI, portName: Option[String])
 
 object RegisteredService {
+  import UriFormat.uriFormat
   implicit val format: Format[RegisteredService] = Json.format[RegisteredService]
 }
 
@@ -77,6 +78,8 @@ case class ServiceRegistryService(uris: immutable.Seq[URI], acls: immutable.Seq[
 
 object ServiceRegistryService {
   def apply(uri: URI, acls: immutable.Seq[ServiceAcl]): ServiceRegistryService = ServiceRegistryService(Seq(uri), acls)
+
+  import UriFormat.uriFormat
 
   implicit val methodFormat: Format[Method] =
     (__ \ "name").format[String].inmap(new Method(_), _.name)

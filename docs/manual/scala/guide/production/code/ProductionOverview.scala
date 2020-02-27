@@ -8,7 +8,7 @@ package configurationservicelocator {
   import docs.scaladsl.services.lagomapplication.HelloApplication
 
   //#configuration-service-locator
-  import com.lightbend.lagom.devmode.scaladsl.LagomDevModeComponents
+  import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
   import com.lightbend.lagom.scaladsl.server._
   import com.lightbend.lagom.scaladsl.client.ConfigurationServiceLocatorComponents
 

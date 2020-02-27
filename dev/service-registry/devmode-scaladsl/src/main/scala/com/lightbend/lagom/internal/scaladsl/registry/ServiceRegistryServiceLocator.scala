@@ -6,7 +6,7 @@ package com.lightbend.lagom.internal.scaladsl.registry
 
 import java.net.URI
 
-import com.lightbend.lagom.internal.registry.ServiceRegistryClient
+import com.lightbend.lagom.devmode.internal.registry.ServiceRegistryClient
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
 import com.lightbend.lagom.scaladsl.client.CircuitBreakersPanel
 import com.lightbend.lagom.scaladsl.client.CircuitBreakingServiceLocator
