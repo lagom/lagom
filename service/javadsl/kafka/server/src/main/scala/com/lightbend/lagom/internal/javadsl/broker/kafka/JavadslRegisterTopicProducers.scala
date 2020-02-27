@@ -97,6 +97,9 @@ class JavadslRegisterTopicProducers @Inject() (
                   offsetStore,
                   projectionRegistryImpl
                 )
+              case null =>
+                val message = s"Expected an instance of ${classOf[MethodTopicHolder]}, but 'null' was passed"
+                log.error(message, new NullPointerException(message))
 
               case other =>
                 log.warn {

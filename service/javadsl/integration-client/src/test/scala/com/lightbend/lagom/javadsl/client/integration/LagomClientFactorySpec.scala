@@ -17,7 +17,7 @@ import org.scalatest.Matchers
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import akka.pattern._
-import akka.stream.ActorMaterializer
+import akka.stream.SystemMaterializer
 import akka.util.Timeout
 
 class LagomClientFactorySpec extends FlatSpec with Matchers with BeforeAndAfterEach with ScalaFutures {
@@ -34,12 +34,12 @@ class LagomClientFactorySpec extends FlatSpec with Matchers with BeforeAndAfterE
     (echoActor ? "hey").mapTo[String].futureValue shouldBe "hey"
 
     LagomClientFactory
-    // create a factory by passing an existing ActorSystem
+    // create a factory by passing the existing ActorSystem
       .create(
         "test",
         this.getClass.getClassLoader,
         system,
-        ActorMaterializer()(system)
+        SystemMaterializer(system).materializer
       )
       // closing the factory should not close the existing ActorSystem
       .close()

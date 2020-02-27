@@ -13,29 +13,30 @@ import java.util.Optional;
  * <p>This describes the negotiated protocol being used for a message. It has three elements, a
  * content type, a charset, and a version.
  *
- * <p>The <tt>contentType</tt> may be registered mime type such as <tt>application/json</tt>, or it
- * could be an application specific content type, such as <tt>application/vnd.myservice+json</tt>.
- * It could also contain protocol versioning information, such as
- * <tt>application/vnd.github.v3+json</tt>. During the protocol negotiation process, the content
- * type may be transformed, for example, if the content type contains a version, the configured
- * {@link HeaderFilter} will be expected to extract that version out into the <tt>version</tt>,
- * leaving a <tt>contentType</tt> that will be understood by the message serializer.
+ * <p>The <code>contentType</code> may be registered mime type such as <code>application/json</code>
+ * , or it could be an application specific content type, such as <code>
+ * application/vnd.myservice+json</code>. It could also contain protocol versioning information,
+ * such as <code>application/vnd.github.v3+json</code>. During the protocol negotiation process, the
+ * content type may be transformed, for example, if the content type contains a version, the
+ * configured {@link HeaderFilter} will be expected to extract that version out into the <code>
+ * version</code>, leaving a <code>contentType</code> that will be understood by the message
+ * serializer.
  *
- * <p>The <tt>charset</tt> applies to text messages, if the message is not in a text format, then no
- * <tt>charset</tt> should be specified. This is not only used in setting of content negotiation
- * headers, it's also used as a hint to the framework of when it can treat a message as text. For
- * example, if the charset is set, then when a message gets sent via WebSockets, it will be sent as
- * a text message, otherwise it will be sent as a binary message.
+ * <p>The <code>charset</code> applies to text messages, if the message is not in a text format,
+ * then no <code>charset</code> should be specified. This is not only used in setting of content
+ * negotiation headers, it's also used as a hint to the framework of when it can treat a message as
+ * text. For example, if the charset is set, then when a message gets sent via WebSockets, it will
+ * be sent as a text message, otherwise it will be sent as a binary message.
  *
- * <p>The <tt>version</tt> is used to describe the version of the protocol being used. Lagom does
- * not, out of the box, prescribe any semantics around the version, from Lagom's perspective, two
- * message protocols with different versions are two different protocols. The version is however
+ * <p>The <code>version</code> is used to describe the version of the protocol being used. Lagom
+ * does not, out of the box, prescribe any semantics around the version, from Lagom's perspective,
+ * two message protocols with different versions are two different protocols. The version is however
  * treated as a separate piece of information so that generic parsers, such as json/xml, can make
  * sensible use of the content type passed to them. The version could come from a media type header,
  * but it does not necessarily have to come from there, it could come from the URI or any other
  * header.
  *
- * <p><tt>MessageProtocol</tt> instances can also be used in content negotiation, an empty value
+ * <p><code>MessageProtocol</code> instances can also be used in content negotiation, an empty value
  * means that any value is accepted.
  */
 public final class MessageProtocol {
