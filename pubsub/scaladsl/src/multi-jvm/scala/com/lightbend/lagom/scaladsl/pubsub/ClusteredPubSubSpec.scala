@@ -15,7 +15,6 @@ import akka.remote.testconductor.RoleName
 import akka.cluster.Cluster
 import akka.actor.ActorSystem
 import akka.actor.BootstrapSetup
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
 
@@ -66,9 +65,8 @@ class ClusteredPubSubSpec
     enterBarrier("startup")
   }
 
-  implicit val mat = ActorMaterializer()
-  val topic1       = TopicId[Notification]("1")
-  val topic2       = TopicId[Notification]("2")
+  val topic1 = TopicId[Notification]("1")
+  val topic2 = TopicId[Notification]("2")
 
   val application = new PubSubComponents {
     override def actorSystem: ActorSystem = system

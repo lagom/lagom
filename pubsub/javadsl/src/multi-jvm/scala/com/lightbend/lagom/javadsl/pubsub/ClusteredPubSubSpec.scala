@@ -13,8 +13,8 @@ import akka.testkit.ImplicitSender
 import com.typesafe.config.ConfigFactory
 import akka.remote.testconductor.RoleName
 import akka.cluster.Cluster
-import akka.stream.ActorMaterializer
 import akka.stream.Materializer
+import akka.stream.SystemMaterializer
 import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
 import play.api.inject.guice.GuiceInjectorBuilder
@@ -59,9 +59,8 @@ class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig) with STMu
     super.afterTermination()
   }
 
-  implicit val mat = ActorMaterializer()
-  val topic1       = TopicId(classOf[Notification], "1")
-  val topic2       = TopicId(classOf[Notification], "2")
+  val topic1 = TopicId(classOf[Notification], "1")
+  val topic2 = TopicId(classOf[Notification], "2")
 
   val applicationLifecycle = new DefaultApplicationLifecycle
 
@@ -70,7 +69,7 @@ class ClusteredPubSubSpec extends MultiNodeSpec(ClusteredPubSubConfig) with STMu
     .bindings(
       bind[ApplicationLifecycle].toInstance(applicationLifecycle),
       bind[ActorSystem].toInstance(system),
-      bind[Materializer].toInstance(mat),
+      bind[Materializer].toInstance(SystemMaterializer(system).materializer),
       bind[ExecutionContext].toInstance(system.dispatcher)
     )
     .build()

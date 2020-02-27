@@ -49,7 +49,7 @@ public abstract class MessageHeader {
   /**
    * Get the headers for the message.
    *
-   * <p>The returned map is case sensitive, it is recommended that you use <tt>getHeader</tt>
+   * <p>The returned map is case sensitive, it is recommended that you use <code>getHeader</code>
    * instead.
    *
    * @return The headers for this message.

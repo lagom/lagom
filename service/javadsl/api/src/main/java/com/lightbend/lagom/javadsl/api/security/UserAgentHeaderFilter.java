@@ -13,10 +13,10 @@ import java.security.Principal;
 import java.util.Optional;
 
 /**
- * Transfers service principal information via the <tt>User-Agent</tt> header.
+ * Transfers service principal information via the <code>User-Agent</code> header.
  *
  * <p>If using this on a service that serves requests from the outside world, it would be a good
- * idea to block the <tt>User-Agent</tt> header in the web facing load balancer/proxy.
+ * idea to block the <code>User-Agent</code> header in the web facing load balancer/proxy.
  */
 // #user-agent-auth-filter
 public class UserAgentHeaderFilter implements HeaderFilter {

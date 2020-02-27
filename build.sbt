@@ -12,11 +12,6 @@ import org.scalafmt.sbt.ScalafmtPlugin
 // Turn off "Resolving" log messages that clutter build logs
 ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
 
-def defineSbtVersion(scalaBinVer: String): String = scalaBinVer match {
-  case "2.12" => "1.2.8"
-  case _      => "0.13.18"
-}
-
 def evictionSettings: Seq[Setting[_]] = Seq(
   // This avoids a lot of dependency resolution warnings to be showed.
   // They are not required in Lagom since we have a more strict whitelist
@@ -68,14 +63,10 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSett
   javacOptions in compile ++= Seq(
     "-encoding",
     "UTF-8",
-    "-source",
-    "1.8",
-    "-target",
-    "1.8",
     "-parameters",
     "-Xlint:unchecked",
     "-Xlint:deprecation"
-  ),
+  ) ++ akka.JavaVersion.sourceAndTarget(akka.CrossJava.Keys.fullJavaHomes.value("8")),
   LagomPublish.validatePublishSettingsSetting
 )
 
@@ -176,8 +167,8 @@ def sbtScalaSettings: Seq[Setting[_]] = Seq(
 
 def runtimeLibCommon: Seq[Setting[_]] = common ++ sonatypeSettings ++ runtimeScalaSettings ++ Seq(
   Dependencies.validateDependenciesSetting,
-  Dependencies.pruneWhitelistSetting,
-  Dependencies.dependencyWhitelistSetting,
+  Dependencies.allowedPruneSetting,
+  Dependencies.allowDependenciesSetting,
   // show full stack traces and test case durations
   testOptions in Test += Tests.Argument("-oDF"),
   // -v Log "test run started" / "test started" / "test run finished" events on log level "info" instead of "debug".
@@ -281,7 +272,23 @@ val mimaSettings: Seq[Setting[_]] = {
       else moduleID
     }.toSet,
     mimaBinaryIssueFilters ++= Seq(
-      // Add mima filters here.
+      // Drop sbt 0.13
+      ProblemFilters.exclude[MissingClassProblem]("sbt.LagomLoad"),
+      ProblemFilters.exclude[MissingClassProblem]("sbt.LagomLoad$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomPluginCompat"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomReloadableServiceCompat$autoImport"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.DynamicProjectAdder"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.DynamicProjectAdder$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomReloadableServiceCompat"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.LagomPlugin$"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.sbt.LagomPlugin.getPollInterval"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.sbt.LagomImport.getForkOptions"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.LagomImport$"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.LagomReloadableService$autoImport$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomReloadableServiceCompat$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomImportCompat"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.run.RunSupport$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.run.RunSupportCompat"),
     )
   )
 }
@@ -894,7 +901,7 @@ lazy val `persistence-jpa-javadsl` = (project in file("persistence-jpa/javadsl")
   .settings(
     name := "lagom-javadsl-persistence-jpa",
     Dependencies.`persistence-jpa-javadsl`,
-    Dependencies.dependencyWhitelist ++= Dependencies.JpaTestWhitelist
+    Dependencies.allowedDependencies ++= Dependencies.JpaTestWhitelist
   )
 
 lazy val `broker-javadsl` = (project in file("service/javadsl/broker"))
@@ -1105,7 +1112,7 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
   .settings(
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
-    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
+    sbtVersion in pluginCrossBuild := Dependencies.Versions.TargetSbt1,
     sbtPlugin := true,
     scriptedDependencies := (()),
     target := target.value / "lagom-sbt-build-tool-support",
@@ -1118,7 +1125,7 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     name := "lagom-sbt-plugin",
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
-    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value),
+    sbtVersion in pluginCrossBuild := Dependencies.Versions.TargetSbt1,
     Dependencies.`sbt-plugin`,
     libraryDependencies ++= Seq(
       Defaults
@@ -1342,7 +1349,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
             {
         // here we generate all non-Lagom dependencies
         // some are cross compiled, others are simply java deps.
-        Dependencies.DependencyWhitelist.value
+        Dependencies.AllowedDependencies.value
         // remove any scala-lang deps, they must be included transitively
           .filterNot(_.organization.startsWith("org.scala-lang"))
           .map {
@@ -1391,7 +1398,7 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
     scriptedDependencies := (()),
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
-    sbtVersion in pluginCrossBuild := defineSbtVersion(scalaBinaryVersion.value)
+    sbtVersion in pluginCrossBuild := Dependencies.Versions.TargetSbt1,
   )
   .dependsOn(`sbt-plugin`)
 

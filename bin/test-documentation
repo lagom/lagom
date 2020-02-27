@@ -7,31 +7,14 @@
 
 runSbt unidoc
 
-EXTRA_TASK=""
-
-# Check if it is a scheduled build
+declare -a EXTRA_TASKS
 if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then
-    # check external links as well
-    EXTRA_TASK="markdownValidateExternalLinks"
+    EXTRA_TASKS+=("markdownValidateExternalLinks")
 fi
 
 cd docs
-runSbt markdownValidateDocs test markdownEvaluateSbtFiles $EXTRA_TASK
-runSbt headerCheck test:headerCheck
-
-printMessage "VALIDATE SCALA CODE FORMATTING FOR DOCS SAMPLE CODE"
-runSbt scalafmtAll scalafmtSbt
-git diff --exit-code || (
-  echo "[error] ERROR: scalafmt check failed, see differences above."
-  echo "[error] To fix, format your sources using 'sbt scalafmtAll scalafmtSbt' before submitting a pull request."
-  false
-)
-
-printMessage "VALIDATE JAVA CODE FORMATTING FOR DOCS SAMPLE CODE"
-runSbt javafmt test:javafmt
-git diff --exit-code || (
-  echo "[error] ERROR: javafmt check failed, see differences above."
-  echo "[error] To fix, before submitting a pull request, format your"
-  echo "[error] sources using sbt javafmt test:javafmt inside docs folder."
-  false
-)
+runSbt markdownValidateDocs markdownEvaluateSbtFiles \
+  headerCheckAll \
+  scalafmtCheckAll scalafmtSbtCheck \
+  javafmtCheckAll \
+  test "${EXTRA_TASKS[@]}"

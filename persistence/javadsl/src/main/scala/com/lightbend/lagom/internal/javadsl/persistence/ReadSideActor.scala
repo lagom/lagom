@@ -96,7 +96,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
           val futureOffset: Future[Offset]                      = handler.prepare(tag).toScala
 
           scaladsl.Source
-            .fromFuture(futureOffset)
+            .future(futureOffset)
             .initialTimeout(config.offsetTimeout)
             .flatMapConcat { offset =>
               val eventStreamSource = eventStreamFactory(tag, offset).asScala
