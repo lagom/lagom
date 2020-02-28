@@ -5,7 +5,7 @@
 package com.example.shoppingcart.impl
 
 import com.example.shoppingcart.api.ShoppingCartService
-import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
+import com.lightbend.lagom.scaladsl.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.slick.SlickPersistenceComponents
 import com.lightbend.lagom.scaladsl.server._
 import com.softwaremill.macwire._

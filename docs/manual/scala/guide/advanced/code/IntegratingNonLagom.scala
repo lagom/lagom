@@ -65,7 +65,7 @@ package devmode {
     import java.net.URI
     import com.lightbend.lagom.scaladsl.client._
     import play.api.libs.ws.ahc.AhcWSComponents
-    import com.lightbend.lagom.scaladsl.devmode.LagomDevModeServiceLocatorComponents
+    import com.lightbend.lagom.scaladsl.LagomDevModeServiceLocatorComponents
 
     val clientApplication = if (devMode) {
       new StandaloneLagomClientFactory("my-client") with AhcWSComponents with LagomDevModeServiceLocatorComponents

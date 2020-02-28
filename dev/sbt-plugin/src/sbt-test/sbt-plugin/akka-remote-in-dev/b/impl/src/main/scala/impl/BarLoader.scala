@@ -6,7 +6,7 @@ package impl
 
 import api.BarService
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
-import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
+import com.lightbend.lagom.scaladsl.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import com.lightbend.lagom.scaladsl.playjson.EmptyJsonSerializerRegistry
 import com.lightbend.lagom.scaladsl.server._
