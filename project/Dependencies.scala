@@ -21,11 +21,11 @@ object Dependencies {
     val TargetSbt1 = "1.2.8"
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.8.0" // sync with docs/build.sbt
+    val Play             = "2.8.1" // sync with docs/build.sbt
     val PlayJson         = "2.8.1"
     val PlayStandaloneWs = "2.1.2"
     val Twirl            = "1.5.0" // sync with docs/project/plugins.sbt
-    val PlayFileWatch    = "1.1.10"
+    val PlayFileWatch    = "1.1.12"
 
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.3") // sync with docs/build.sbt
     val AkkaHttp     = "10.1.11"
@@ -46,17 +46,19 @@ object Dependencies {
     val Maven                = "3.6.2"
     val MavenWagon           = "3.3.3"
     val MavenResolver        = "1.4.1"
-    val Netty                = "4.1.45.Final"
+    val Netty                = "4.1.46.Final"
     val NettyReactiveStreams = "2.0.4"
-    val Kafka                = "2.1.1"
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
-    val AlpakkaKafka  = "1.1.0"
+    val AlpakkaKafka = "2.0.1"
+    // Keep this version consistent with Alpakka Kafka Connector
+    val Kafka = "2.4.0"
+
     val Curator       = "2.12.0"
     val Immutables    = "2.8.3"
-    val HibernateCore = "5.4.10.Final"
+    val HibernateCore = "5.4.12.Final"
     val PCollections  = "3.1.3"
 
-    val ScalaJava8Compat = "0.9.0"
+    val ScalaJava8Compat = "0.9.1"
     val ScalaXml         = "1.2.0"
     val Slick            = "3.3.2"
     val JUnit            = "4.12"
@@ -89,13 +91,13 @@ object Dependencies {
   private val scalaTest: ModuleID    = ("org.scalatest" %% "scalatest" % Versions.ScalaTest).excludeAll(excludeSlf4j: _*)
   private val guava                  = "com.google.guava" % "guava" % Versions.Guava
   private val scalaJava8Compat       = "org.scala-lang.modules" %% "scala-java8-compat" % Versions.ScalaJava8Compat
-  private val scalaCollectionCompat  = "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.3"
+  private val scalaCollectionCompat  = "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.4"
   private val scalaXml               = "org.scala-lang.modules" %% "scala-xml" % Versions.ScalaXml
   private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
-  private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.10.6"
+  private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.10.8"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
   private val typesafeConfig         = "com.typesafe" % "config" % "1.4.0"
-  private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.1"
+  private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.2"
   private val h2                     = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore =
     ("com.datastax.cassandra" % "cassandra-driver-core" % "3.8.0").excludeAll(excludeSlf4j: _*)
@@ -191,10 +193,10 @@ object Dependencies {
     "asm-util"
   )
 
-  private val jffi         = "com.github.jnr" % "jffi"          % "1.2.22"
-  private val jnrConstants = "com.github.jnr" % "jnr-constants" % "0.9.14"
-  private val jnrFfi       = "com.github.jnr" % "jnr-ffi"       % "2.1.10"
-  private val jnrPosix     = "com.github.jnr" % "jnr-posix"     % "3.0.52"
+  private val jffi         = "com.github.jnr" % "jffi"          % "1.2.23"
+  private val jnrConstants = "com.github.jnr" % "jnr-constants" % "0.9.15"
+  private val jnrFfi       = "com.github.jnr" % "jnr-ffi"       % "2.1.12"
+  private val jnrPosix     = "com.github.jnr" % "jnr-posix"     % "3.0.54"
   private val jnra64asm    = "com.github.jnr" % "jnr-a64asm"    % "1.0.0"
   private val jnrx86asm    = "com.github.jnr" % "jnr-x86asm"    % "1.0.2"
 
@@ -221,13 +223,13 @@ object Dependencies {
 
   val scalaParserCombinatorOverrides = Seq(scalaParserCombinators)
 
-  // A whitelist of dependencies that Lagom is allowed to depend on, either directly or transitively.
+  // Allowed dependencies that Lagom is allowed to depend on, either directly or transitively.
   // This list is used to validate all of Lagom's dependencies.
-  // By maintaining this whitelist, we can be absolutely sure of what we depend on, that we consistently depend on the
+  // By maintaining this allowed list, we can be absolutely sure of what we depend on, that we consistently depend on the
   // same versions of libraries across our modules, we can ensure also that we have no partial upgrades of families of
   // libraries (such as Play or Akka), and we will also be alerted when a transitive dependency is upgraded (because
   // the validation task will fail) which means we can manually check that it is safe to upgrade that dependency.
-  val DependencyWhitelist: Def.Initialize[Seq[ModuleID]] = Def.setting {
+  val AllowedDependencies: Def.Initialize[Seq[ModuleID]] = Def.setting {
     val scalaVersion = Keys.scalaVersion.value
 
     Seq(
@@ -436,7 +438,7 @@ object Dependencies {
     ) ++ ow2asmDeps ++ kotlinDeps.map(_ % Test)
   }
 
-  // These dependencies are used by JPA to test, but we don't want to export them as part of our regular whitelist,
+  // These dependencies are used by JPA to test, but we don't want to export them as part of our regular allowedlist,
   // so we maintain it separately.
   val JpaTestWhitelist = Seq(
     "antlr"                            % "antlr"                           % "2.7.7",
@@ -460,7 +462,7 @@ object Dependencies {
   )
 
   // These dependencies are used by the Kafka tests, but we don't want to export them as part of our regular
-  // whitelist, so we maintain it separately.
+  // allowList, so we maintain it separately.
   val KafkaTestWhitelist = Seq(
     "com.101tec"                 % "zkclient"             % "0.11",
     "com.yammer.metrics"         % "metrics-core"         % "2.2.0",
@@ -496,7 +498,7 @@ object Dependencies {
     akkaJackson,
     play,
     guava,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     sslConfig,
     pcollections,
     playJson,
@@ -505,13 +507,13 @@ object Dependencies {
     jnra64asm,
     jnrConstants,
     slf4jApi,
-  ) ++ jacksonFamily ++ ow2asmDeps // to match whitelist versions
+  ) ++ jacksonFamily ++ ow2asmDeps // to match allowed versions
 
   val `api-javadsl` = libraryDependencies ++= Seq(
     playJava,
     playGuice,
     pcollections,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     sslConfig,
     scalaTest                      % Test,
     "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % Versions.Jackson % Test
@@ -519,7 +521,7 @@ object Dependencies {
 
   val `api-scaladsl` = libraryDependencies ++= Seq(
     scalaCollectionCompat,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     sslConfig,
     scalaTest % Test
   )
@@ -527,7 +529,7 @@ object Dependencies {
   val immutables = libraryDependencies += "org.immutables" % "value" % Versions.Immutables
 
   val jackson = libraryDependencies ++= jacksonFamily ++ Seq(
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     sslConfig,
     pcollections,
     akkaJackson,
@@ -544,7 +546,7 @@ object Dependencies {
     akkaActor,
     akkaTestkit % Test,
     scalaTest   % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     scalaOrganization.value % "scala-reflect" % scalaVersion.value,
     scalaJava8Compat,
     pcollections,
@@ -561,7 +563,7 @@ object Dependencies {
     akkaJackson,
     play,
     scalaTest % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     reactiveStreams,
     sslConfig,
     playJson,
@@ -577,7 +579,7 @@ object Dependencies {
     jnra64asm,
     jnrConstants,
     pcollections,
-  ) ++ jacksonFamily ++ ow2asmDeps // to match whitelist versions
+  ) ++ jacksonFamily ++ ow2asmDeps // to match allowed versions
 
   val client = libraryDependencies ++= Seq(
     slf4jApi,
@@ -587,7 +589,7 @@ object Dependencies {
     "com.typesafe.netty" % "netty-reactive-streams" % Versions.NettyReactiveStreams,
     "io.netty"           % "netty-codec-http" % Versions.Netty,
     scalaTest            % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     sslConfig,
     "io.netty" % "netty-handler" % Versions.Netty,
     // update to enforce using snapshots in nightly jobs
@@ -610,7 +612,7 @@ object Dependencies {
     // because the test for LagomClientFactory needs it
     akkaRemote % Test,
     scalaTest  % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     scalaCollectionCompat,
     // update to enforce using snapshots in nightly jobs
     akkaActorTyped % Test,
@@ -640,7 +642,7 @@ object Dependencies {
     akkaStream,
     play,
     akkaPersistenceCassandraLauncher,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     sslConfig,
     playJson,
     akkaSlf4j,
@@ -648,7 +650,7 @@ object Dependencies {
     jffi,
     jnrConstants,
     jnrPosix
-  ) ++ ow2asmDeps // to match whitelist versions
+  ) ++ ow2asmDeps // to match allowed versions
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
     akkaStreamTestkit,
@@ -678,7 +680,7 @@ object Dependencies {
     slf4jApi           % Test,
     "com.novocode"     % "junit-interface" % "0.11" % Test,
     scalaTest,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     okio        % Test,
     byteBuddy   % Test,
     commonsLang % Test,
@@ -707,7 +709,7 @@ object Dependencies {
     akkaDiscovery,
     slf4jApi,
     scalaTest % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     scalaJava8Compat,
     scalaXml
   )
@@ -720,7 +722,7 @@ object Dependencies {
   val `akka-management-core` = libraryDependencies ++= Seq(
     play,
     akkaManagement,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     akkaStream,
     akkaActor,
     akkaActorTyped,
@@ -739,7 +741,7 @@ object Dependencies {
     jnrConstants,
     pcollections,
     slf4jApi,
-  ) ++ jacksonFamily ++ ow2asmDeps // to match whitelist versions
+  ) ++ jacksonFamily ++ ow2asmDeps // to match allowed versions
 
   val `akka-management-javadsl`  = libraryDependencies ++= Seq.empty[ModuleID]
   val `akka-management-scaladsl` = libraryDependencies ++= Seq.empty[ModuleID]
@@ -756,7 +758,7 @@ object Dependencies {
     junit                % Test,
     slf4jApi             % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     sslConfig,
     scalaJava8Compat,
     scalaParserCombinators,
@@ -776,6 +778,8 @@ object Dependencies {
     akkaDistributedData,
     akkaPersistence,
     akkaClusterTools
+  ) ++ Seq("logback-core", "logback-classic").map(
+    "ch.qos.logback" % _ % Versions.Logback % Test
   )
 
   val `cluster-javadsl` = libraryDependencies ++= Seq(
@@ -784,7 +788,7 @@ object Dependencies {
     scalaTest            % Test,
     junit                % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     slf4jApi,
   )
 
@@ -794,7 +798,7 @@ object Dependencies {
     scalaTest            % Test,
     junit                % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     sslConfig,
     scalaXml,
     akkaSlf4j
@@ -802,7 +806,7 @@ object Dependencies {
   ) ++ jacksonFamily ++ Seq(
     // explicitly depend on particular versions of guava
     guava,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     slf4jApi,
   )
 
@@ -816,7 +820,7 @@ object Dependencies {
     slf4jApi             % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
     slf4jApi             % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     jnrConstants,
     // explicitly depend on particular versions of jackson
   ) ++ jacksonFamily ++ Seq(
@@ -831,7 +835,7 @@ object Dependencies {
     akkaStreamTestkit    % Test,
     scalaTest            % Test,
     slf4jApi             % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     sslConfig,
     scalaXml % Test,
     akkaSlf4j,
@@ -847,7 +851,7 @@ object Dependencies {
     scalaTest            % Test,
     junit                % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     jnrConstants,
   )
 
@@ -872,7 +876,7 @@ object Dependencies {
     scalaTest            % Test,
     junit                % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     sslConfig,
     playJson,
     scalaXml
@@ -884,7 +888,7 @@ object Dependencies {
     akkaTestkitTyped,
     slf4jApi,
     scalaJava8Compat,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     sslConfig
   )
 
@@ -903,7 +907,7 @@ object Dependencies {
     slf4jApi,
     akkaPersistenceCassandra,
     akkaPersistenceCassandraLauncher % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     sslConfig,
     dropwizardMetricsCore,
     cassandraDriverCore,
@@ -916,12 +920,12 @@ object Dependencies {
   val `persistence-cassandra-javadsl` = libraryDependencies ++= Seq(
     junit % Test,
     jsr250,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     cassandraDriverCore
   )
 
   val `persistence-cassandra-scaladsl` = libraryDependencies ++= Seq(
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     cassandraDriverCore
   )
 
@@ -931,7 +935,7 @@ object Dependencies {
     playJdbc,
     junit % Test,
     h2    % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     scalaCollectionCompat,
     scalaXml,
     jnrConstants,
@@ -951,7 +955,7 @@ object Dependencies {
     "org.hibernate"                   % "hibernate-core" % Versions.HibernateCore % Test,
     h2                                % Test,
     javassist                         % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     byteBuddy,
     jnrConstants
   )
@@ -964,7 +968,7 @@ object Dependencies {
     "org.slf4j" % "log4j-over-slf4j" % Versions.Slf4j,
     akkaStreamKafka.exclude("org.slf4j", "slf4j-log4j12"),
     scalaTest % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     sslConfig,
     kafkaClients,
     scalaCollectionCompat,
@@ -972,7 +976,7 @@ object Dependencies {
 
   val `kafka-client-javadsl` = libraryDependencies ++= Seq(
     scalaTest % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     sslConfig,
     kafkaClients,
     jnrConstants
@@ -980,7 +984,7 @@ object Dependencies {
 
   val `kafka-client-scaladsl` = libraryDependencies ++= Seq(
     scalaTest % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     sslConfig,
     kafkaClients,
     jnrConstants
@@ -988,7 +992,7 @@ object Dependencies {
 
   val `kafka-broker` = libraryDependencies ++= Seq(
     kafkaClients,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     jnrConstants,
     pcollections,
     scalaCollectionCompat,
@@ -999,7 +1003,7 @@ object Dependencies {
     "log4j"   % "log4j" % "1.2.17",
     scalaTest % Test,
     junit     % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     jnrPosix
   )
 
@@ -1007,14 +1011,14 @@ object Dependencies {
     "log4j"   % "log4j" % "1.2.17",
     scalaTest % Test,
     junit     % Test,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     jnrPosix
   )
 
   val logback = libraryDependencies ++= slf4j ++ Seq(
     // needed only because we use play.utils.Colors
     play,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     reactiveStreams,
     sslConfig,
     playJson,
@@ -1038,12 +1042,12 @@ object Dependencies {
 
   val log4j2 = libraryDependencies ++= Seq(slf4jApi) ++
     log4jModules ++
-    ow2asmDeps ++ // to match whitelist versions
+    ow2asmDeps ++ // to match allowed versions
     jacksonFamily ++
     Seq(
       "com.lmax" % "disruptor" % Versions.Disruptor,
       play,
-      // Upgrades needed to match whitelist versions
+      // Upgrades needed to match allowed versions
       reactiveStreams,
       sslConfig,
       playJson,
@@ -1065,7 +1069,7 @@ object Dependencies {
 
   val `reloadable-server` = libraryDependencies ++= Seq(
     playServer,
-    // Upgrades needed to match whitelist versions
+    // Upgrades needed to match allowed versions
     reactiveStreams,
     playJson,
     scalaParserCombinators,
@@ -1080,7 +1084,7 @@ object Dependencies {
     jffi,
     jnra64asm,
     jnrConstants,
-  ) ++ ow2asmDeps // to match whitelist versions
+  ) ++ ow2asmDeps // to match allowed versions
 
   val `server-containers` = libraryDependencies ++= Seq(
     // This is used in the code to check if the embedded cassandra server is started
@@ -1125,7 +1129,7 @@ object Dependencies {
   val `dev-mode-ssl-support` = libraryDependencies ++= Seq(
     playServer,
     akkaHttpCore,
-    // updates to match whitelist
+    // updates to match allowed List
     akkaActor,
     akkaActorTyped,
     akkaJackson,
@@ -1194,9 +1198,9 @@ object Dependencies {
     guava
   )
 
-  val validateDependencies = taskKey[Unit]("Validate Lagom dependencies to ensure they are whitelisted")
-  val dependencyWhitelist  = settingKey[Seq[ModuleID]]("The whitelist of dependencies")
-  val pruneWhitelist       = taskKey[Unit]("List items that can be pruned from the whitelist ")
+  val validateDependencies = taskKey[Unit]("Validate Lagom dependencies to ensure they are allowed")
+  val allowedDependencies  = settingKey[Seq[ModuleID]]("The allowed dependencies")
+  val allowedPrune         = taskKey[Unit]("List items that can be pruned from the allowed ")
 
   val validateDependenciesTask: Def.Initialize[Task[Unit]] = Def.task {
     // We validate compile dependencies to ensure that whatever we are exporting, we are exporting the right
@@ -1208,7 +1212,7 @@ object Dependencies {
     val log              = streams.value.log
     val svb              = scalaBinaryVersion.value
 
-    val whitelist = (dependencyWhitelist.value ++ KafkaTestWhitelist).iterator
+    val allowList = (allowedDependencies.value ++ KafkaTestWhitelist).iterator
       .map(cross)
       .toTraversable
       .groupBy(crossModuleId => (crossModuleId.organization, crossModuleId.name))
@@ -1216,14 +1220,14 @@ object Dependencies {
       .map { case (key, crossModuleIds) => key -> crossModuleIds.map(_.revision) }
       .toMap
 
-    val dupes = whitelist.collect { case (key, versions) if versions.size > 1 => (key, versions) }
+    val dupes = allowList.collect { case (key, versions) if versions.size > 1 => (key, versions) }
     if (dupes.nonEmpty) {
       dupes.foreach {
         case ((org, id), revs) =>
           val revsS = revs.mkString("[", ", ", "]")
-          log.error(s"[${name.value}] dependency $org:$id in whitelist with multiple versions: $revsS")
+          log.error(s"[${name.value}] dependency $org:$id in allowList with multiple versions: $revsS")
       }
-      throw new DependencyWhitelistValidationFailed
+      throw new AllowDependenciesValidationFailed
     }
 
     def collectProblems(scope: String, classpath: Classpath) = {
@@ -1232,13 +1236,13 @@ object Dependencies {
           sys.error(s"Managed classpath dependency without moduleID: $dep")
         }
 
-        whitelist.get((moduleId.organization, moduleId.name)) match {
+        allowList.get((moduleId.organization, moduleId.name)) match {
           case None =>
-            Some(moduleId -> s"[${name.value}] $scope dependency not in whitelist: $moduleId")
+            Some(moduleId -> s"[${name.value}] $scope dependency not in allowList: $moduleId")
           case Some(revs) if revs.forall(moduleId.revision != _) =>
             val unmatched = revs.mkString("[", ", ", "]")
             Some(
-              moduleId -> s"[${name.value}] $scope dependency ${moduleId.organization}:${moduleId.name} version ${moduleId.revision} doesn't match whitelist versions $unmatched"
+              moduleId -> s"[${name.value}] $scope dependency ${moduleId.organization}:${moduleId.name} version ${moduleId.revision} doesn't match allowList versions $unmatched"
             )
           case _ => None
         }
@@ -1263,24 +1267,24 @@ object Dependencies {
           }
           .sorted
           .mkString(
-            "The following dependencies need to be added to the whitelist:\n",
+            "The following dependencies need to be added to the allowList:\n",
             ",\n",
             ""
           )
       }
       if (sys.env.get("TRAVIS_EVENT_TYPE") != Some("cron"))
-        throw new DependencyWhitelistValidationFailed
+        throw new AllowDependenciesValidationFailed
     }
   }
 
-  val pruneWhitelistTask: Def.Initialize[Task[Unit]] = Def.task {
+  val allowedPruneTask: Def.Initialize[Task[Unit]] = Def.task {
     val compileClasspath = (managedClasspath in Compile).value
     val testClasspath    = (managedClasspath in Test).value
     val cross            = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)
     val log              = streams.value.log
     val svb              = scalaBinaryVersion.value
 
-    val whitelist: Map[(String, String), String] = dependencyWhitelist.value.map { moduleId =>
+    val allowList: Map[(String, String), String] = allowedDependencies.value.map { moduleId =>
       val crossModuleId = cross(moduleId)
       (crossModuleId.organization, crossModuleId.name) -> crossModuleId.revision
     }.toMap
@@ -1288,23 +1292,22 @@ object Dependencies {
     def collectProblems(scope: String, classpath: Classpath): Set[(String, String)] = {
       val modules: Set[(String, String)] =
         classpath.toSet[Attributed[File]].flatMap(_.get(moduleID.key)).map(mod => (mod.organization, mod.name))
-      whitelist.keySet -- modules
+      allowList.keySet -- modules
     }
 
     val problems = collectProblems("Compile", compileClasspath) ++ collectProblems("Test", testClasspath)
 
     if (problems.nonEmpty) {
-      problems.foreach(p => log.error(s"${name.value} - Found unnecessary whitelisted item: ${p._1}:${p._2}"))
+      problems.foreach(p => log.error(s"${name.value} - Found unnecessary allowList item: ${p._1}:${p._2}"))
     } else {
-      log.error(s"${name.value} needs a complete whitelist.")
+      log.error(s"${name.value} needs a complete allowList.")
     }
   }
-  val pruneWhitelistSetting = pruneWhitelist := pruneWhitelistTask.value
-
+  val allowedPruneSetting         = allowedPrune := allowedPruneTask.value
   val validateDependenciesSetting = validateDependencies := validateDependenciesTask.value
-  val dependencyWhitelistSetting  = dependencyWhitelist := DependencyWhitelist.value
+  val allowDependenciesSetting    = allowedDependencies := AllowedDependencies.value
 
-  private class DependencyWhitelistValidationFailed extends RuntimeException with FeedbackProvidedException {
-    override def toString = "Dependency whitelist validation failed!"
+  private class AllowDependenciesValidationFailed extends RuntimeException with FeedbackProvidedException {
+    override def toString = "Allow Dependencies validation failed!"
   }
 }
