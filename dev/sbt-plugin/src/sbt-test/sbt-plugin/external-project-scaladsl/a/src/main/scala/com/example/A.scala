@@ -8,7 +8,7 @@ import akka.NotUsed
 import com.lightbend.lagom.scaladsl.api._
 import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
-import com.lightbend.lagom.scaladsl.LagomDevModeComponents
+import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import scala.concurrent.Future
 

@@ -40,7 +40,7 @@ package lagomloader {
   //#lagom-loader
   import com.lightbend.lagom.scaladsl.server._
   import com.lightbend.lagom.scaladsl.api.ServiceLocator
-  import com.lightbend.lagom.scaladsl.LagomDevModeComponents
+  import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 
   class HelloApplicationLoader extends LagomApplicationLoader {
     override def loadDevMode(context: LagomApplicationContext) =
