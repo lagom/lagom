@@ -13,11 +13,10 @@ import akka.actor.CoordinatedShutdown
 import akka.cluster.Cluster
 import akka.pattern.AskTimeoutException
 import akka.persistence.cassandra.testkit.CassandraLauncher
-import akka.stream.ActorMaterializer
 import akka.stream.Materializer
+import akka.stream.SystemMaterializer
 import akka.testkit.TestKit
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
-import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.ClusterConfig
 import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.cassandraConfig
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
@@ -97,7 +96,7 @@ class PersistentEntityRefSpec
 
     override def environment: Environment                       = Environment(new File("."), getClass.getClassLoader, PlayMode.Test)
     override def configuration: play.api.Configuration          = play.api.Configuration(config)
-    override def materializer: Materializer                     = ActorMaterializer()(system)
+    override def materializer: Materializer                     = SystemMaterializer(actorSystem).materializer
     override def serviceLocator: ServiceLocator                 = NoServiceLocator
     override def jsonSerializerRegistry: JsonSerializerRegistry = TestEntitySerializerRegistry
   }

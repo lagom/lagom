@@ -15,7 +15,6 @@ import akka.http.scaladsl.model.ws.TextMessage
 import akka.http.scaladsl.model.ws.UpgradeToWebSocket
 import akka.http.scaladsl.model.ws.WebSocketRequest
 import akka.http.scaladsl.model._
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.Sink
@@ -38,7 +37,6 @@ import scala.concurrent.duration._
 class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAfterAll {
   implicit val actorSystem = ActorSystem()
   import actorSystem.dispatcher
-  implicit val mat        = ActorMaterializer()
   val coordinatedShutdown = CoordinatedShutdown(actorSystem)
   val http                = Http()
 

@@ -9,8 +9,8 @@ import java.io.File
 import akka.actor.ActorSystem
 import akka.actor.CoordinatedShutdown
 import akka.persistence.cassandra.testkit.CassandraLauncher
-import akka.stream.ActorMaterializer
 import akka.stream.Materializer
+import akka.stream.SystemMaterializer
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
 import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig.cassandraConfigOnly
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
@@ -31,8 +31,10 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
-  override def additionalCommonConfig(databasePort: Int): Config =
+  override def additionalCommonConfig(databasePort: Int): Config = {
     cassandraConfigOnly("CassandraClusteredPersistentEntityConfig", databasePort)
+      .withFallback(CassandraReadSideSpec.readSideConfig)
+  }
 }
 
 class CassandraClusteredPersistentEntitySpecMultiJvmNode1 extends CassandraClusteredPersistentEntitySpec
@@ -82,7 +84,7 @@ class CassandraClusteredPersistentEntitySpec
       override def coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(actorSystem)
 
       override def environment: Environment                       = Environment(new File("."), getClass.getClassLoader, Mode.Test)
-      override def materializer: Materializer                     = ActorMaterializer()(system)
+      override def materializer: Materializer                     = SystemMaterializer(system).materializer
       override def configuration: Configuration                   = Configuration(system.settings.config)
       override def serviceLocator: ServiceLocator                 = NoServiceLocator
       override def jsonSerializerRegistry: JsonSerializerRegistry = ???
