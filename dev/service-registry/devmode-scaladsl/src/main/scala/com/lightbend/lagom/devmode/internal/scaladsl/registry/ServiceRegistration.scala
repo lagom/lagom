@@ -2,13 +2,11 @@
  * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.internal.scaladsl.registry
+package com.lightbend.lagom.devmode.internal.scaladsl.registry
 
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import com.lightbend.lagom.devmode.internal.registry.registry.serviceDnsRecords
-import com.lightbend.lagom.devmode.internal.scaladsl.registry.ServiceRegistry
-import com.lightbend.lagom.devmode.internal.scaladsl.registry.ServiceRegistryService
 import com.lightbend.lagom.scaladsl.api.ServiceInfo
 import com.typesafe.config.Config
 import play.api.Logger

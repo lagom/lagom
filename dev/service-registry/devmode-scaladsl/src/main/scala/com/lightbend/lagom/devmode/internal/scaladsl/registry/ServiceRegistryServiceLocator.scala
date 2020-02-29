@@ -2,7 +2,7 @@
  * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.internal.scaladsl.registry
+package com.lightbend.lagom.devmode.internal.scaladsl.registry
 
 import java.net.URI
 

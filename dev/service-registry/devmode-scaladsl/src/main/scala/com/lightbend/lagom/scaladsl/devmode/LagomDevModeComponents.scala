@@ -2,7 +2,7 @@
  * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.scaladsl
+package com.lightbend.lagom.scaladsl.devmode
 
 import java.net.URI
 
@@ -16,7 +16,7 @@ import com.lightbend.lagom.devmode.internal.registry.ServiceRegistryClient
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceClient
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslServiceResolver
 import com.lightbend.lagom.internal.scaladsl.client.ScaladslWebSocketClient
-import com.lightbend.lagom.internal.scaladsl.registry._
+import com.lightbend.lagom.devmode.internal.scaladsl.registry._
 import com.lightbend.lagom.scaladsl.api.Descriptor.Call
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
 import com.lightbend.lagom.scaladsl.api.ServiceInfo
