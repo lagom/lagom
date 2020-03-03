@@ -38,27 +38,27 @@ object Dependencies {
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
     val ScalaTest            = "3.0.8"
-    val Jackson              = "2.10.2"
+    val Jackson              = "2.10.3"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
     val JacksonDatabind      = Jackson
     val Guava                = "28.2-jre"
-    val Maven                = "3.6.2"
+    val Maven                = "3.6.3"
     val MavenWagon           = "3.3.3"
     val MavenResolver        = "1.4.1"
-    val Netty                = "4.1.45.Final"
+    val Netty                = "4.1.46.Final"
     val NettyReactiveStreams = "2.0.4"
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
-    val AlpakkaKafka = "2.0.1"
+    val AlpakkaKafka = "2.0.2"
     // Keep this version consistent with Alpakka Kafka Connector
     val Kafka = "2.4.0"
 
     val Curator       = "2.12.0"
     val Immutables    = "2.8.3"
     val HibernateCore = "5.4.12.Final"
-    val PCollections  = "3.1.2"
+    val PCollections  = "3.1.3"
 
-    val ScalaJava8Compat = "0.9.0"
+    val ScalaJava8Compat = "0.9.1"
     val ScalaXml         = "1.2.0"
     val Slick            = "3.3.2"
     val JUnit            = "4.12"
@@ -66,7 +66,7 @@ object Dependencies {
 
     val Slf4j   = "1.7.30"
     val Logback = "1.2.3"
-    val Log4j   = "2.13.0"
+    val Log4j   = "2.13.1"
 
     val jetty = "9.4.20.v20190813"
 
@@ -94,10 +94,10 @@ object Dependencies {
   private val scalaCollectionCompat  = "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.4"
   private val scalaXml               = "org.scala-lang.modules" %% "scala-xml" % Versions.ScalaXml
   private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
-  private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.10.6"
+  private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.10.8"
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
   private val typesafeConfig         = "com.typesafe" % "config" % "1.4.0"
-  private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.1"
+  private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.2"
   private val h2                     = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore =
     ("com.datastax.cassandra" % "cassandra-driver-core" % "3.8.0").excludeAll(excludeSlf4j: _*)
@@ -194,9 +194,9 @@ object Dependencies {
   )
 
   private val jffi         = "com.github.jnr" % "jffi"          % "1.2.23"
-  private val jnrConstants = "com.github.jnr" % "jnr-constants" % "0.9.14"
+  private val jnrConstants = "com.github.jnr" % "jnr-constants" % "0.9.15"
   private val jnrFfi       = "com.github.jnr" % "jnr-ffi"       % "2.1.12"
-  private val jnrPosix     = "com.github.jnr" % "jnr-posix"     % "3.0.53"
+  private val jnrPosix     = "com.github.jnr" % "jnr-posix"     % "3.0.54"
   private val jnra64asm    = "com.github.jnr" % "jnr-a64asm"    % "1.0.0"
   private val jnrx86asm    = "com.github.jnr" % "jnr-x86asm"    % "1.0.2"
 
