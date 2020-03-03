@@ -41,7 +41,7 @@ object Dependencies {
     val Jackson              = "2.10.2"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
-    val JacksonDatabind      = "2.10.2"
+    val JacksonDatabind      = Jackson
     val Guava                = "28.2-jre"
     val Maven                = "3.6.2"
     val MavenWagon           = "3.3.3"
