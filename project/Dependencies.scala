@@ -38,10 +38,10 @@ object Dependencies {
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
     val ScalaTest            = "3.0.8"
-    val Jackson              = "2.10.2"
+    val Jackson              = "2.10.3"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
-    val JacksonDatabind      = "2.10.2"
+    val JacksonDatabind      = "2.10.3"
     val Guava                = "28.2-jre"
     val Maven                = "3.6.3"
     val MavenWagon           = "3.3.3"
