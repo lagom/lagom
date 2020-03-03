@@ -97,11 +97,6 @@ You can verify that your services are running by viewing `http://localhost:9008/
     "portName":null
   },
   {
-    "name":"kafka_native",
-    "url":"tcp://localhost:9092/kafka_native",
-    "portName":null
-  },
-  {
     "name":"hello",
     "url":"http://127.0.0.1:65499",
     "portName":null
