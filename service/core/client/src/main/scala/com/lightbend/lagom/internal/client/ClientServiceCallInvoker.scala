@@ -272,10 +272,10 @@ private[lagom] abstract class ClientServiceCallInvoker[Request, Response](
       val transportResponseHeader = newResponseHeader(response.status, protocol, headers)
       val responseHeader          = headerFilterTransformClientResponse(headerFilter, transportResponseHeader, requestHeader)
 
-      if (response.status >= 400 && response.status <= 599) {
+      if (responseHeaderStatus(responseHeader) >= 400 && responseHeaderStatus(responseHeader) <= 599) {
         throw exceptionSerializerDeserializeHttpException(
           descriptorExceptionSerializer(descriptor),
-          response.status,
+          responseHeaderStatus(responseHeader),
           protocol,
           response.bodyAsBytes
         )
