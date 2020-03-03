@@ -100,9 +100,8 @@ private[lagom] class TopicProducerActor[Message](
           producerConfig.maxBackoff,
           producerConfig.randomBackoffFactor
         ) { () =>
-          val eventualOffset: Future[OffsetDao] = eventualBrokersAndOffset(tagName)
           Source
-            .future(eventualOffset)
+            .future(eventualOffset(tagName))
             .initialTimeout(producerConfig.offsetTimeout)
             .flatMapConcat { offset =>
               log.debug("Kafka service for producer of [{}]", topicId)
@@ -138,7 +137,7 @@ private[lagom] class TopicProducerActor[Message](
    * The returned future can fail when the offset store is unavailable or times out or when the brokers list
    * is empty or unconfigured, etc... In either case, the stream can't be built
    */
-  private def eventualBrokersAndOffset(tagName: String): Future[OffsetDao] = {
+  private def eventualOffset(tagName: String): Future[OffsetDao] = {
     // TODO: review the OffsetStore API. I think `prepare()` does more than we need here. Ideally, prepare (create
     // schema and prepared statements) would be used when this actor starts and here we would only query for
     // the latest offset.
