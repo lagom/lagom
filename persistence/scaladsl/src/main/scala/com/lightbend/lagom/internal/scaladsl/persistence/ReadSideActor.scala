@@ -19,16 +19,23 @@ import akka.stream.Materializer
 import akka.util.Timeout
 import akka.Done
 import akka.NotUsed
+import akka.stream.FlowShape
 import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.GraphDSL
+import akka.stream.scaladsl.Unzip
+import akka.stream.scaladsl.Zip
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
+import com.lightbend.lagom.internal.spi.projection.ProjectionSpi
 import com.lightbend.lagom.scaladsl.persistence._
+import com.lightbend.lagom.spi.persistence.OffsetDao
 
 import scala.concurrent.Future
 
 private[lagom] object ReadSideActor {
   def props[Event <: AggregateEvent[Event]](
-      tagName: String,
+      workerCoordinates: WorkerCoordinates,
       config: ReadSideConfig,
       clazz: Class[Event],
       globalPrepareTask: ClusterStartupTask,
@@ -37,7 +44,7 @@ private[lagom] object ReadSideActor {
   )(implicit mat: Materializer) =
     Props(
       new ReadSideActor[Event](
-        tagName,
+        workerCoordinates,
         config,
         clazz,
         globalPrepareTask,
@@ -54,7 +61,7 @@ private[lagom] object ReadSideActor {
  * Read side actor
  */
 private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
-    tagName: String,
+    workerCoordinates: WorkerCoordinates,
     config: ReadSideConfig,
     clazz: Class[Event],
     globalPrepareTask: ClusterStartupTask,
@@ -66,6 +73,8 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   import ReadSideActor._
   import akka.pattern.pipe
   import context.dispatcher
+
+  val tagName = workerCoordinates.tagName
 
   /** Switch used to terminate the on-going stream when this actor is stopped.*/
   private var shutdown: Option[KillSwitch] = None
@@ -88,7 +97,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   def receive: Receive = {
     case Start =>
       val tag = new AggregateEventTag(clazz, tagName)
-      val backOffSource: Source[Done, NotUsed] =
+      val backOffSource: Source[Offset, NotUsed] =
         RestartSource.withBackoff(
           config.minBackoff,
           config.maxBackoff,
@@ -98,12 +107,18 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
           val futureOffset: Future[Offset]                      = handler.prepare(tag)
 
           Source
-            .fromFuture(futureOffset)
+            .future(futureOffset)
             .initialTimeout(config.offsetTimeout)
             .flatMapConcat { offset =>
-              val eventStreamSource = eventStreamFactory(tag, offset)
-              val usersFlow         = handler.handle()
-              eventStreamSource.via(usersFlow)
+              val eventStreamSource: Source[EventStreamElement[Event], NotUsed] = eventStreamFactory(tag, offset)
+              val userFlow                                                      = handler.handle()
+              val wrappedFlow = Flow[EventStreamElement[Event]]
+                .map { ese =>
+                  (ese, ese.offset)
+                }
+                .via(userFlowWrapper(workerCoordinates, userFlow))
+
+              eventStreamSource.via(wrappedFlow)
             }
         }
 
@@ -124,4 +139,29 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
       // This actor will be restarted by WorkerCoordinator
       throw cause
   }
+
+  private def userFlowWrapper(
+      workerCoordinates: WorkerCoordinates,
+      userFlow: Flow[EventStreamElement[Event], Done, NotUsed]
+  ): Flow[(EventStreamElement[Event], Offset), Offset, NotUsed] =
+    Flow.fromGraph(GraphDSL.create(userFlow) { implicit builder => wrappedFlow =>
+      import GraphDSL.Implicits._
+      val unzip = builder.add(Unzip[EventStreamElement[Event], Offset])
+      val zip   = builder.add(Zip[Done, Offset])
+      val metricsReporter: FlowShape[(Done, Offset), Offset] = builder.add(Flow.fromFunction {
+        e: (Done, Offset) =>
+          // TODO: in ReadSide processor we can't report `afterUserFlow` and `completedProcessing` separately
+          //  as we do in TopicProducerActor, unless we moved the invocation of `afterUserFlow` to each
+          //  particular ReadSideImpl (C* and JDBC).
+          ProjectionSpi.afterUserFlow(workerCoordinates.projectionName, e._2)
+          ProjectionSpi.completedProcessing(Future(e._2), context.dispatcher)
+          e._2
+      })
+
+      unzip.out0 ~> wrappedFlow ~> zip.in0
+      unzip.out1 ~> zip.in1
+      zip.out ~> metricsReporter.in
+      FlowShape(unzip.in, metricsReporter.out)
+    })
+
 }
