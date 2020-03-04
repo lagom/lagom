@@ -5,13 +5,12 @@
 package com.lightbend.lagom.internal.spi.projection
 
 import akka.actor.ActorSystem
-import akka.persistence.query.Offset
-
-import scala.concurrent.Future
 import akka.annotation.InternalStableApi
 import akka.persistence.query.EventEnvelope
+import akka.persistence.query.Offset
 
 import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 object ProjectionSpi {
   @InternalStableApi

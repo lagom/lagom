@@ -125,7 +125,7 @@ trait AbstractReadSideSpec extends ImplicitSender with ScalaFutures with Eventua
 
     val processorProps = (coordinates: WorkerCoordinates) =>
       ReadSideActor.props[TestEntity.Evt](
-        coordinates.tagName,
+        coordinates,
         ReadSideConfig(),
         classOf[TestEntity.Evt],
         clusterStartup,
