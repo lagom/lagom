@@ -78,6 +78,8 @@ class AbstractPersistentEntityRegistry(
   private val extractShardId: ShardRegion.ExtractShardId = {
     case CommandEnvelope(entityId, _) =>
       (math.abs(entityId.hashCode) % maxNumberOfShards).toString
+    case ShardRegion.StartEntity(entityId) =>
+      (math.abs(entityId.hashCode) % maxNumberOfShards).toString
   }
 
   private val registeredTypeNames = new ConcurrentHashMap[String, Class[_]]()
