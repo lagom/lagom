@@ -36,16 +36,16 @@ import akka.actor.Actor
 import akka.stream.scaladsl.Zip
 import java.net.URI
 
-import akka.annotation.InternalStableApi
 import akka.kafka.ProducerMessage
 import akka.persistence.query.Offset
 import akka.stream.scaladsl.RestartSource
 import com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.Start
-import com.lightbend.lagom.internal.spi.projections.ProjectionsSpi
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
+import com.lightbend.lagom.internal.spi.projection.ProjectionSpi
 
 private[lagom] object TopicProducerActor {
   def props[Message](
-      tagName: String,
+      workerCoordinates: WorkerCoordinates,
       kafkaConfig: KafkaConfig,
       producerConfig: ProducerConfig,
       locateService: String => Future[Seq[URI]],
@@ -57,7 +57,7 @@ private[lagom] object TopicProducerActor {
   )(implicit mat: Materializer, ec: ExecutionContext) =
     Props(
       new TopicProducerActor[Message](
-        tagName,
+        workerCoordinates,
         kafkaConfig,
         producerConfig,
         locateService,
@@ -78,7 +78,7 @@ private[lagom] object TopicProducerActor {
  * Kafka. See also ReadSideActor.
  */
 private[lagom] class TopicProducerActor[Message](
-    tagName: String,
+    workerCoordinates: WorkerCoordinates,
     kafkaConfig: KafkaConfig,
     producerConfig: ProducerConfig,
     locateService: String => Future[Seq[URI]],
@@ -90,6 +90,8 @@ private[lagom] class TopicProducerActor[Message](
 )(implicit mat: Materializer, ec: ExecutionContext)
     extends Actor
     with ActorLogging {
+
+  val tagName = workerCoordinates.tagName
 
   /** Switch used to terminate the on-going stream when this actor is stopped.*/
   private var shutdown: Option[KillSwitch] = None
@@ -123,9 +125,12 @@ private[lagom] class TopicProducerActor[Message](
                 val eventPublisherFlow: Flow[(Message, Offset), Future[Offset], Any] =
                   eventsPublisherFlow(endpoints, offset)
                 eventStreamSource
-                  .map(ProjectionsSpi.afterUserFlow)
+                  .map { tuple =>
+                    val o = ProjectionSpi.afterUserFlow(workerCoordinates.projectionName, tuple._2)
+                    (tuple._1, o)
+                  }
                   .via(eventPublisherFlow)
-                  .map(o => ProjectionsSpi.completedProcessing(o, context.dispatcher))
+                  .map(o => ProjectionSpi.completedProcessing(o, context.dispatcher))
             }
         }
       }

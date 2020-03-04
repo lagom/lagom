@@ -2,7 +2,7 @@
  * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.internal.cluster.projections
+package com.lightbend.lagom.internal.projection
 
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.ProjectionName
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates

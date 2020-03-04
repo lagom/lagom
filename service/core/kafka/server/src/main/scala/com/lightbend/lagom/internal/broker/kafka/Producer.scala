@@ -40,7 +40,7 @@ private[lagom] object Producer {
     val producerConfig = ProducerConfig(system.settings.config)
     val topicProducerProps = (coordinates: WorkerCoordinates) =>
       TopicProducerActor.props(
-        coordinates.tagName,
+        coordinates,
         kafkaConfig,
         producerConfig,
         locateService,
