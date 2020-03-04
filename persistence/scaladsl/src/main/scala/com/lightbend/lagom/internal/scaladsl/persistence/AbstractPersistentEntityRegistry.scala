@@ -72,7 +72,9 @@ class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEn
   }
 
   private val extractShardId: ShardRegion.ExtractShardId = {
-    case CommandEnvelope(entityId, payload) =>
+    case CommandEnvelope(entityId, _) =>
+      (math.abs(entityId.hashCode) % maxNumberOfShards).toString
+    case ShardRegion.StartEntity(entityId) =>
       (math.abs(entityId.hashCode) % maxNumberOfShards).toString
   }
 
