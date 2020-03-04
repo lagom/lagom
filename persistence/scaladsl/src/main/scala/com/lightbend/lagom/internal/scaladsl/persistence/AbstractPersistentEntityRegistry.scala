@@ -20,7 +20,7 @@ import akka.stream.scaladsl
 import akka.NotUsed
 import akka.annotation.InternalStableApi
 import akka.persistence.query.EventEnvelope
-import com.lightbend.lagom.internal.spi.projections.ProjectionsSpi
+import com.lightbend.lagom.internal.spi.projection.ProjectionSpi
 import com.lightbend.lagom.scaladsl.persistence._
 
 import scala.concurrent.duration._
@@ -132,7 +132,7 @@ class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEn
 
         queries
           .eventsByTag(tag, fromOffset)
-          .map(envelope => ProjectionsSpi.startProcessing(tag, envelope))
+          .map(envelope => ProjectionSpi.startProcessing(system, tag, envelope))
           .map(env =>
             new EventStreamElement[Event](
               PersistentEntityActor.extractEntityId(env.persistenceId),
