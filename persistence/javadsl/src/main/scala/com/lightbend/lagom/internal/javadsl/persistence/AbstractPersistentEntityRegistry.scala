@@ -5,27 +5,22 @@
 package com.lightbend.lagom.internal.javadsl.persistence
 
 import java.util.Optional
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionStage
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
-
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.cluster.sharding.ClusterSharding
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.cluster.sharding.ShardRegion
-import akka.event.Logging
 import akka.japi.Pair
 import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.persistence.query.PersistenceQuery
 import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.javadsl
-import akka.Done
 import akka.NotUsed
+import com.lightbend.lagom.internal.persistence.cluster.HashCodeMessageExtractor
 import com.lightbend.lagom.javadsl.persistence._
 import play.api.inject.Injector
-
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
@@ -77,9 +72,9 @@ class AbstractPersistentEntityRegistry(
 
   private val extractShardId: ShardRegion.ExtractShardId = {
     case CommandEnvelope(entityId, _) =>
-      (math.abs(entityId.hashCode) % maxNumberOfShards).toString
+      HashCodeMessageExtractor.shardId(entityId, maxNumberOfShards)
     case ShardRegion.StartEntity(entityId) =>
-      (math.abs(entityId.hashCode) % maxNumberOfShards).toString
+      HashCodeMessageExtractor.shardId(entityId, maxNumberOfShards)
   }
 
   private val registeredTypeNames = new ConcurrentHashMap[String, Class[_]]()
