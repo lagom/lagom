@@ -23,6 +23,7 @@ import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.javadsl
 import akka.Done
 import akka.NotUsed
+import com.lightbend.lagom.internal.spi.projection.ProjectionSpi
 import com.lightbend.lagom.javadsl.persistence._
 import play.api.inject.Injector
 
@@ -153,6 +154,7 @@ class AbstractPersistentEntityRegistry(
 
         queries
           .eventsByTag(tag, startingOffset)
+          .map(envelope => ProjectionSpi.startProcessing(system, tag, envelope))
           .map { env =>
             Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset))
           }

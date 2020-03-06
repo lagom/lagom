@@ -37,7 +37,7 @@ import akka.stream.scaladsl.Zip
 import java.net.URI
 
 import akka.kafka.ProducerMessage
-import akka.persistence.query.Offset
+import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.scaladsl.RestartSource
 import com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.Start
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
@@ -50,7 +50,7 @@ private[lagom] object TopicProducerActor {
       producerConfig: ProducerConfig,
       locateService: String => Future[Seq[URI]],
       topicId: String,
-      eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+      eventStreamFactory: (String, AkkaOffset) => Source[(Message, AkkaOffset), _],
       partitionKeyStrategy: Option[Message => String],
       serializer: Serializer[Message],
       offsetStore: OffsetStore
@@ -83,7 +83,7 @@ private[lagom] class TopicProducerActor[Message](
     producerConfig: ProducerConfig,
     locateService: String => Future[Seq[URI]],
     topicId: String,
-    eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+    eventStreamFactory: (String, AkkaOffset) => Source[(Message, AkkaOffset), _],
     partitionKeyStrategy: Option[Message => String],
     serializer: Serializer[Message],
     offsetStore: OffsetStore
@@ -107,7 +107,7 @@ private[lagom] class TopicProducerActor[Message](
 
   def receive: Receive = {
     case Start => {
-      val backoffSource: Source[Future[Offset], NotUsed] = {
+      val backoffSource: Source[Future[AkkaOffset], NotUsed] = {
         RestartSource.withBackoff(
           producerConfig.minBackoff,
           producerConfig.maxBackoff,
@@ -115,14 +115,15 @@ private[lagom] class TopicProducerActor[Message](
         ) { () =>
           val brokersAndOffset: Future[(String, OffsetDao)] = eventualBrokersAndOffset(tagName)
           Source
-            .fromFuture(brokersAndOffset)
+            .future(brokersAndOffset)
             .initialTimeout(producerConfig.offsetTimeout)
             .flatMapConcat {
               case (endpoints, offset) =>
                 val serviceName = kafkaConfig.serviceName.map(name => s"[$name]").getOrElse("")
                 log.debug("Kafka service {} located at URIs [{}] for producer of [{}]", serviceName, endpoints, topicId)
-                val eventStreamSource: Source[(Message, Offset), _] = eventStreamFactory(tagName, offset.loadedOffset)
-                val eventPublisherFlow: Flow[(Message, Offset), Future[Offset], Any] =
+                val eventStreamSource: Source[(Message, AkkaOffset), _] =
+                  eventStreamFactory(tagName, offset.loadedOffset)
+                val eventPublisherFlow: Flow[(Message, AkkaOffset), Future[AkkaOffset], Any] =
                   eventsPublisherFlow(endpoints, offset)
                 eventStreamSource
                   .map { tuple =>
@@ -205,9 +206,9 @@ private[lagom] class TopicProducerActor[Message](
   private def eventsPublisherFlow(endpoints: String, offsetDao: OffsetDao) =
     Flow.fromGraph(GraphDSL.create(kafkaFlowPublisher(endpoints)) { implicit builder => publishFlow =>
       import GraphDSL.Implicits._
-      val unzip = builder.add(Unzip[Message, Offset])
-      val zip   = builder.add(Zip[Any, Offset])
-      val offsetCommitter = builder.add(Flow.fromFunction { e: (Any, Offset) =>
+      val unzip = builder.add(Unzip[Message, AkkaOffset])
+      val zip   = builder.add(Zip[Any, AkkaOffset])
+      val offsetCommitter = builder.add(Flow.fromFunction { e: (Any, AkkaOffset) =>
         offsetDao.saveOffset(e._2).map(done => e._2)
       })
 
