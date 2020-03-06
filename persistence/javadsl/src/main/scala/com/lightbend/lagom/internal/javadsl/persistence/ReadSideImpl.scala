@@ -97,7 +97,7 @@ private[lagom] class ReadSideImpl @Inject() (
 
     val readSidePropsFactory = (coordinates: WorkerCoordinates) =>
       ReadSideActor.props(
-        coordinates.tagName,
+        coordinates,
         config,
         eventClass,
         globalPrepareTask,

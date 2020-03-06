@@ -4,32 +4,31 @@
 
 package com.lightbend.lagom.internal.scaladsl.persistence
 
+import akka.Done
+import akka.NotUsed
 import akka.actor.Actor
 import akka.actor.ActorLogging
 import akka.actor.Props
 import akka.actor.Status
-import akka.persistence.query.Offset
+import akka.persistence.query.{ Offset => AkkaOffset }
+import akka.stream.FlowShape
+import akka.stream.KillSwitch
+import akka.stream.KillSwitches
+import akka.stream.Materializer
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.GraphDSL
 import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.RestartSource
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
-import akka.stream.KillSwitch
-import akka.stream.KillSwitches
-import akka.stream.Materializer
-import akka.util.Timeout
-import akka.Done
-import akka.NotUsed
-import akka.stream.FlowShape
-import akka.stream.scaladsl.Flow
-import akka.stream.scaladsl.GraphDSL
 import akka.stream.scaladsl.Unzip
 import akka.stream.scaladsl.Zip
+import akka.util.Timeout
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.internal.spi.projection.ProjectionSpi
 import com.lightbend.lagom.scaladsl.persistence._
-import com.lightbend.lagom.spi.persistence.OffsetDao
 
 import scala.concurrent.Future
 
@@ -39,7 +38,7 @@ private[lagom] object ReadSideActor {
       config: ReadSideConfig,
       clazz: Class[Event],
       globalPrepareTask: ClusterStartupTask,
-      eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[EventStreamElement[Event], NotUsed],
+      eventStreamFactory: (AggregateEventTag[Event], AkkaOffset) => Source[EventStreamElement[Event], NotUsed],
       processor: () => ReadSideProcessor[Event]
   )(implicit mat: Materializer) =
     Props(
@@ -65,7 +64,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
     config: ReadSideConfig,
     clazz: Class[Event],
     globalPrepareTask: ClusterStartupTask,
-    eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[EventStreamElement[Event], NotUsed],
+    eventStreamFactory: (AggregateEventTag[Event], AkkaOffset) => Source[EventStreamElement[Event], NotUsed],
     processor: () => ReadSideProcessor[Event]
 )(implicit mat: Materializer)
     extends Actor
@@ -97,17 +96,17 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   def receive: Receive = {
     case Start =>
       val tag = new AggregateEventTag(clazz, tagName)
-      val backOffSource: Source[Offset, NotUsed] =
+      val backOffSource: Source[AkkaOffset, NotUsed] =
         RestartSource.withBackoff(
           config.minBackoff,
           config.maxBackoff,
           config.randomBackoffFactor
         ) { () =>
           val handler: ReadSideProcessor.ReadSideHandler[Event] = processor().buildHandler()
-          val futureOffset: Future[Offset]                      = handler.prepare(tag)
+          val futureAkkaOffset: Future[AkkaOffset]              = handler.prepare(tag)
 
           Source
-            .future(futureOffset)
+            .future(futureAkkaOffset)
             .initialTimeout(config.offsetTimeout)
             .flatMapConcat { offset =>
               val eventStreamSource: Source[EventStreamElement[Event], NotUsed] = eventStreamFactory(tag, offset)
@@ -143,13 +142,13 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   private def userFlowWrapper(
       workerCoordinates: WorkerCoordinates,
       userFlow: Flow[EventStreamElement[Event], Done, NotUsed]
-  ): Flow[(EventStreamElement[Event], Offset), Offset, NotUsed] =
+  ): Flow[(EventStreamElement[Event], AkkaOffset), AkkaOffset, NotUsed] =
     Flow.fromGraph(GraphDSL.create(userFlow) { implicit builder => wrappedFlow =>
       import GraphDSL.Implicits._
-      val unzip = builder.add(Unzip[EventStreamElement[Event], Offset])
-      val zip   = builder.add(Zip[Done, Offset])
-      val metricsReporter: FlowShape[(Done, Offset), Offset] = builder.add(Flow.fromFunction {
-        e: (Done, Offset) =>
+      val unzip = builder.add(Unzip[EventStreamElement[Event], AkkaOffset])
+      val zip   = builder.add(Zip[Done, AkkaOffset])
+      val metricsReporter: FlowShape[(Done, AkkaOffset), AkkaOffset] = builder.add(Flow.fromFunction {
+        e: (Done, AkkaOffset) =>
           // TODO: in ReadSide processor we can't report `afterUserFlow` and `completedProcessing` separately
           //  as we do in TopicProducerActor, unless we moved the invocation of `afterUserFlow` to each
           //  particular ReadSideImpl (C* and JDBC).
