@@ -18,22 +18,21 @@ To create your project, follow these steps:
 
 1. Enter the following command:
 
-   ```
-   sbt new lagom/lagom-scala.g8
-   ```
+```shell
+sbt new lagom/lagom-scala.g8
+```
 
 1. The template prompts for the following parameters. Press `Enter` to accept the defaults or specify your own values:
 
    * `name` - Becomes the name of the top-level project directory.
    * `organization` - Used as a package name.
    * `version` - A version number for your system.
-   * `lagom-version` - The version number of Lagom, such as 1.3.2. Be sure to use the [current stable release](https://www.lagomframework.com/documentation/).
 
 ## Browse the build
 
 The created project contains the following elements:
 
-```
+```shell
 hello                   → Project root
  └ hello-api            → hello api project
  └ hello-impl           → hello implementation project
@@ -54,14 +53,16 @@ hello                   → Project root
 
 Lagom includes a development environment that let you start all your services by simply typing `runAll` in the sbt console. To run Hello World, change directories to the top-level directory and start sbt, when the command prompt displays, invoke `runAll`. For example:
 
-```
+```shell
 cd hello
 sbt
 ... (booting up)
 > runAll
 ```
+
 It will take a bit of time to build the project and start the services. Among other messages, you should see the following:
-```
+
+```shell
 [info] Starting embedded Cassandra server
 ..........
 [info] Cassandra server running at 127.0.0.1:4000
@@ -76,7 +77,7 @@ It will take a bit of time to build the project and start the services. Among ot
 
 Verify that the services are indeed up and running by invoking one of its endpoints from any HTTP client, such as a browser:
 
-```
+```shell
 http://localhost:9000/api/hello/World
 ```
 
