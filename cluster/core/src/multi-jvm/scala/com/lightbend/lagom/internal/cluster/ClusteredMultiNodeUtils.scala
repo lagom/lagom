@@ -33,7 +33,8 @@ abstract class ClusteredMultiNodeUtils(val numOfNodes: Int)
     else ref.path.address
 
   protected override def atStartup(): Unit = {
-    roles.foreach(n => join(n, node1))
+    join(node1, node1)
+    roles.tail.foreach(n => join(n, node1))
     within(15.seconds) {
       awaitAssert(Cluster(system).state.members.size should be(numOfNodes))
       awaitAssert(
