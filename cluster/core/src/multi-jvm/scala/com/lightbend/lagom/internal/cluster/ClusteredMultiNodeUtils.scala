@@ -15,8 +15,8 @@ import com.lightbend.lagom.internal.cluster.ClusterMultiNodeConfig.node1
 
 import scala.concurrent.duration._
 
-abstract class ClusteredMultiNodeUtils(val numOfNodes: Int)
-    extends MultiNodeSpec(ClusterMultiNodeConfig, ClusterMultiNodeActorSystemFactory.createActorSystem())
+abstract class ClusteredMultiNodeUtils(val numOfNodes: Int, multiNodeConfig: ClusterMultiNodeConfig)
+    extends MultiNodeSpec(multiNodeConfig, ClusterMultiNodeActorSystemFactory.createActorSystem())
     with STMultiNodeSpec
     with ImplicitSender {
   override def initialParticipants: Int = roles.size
