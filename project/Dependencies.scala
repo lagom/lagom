@@ -59,7 +59,7 @@ object Dependencies {
     val PCollections  = "3.1.3"
 
     val ScalaJava8Compat = "0.9.1"
-    val ScalaXml         = "1.2.0"
+    val ScalaXml         = "1.3.0"
     val Slick            = "3.3.2"
     val JUnit            = "4.12"
     val JUnitInterface   = "0.11"
