@@ -135,7 +135,7 @@ The `EntityTypeKey` has as name to uniquely identify this model in the cluster. 
 
 @[shopping-cart-type-key](code/docs/home/persistence/ShoppingCartEntity.java)
 
-Finally, initialize the Entity on the `ClusterSharding` using the `typedKey` and the `create()` static method. Lagom provides an instance of the `clusterSharding` extension through dependency injection for your convenience. Initializing an Entity should be done only once and, in the case of Lagom, it is typically done in the constructor of the service implementation. You should inject the `ClusterSharding` on your service for that matter.
+Finally, initialize the Entity on the `ClusterSharding` using the `typeKey` and the `create()` static method. Lagom provides an instance of the `clusterSharding` extension through dependency injection for your convenience. Initializing an Entity should be done only once and, in the case of Lagom, it is typically done in the constructor of the service implementation. You should inject the `ClusterSharding` on your service for that matter.
 
 @[shopping-cart-init](code/docs/home/persistence/ShoppingCartServiceImpl.java)
 
@@ -189,4 +189,4 @@ Read more about the serialization setup and configuration in the [[serialization
 
 ## Testing
 
-The section in [Testing](https://doc.akka.io/docs/akka/2.6/typed/persistence-testing.html?language=Java) covers all the steps and features you need to write unit tests for your Aggregates. 
+The section in [Testing](https://doc.akka.io/docs/akka/2.6/typed/persistence-testing.html?language=Java) covers all the steps and features you need to write unit tests for your Aggregates.
