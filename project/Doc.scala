@@ -229,7 +229,7 @@ object Unidoc extends AutoPlugin {
   // down to two assuming https://github.com/typesafehub/genjavadoc/issues/66 is possible.
   override lazy val projectSettings = inConfig(Genjavadoc)(Defaults.configSettings) ++ Seq(
     ivyConfigurations += GenjavadocCompilerPlugin,
-    libraryDependencies += ("com.typesafe.genjavadoc" % "genjavadoc-plugin" % "0.15" % "genjavadocplugin->default(compile)")
+    libraryDependencies += ("com.typesafe.genjavadoc" % "genjavadoc-plugin" % "0.16" % "genjavadocplugin->default(compile)")
       .cross(CrossVersion.full),
     scalacOptions in Genjavadoc ++= Seq(
       "-P:genjavadoc:out=" + (target.value / "java"),
