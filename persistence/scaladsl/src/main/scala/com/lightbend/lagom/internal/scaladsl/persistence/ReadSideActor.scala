@@ -110,7 +110,21 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
             .initialTimeout(config.offsetTimeout)
             .flatMapConcat { offset =>
               val eventStreamSource: Source[EventStreamElement[Event], NotUsed] = eventStreamFactory(tag, offset)
-              val userFlow                                                      = handler.handle()
+              val userFlow: Flow[EventStreamElement[Event], Done, _] =
+                handler
+                  .handle()
+                  .watchTermination() { (_, right) =>
+                    right.recoverWith {
+                      case _ =>
+                        ProjectionSpi.failed(
+                          context.system,
+                          workerCoordinates.projectionName,
+                          workerCoordinates.tagName
+                        )
+                        right
+                    }
+                  }
+
               val wrappedFlow = Flow[EventStreamElement[Event]]
                 .map { ese =>
                   (ese, ese.offset)
@@ -141,8 +155,8 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
 
   private def userFlowWrapper(
       workerCoordinates: WorkerCoordinates,
-      userFlow: Flow[EventStreamElement[Event], Done, NotUsed]
-  ): Flow[(EventStreamElement[Event], AkkaOffset), AkkaOffset, NotUsed] =
+      userFlow: Flow[EventStreamElement[Event], Done, _]
+  ): Flow[(EventStreamElement[Event], AkkaOffset), AkkaOffset, _] =
     Flow.fromGraph(GraphDSL.create(userFlow) { implicit builder => wrappedFlow =>
       import GraphDSL.Implicits._
       val unzip = builder.add(Unzip[EventStreamElement[Event], AkkaOffset])

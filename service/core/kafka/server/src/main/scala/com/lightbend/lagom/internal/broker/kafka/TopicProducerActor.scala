@@ -37,6 +37,7 @@ import akka.stream.scaladsl.Zip
 import java.net.URI
 
 import akka.kafka.ProducerMessage
+import akka.persistence.query.Offset
 import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.scaladsl.RestartSource
 import com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.Start
@@ -123,14 +124,27 @@ private[lagom] class TopicProducerActor[Message](
                 log.debug("Kafka service {} located at URIs [{}] for producer of [{}]", serviceName, endpoints, topicId)
                 val eventStreamSource: Source[(Message, AkkaOffset), _] =
                   eventStreamFactory(tagName, offset.loadedOffset)
+                    .watchTermination() { (_, right: Future[Done]) =>
+                      right.recoverWith {
+                        case _ =>
+                          ProjectionSpi.failed(
+                            context.system,
+                            workerCoordinates.projectionName,
+                            workerCoordinates.tagName
+                          )
+                          right
+                      }
+                    }
+
                 val eventPublisherFlow: Flow[(Message, AkkaOffset), Future[AkkaOffset], Any] =
                   eventsPublisherFlow(endpoints, offset)
-                eventStreamSource
+
+                // Return a Source[Future[Offset],_] where each produced element is a completed Offset.
+                eventStreamSource // read from DB + userFlow
                   .map { tuple =>
-                    val o = ProjectionSpi.afterUserFlow(workerCoordinates.projectionName, tuple._2)
-                    (tuple._1, o)
+                    (tuple._1, ProjectionSpi.afterUserFlow(workerCoordinates.projectionName, tuple._2))
                   }
-                  .via(eventPublisherFlow)
+                  .via(eventPublisherFlow) //  Kafka write + offset commit
                   .map(o => ProjectionSpi.completedProcessing(o, context.dispatcher))
             }
         }
