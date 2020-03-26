@@ -119,6 +119,20 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
               val userFlow: javadsl.Flow[japi.Pair[Event, LagomOffset], Done, _] =
                 handler
                   .handle()
+                  .asScala
+                  .watchTermination() { (_, right) =>
+                    right.recoverWith {
+                      case _ =>
+                        ProjectionSpi.failed(
+                          context.system,
+                          workerCoordinates.projectionName,
+                          workerCoordinates.tagName
+                        )
+                        right
+                    }
+                  }
+                  .asJava
+
               val wrappedFlow = Flow[japi.Pair[Event, LagomOffset]]
                 .map { pair =>
                   (pair, OffsetAdapter.dslOffsetToOffset(pair.second))

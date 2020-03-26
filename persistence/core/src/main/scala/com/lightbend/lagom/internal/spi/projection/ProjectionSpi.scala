@@ -13,6 +13,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 object ProjectionSpi {
+
   @InternalStableApi
   private[lagom] def startProcessing(system: ActorSystem, tagName: String, envelope: EventEnvelope): EventEnvelope =
     envelope
@@ -23,4 +24,6 @@ object ProjectionSpi {
   @InternalStableApi
   private[lagom] def completedProcessing(offset: Future[Offset], exCtx: ExecutionContext): Future[Offset] = offset
 
+  @InternalStableApi
+  private[lagom] def failed(actorSystem: ActorSystem, projectionName: String, partitionName: String): Unit = ()
 }
