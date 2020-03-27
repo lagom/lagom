@@ -173,7 +173,7 @@ object Dependencies {
   private val pcollections          = "org.pcollections" % "pcollections" % Versions.PCollections
   private val jsr250                = "javax.annotation" % "jsr250-api" % "1.0"
   private val junit                 = "junit" % "junit" % Versions.JUnit
-  private val commonsLang           = "org.apache.commons" % "commons-lang3" % "3.9"
+  private val commonsLang           = "org.apache.commons" % "commons-lang3" % "3.10"
   private val javaxAnnotationApi    = "javax.annotation" % "javax.annotation-api" % "1.3.2"
   private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "3.2.6").excludeAll(excludeSlf4j: _*)
 
