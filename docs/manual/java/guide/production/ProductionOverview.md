@@ -37,7 +37,7 @@ The production environment determines the methods for packaging your services, m
 
     * When using dynamic deployments where processes don't run on static IPs, you can use  [[Akka Discovery Service Locator|AkkaDiscoveryIntegration]]   that can integrate with the service discovery features of Kubernetes or DC/OS, or any other environment supported by [Akka's Service Discovery](https://doc.akka.io/docs/akka/2.6/discovery/index.html).
 
-    * Otherwise, you can implement the interface yourself to integrate with a service registry of your choosing (such as [Consul](https://www.consul.io/), [ZooKeeper](https://zookeeper.apache.org/), or [etcd](https://coreos.com/etcd/)) or start with an open-source example implementation such as [`lagom-service-locator-consul`](https://github.com/jboner/lagom-service-locator-consul) or [`lagom-service-locator-zookeeper`](https://github.com/jboner/lagom-service-locator-zookeeper).
+    * Otherwise, you can implement the interface yourself to integrate with a service registry of your choosing (such as [Consul](https://www.consul.io/), [ZooKeeper](https://zookeeper.apache.org/), or [etcd](https://etcd.io/)) or start with an open-source example implementation such as [`lagom-service-locator-consul`](https://github.com/jboner/lagom-service-locator-consul) or [`lagom-service-locator-zookeeper`](https://github.com/jboner/lagom-service-locator-zookeeper).
 
 * Lagom services that require an [Akka Cluster](https://doc.akka.io/docs/akka/current/cluster-usage.html) (which includes any that use the Lagom [[Persistence|PersistentEntity]] or [[Publish-Subscribe|PubSub]] APIs) must have a strategy for forming a cluster or joining an existing cluster on startup.
 
