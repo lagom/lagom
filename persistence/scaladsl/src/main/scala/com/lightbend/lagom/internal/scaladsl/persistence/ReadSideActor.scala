@@ -167,8 +167,13 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
           // TODO: in ReadSide processor we can't report `afterUserFlow` and `completedProcessing` separately
           //  as we do in TopicProducerActor, unless we moved the invocation of `afterUserFlow` to each
           //  particular ReadSideImpl (C* and JDBC).
-          ProjectionSpi.afterUserFlow(workerCoordinates.projectionName, e._2)
-          ProjectionSpi.completedProcessing(Future(e._2), context.dispatcher)
+          ProjectionSpi.afterUserFlow(workerCoordinates.projectionName, workerCoordinates.tagName, e._2)
+          ProjectionSpi.completedProcessing(
+            workerCoordinates.projectionName,
+            workerCoordinates.tagName,
+            Future(e._2),
+            context.dispatcher
+          )
           e._2
       })
 

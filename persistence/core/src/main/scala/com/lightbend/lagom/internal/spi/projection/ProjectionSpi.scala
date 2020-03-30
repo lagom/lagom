@@ -19,10 +19,15 @@ object ProjectionSpi {
     envelope
 
   @InternalStableApi
-  private[lagom] def afterUserFlow(projectionName: String, offset: Offset): Offset = offset
+  private[lagom] def afterUserFlow(projectionName: String, tagName: String, offset: Offset): Offset = offset
 
   @InternalStableApi
-  private[lagom] def completedProcessing(offset: Future[Offset], exCtx: ExecutionContext): Future[Offset] = offset
+  private[lagom] def completedProcessing(
+      projectionName: String,
+      tagName: String,
+      offset: Future[Offset],
+      exCtx: ExecutionContext
+  ): Future[Offset] = offset
 
   @InternalStableApi
   private[lagom] def failed(

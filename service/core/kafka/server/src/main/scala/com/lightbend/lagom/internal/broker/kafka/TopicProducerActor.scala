@@ -143,10 +143,20 @@ private[lagom] class TopicProducerActor[Message](
                 // Return a Source[Future[Offset],_] where each produced element is a completed Offset.
                 eventStreamSource // read from DB + userFlow
                   .map { tuple =>
-                    (tuple._1, ProjectionSpi.afterUserFlow(workerCoordinates.projectionName, tuple._2))
+                    (
+                      tuple._1,
+                      ProjectionSpi.afterUserFlow(workerCoordinates.projectionName, workerCoordinates.tagName, tuple._2)
+                    )
                   }
                   .via(eventPublisherFlow) //  Kafka write + offset commit
-                  .map(o => ProjectionSpi.completedProcessing(o, context.dispatcher))
+                  .map(o =>
+                    ProjectionSpi.completedProcessing(
+                      workerCoordinates.projectionName,
+                      workerCoordinates.tagName,
+                      o,
+                      context.dispatcher
+                    )
+                  )
             }
         }
       }
