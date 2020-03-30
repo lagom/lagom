@@ -115,11 +115,12 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
                   .handle()
                   .watchTermination() { (_, right) =>
                     right.recoverWith {
-                      case _ =>
+                      case t: Throwable =>
                         ProjectionSpi.failed(
                           context.system,
                           workerCoordinates.projectionName,
-                          workerCoordinates.tagName
+                          workerCoordinates.tagName,
+                          t
                         )
                         right
                     }
