@@ -25,5 +25,11 @@ object ProjectionSpi {
   private[lagom] def completedProcessing(offset: Future[Offset], exCtx: ExecutionContext): Future[Offset] = offset
 
   @InternalStableApi
-  private[lagom] def failed(actorSystem: ActorSystem, projectionName: String, partitionName: String): Unit = ()
+  private[lagom] def failed(
+      actorSystem: ActorSystem,
+      projectionName: String,
+      partitionName: String,
+      exception: Throwable
+  ): Unit = ()
+
 }

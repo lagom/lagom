@@ -126,11 +126,12 @@ private[lagom] class TopicProducerActor[Message](
                   eventStreamFactory(tagName, offset.loadedOffset)
                     .watchTermination() { (_, right: Future[Done]) =>
                       right.recoverWith {
-                        case _ =>
+                        case t: Throwable =>
                           ProjectionSpi.failed(
                             context.system,
                             workerCoordinates.projectionName,
-                            workerCoordinates.tagName
+                            workerCoordinates.tagName,
+                            t
                           )
                           right
                       }
