@@ -171,18 +171,18 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
       val unzip = builder.add(Unzip[japi.Pair[Event, LagomOffset], AkkaOffset])
       val zip   = builder.add(Zip[Done, AkkaOffset])
       val metricsReporter: FlowShape[(Done, AkkaOffset), AkkaOffset] = builder.add(Flow.fromFunction {
-        e: (Done, AkkaOffset) =>
+        case (_, akkaOffset) =>
           // TODO: in ReadSide processor we can't report `afterUserFlow` and `completedProcessing` separately
           //  as we do in TopicProducerActor, unless we moved the invocation of `afterUserFlow` to each
           //  particular ReadSideHandler (C* and JDBC).
-          ProjectionSpi.afterUserFlow(workerCoordinates.projectionName, workerCoordinates.tagName, e._2)
+          ProjectionSpi.afterUserFlow(workerCoordinates.projectionName, workerCoordinates.tagName, akkaOffset)
           ProjectionSpi.completedProcessing(
             workerCoordinates.projectionName,
             workerCoordinates.tagName,
-            Future(e._2),
+            Future(akkaOffset),
             context.dispatcher
           )
-          e._2
+          akkaOffset
       })
 
       unzip.out0 ~> wrappedFlow ~> zip.in0
