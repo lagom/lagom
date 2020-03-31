@@ -142,11 +142,12 @@ private[lagom] class TopicProducerActor[Message](
 
                 // Return a Source[Future[Offset],_] where each produced element is a completed Offset.
                 eventStreamSource // read from DB + userFlow
-                  .map { tuple =>
-                    (
-                      tuple._1,
-                      ProjectionSpi.afterUserFlow(workerCoordinates.projectionName, workerCoordinates.tagName, tuple._2)
-                    )
+                  .map {
+                    case (message, offset) =>
+                      (
+                        message,
+                        ProjectionSpi.afterUserFlow(workerCoordinates.projectionName, workerCoordinates.tagName, offset)
+                      )
                   }
                   .via(eventPublisherFlow) //  Kafka write + offset commit
                   .map(o =>
@@ -233,8 +234,9 @@ private[lagom] class TopicProducerActor[Message](
       import GraphDSL.Implicits._
       val unzip = builder.add(Unzip[Message, AkkaOffset])
       val zip   = builder.add(Zip[Any, AkkaOffset])
-      val offsetCommitter = builder.add(Flow.fromFunction { e: (Any, AkkaOffset) =>
-        offsetDao.saveOffset(e._2).map(done => e._2)
+      val offsetCommitter = builder.add(Flow.fromFunction[(Any, AkkaOffset), Future[AkkaOffset]] {
+        case (_, akkaOffset) =>
+          offsetDao.saveOffset(akkaOffset).map(done => akkaOffset)
       })
 
       unzip.out0 ~> publishFlow ~> zip.in0
