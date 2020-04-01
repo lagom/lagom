@@ -20,7 +20,7 @@ The simplest way to build the Application cake and then wire your code inside it
 
 @[lagom-application](code/ServiceImplementation.scala)
 
-In this sample, the `HelloApplication` gets [[AhcWSComponents|ScalaComponents#Third-party-Components]] mixed in using the cake pattern and implements the `lazy val lagomService` using Macwire. The important method here is the `lagomServer` method. Lagom will use this to discover your service bindings and create a Play router for handling your service calls. You can see that we've bound one service descriptor, the `HelloService`, to our `HelloServiceImpl` implementation. The name of the Service Descriptor you bind will be used as the Service name, that is used in cross-service communication to identify the client making a request.
+In this sample, the `HelloApplication` gets [[AhcWSComponents|ScalaComponents#Third-party-Components]] mixed in using the cake pattern and implements the `lazy val lagomServer` using Macwire. The important method here is the `lagomServer` method. Lagom will use this to discover your service bindings and create a Play router for handling your service calls. You can see that we've bound one service descriptor, the `HelloService`, to our `HelloServiceImpl` implementation. The name of the Service Descriptor you bind will be used as the Service name, that is used in cross-service communication to identify the client making a request.
 
 We've used Macwire's `wire` macro to wire the dependencies into `HelloServiceImpl` - at the moment our service actually has no dependencies so we could just construct it manually ourselves, but it's not likely that a real service implementation would have no dependencies.
 
