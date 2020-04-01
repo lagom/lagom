@@ -179,8 +179,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
           ProjectionSpi.completedProcessing(
             workerCoordinates.projectionName,
             workerCoordinates.tagName,
-            Future(akkaOffset),
-            context.dispatcher
+            akkaOffset
           )
           akkaOffset
       })

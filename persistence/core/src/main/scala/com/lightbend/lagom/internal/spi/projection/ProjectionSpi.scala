@@ -25,9 +25,8 @@ object ProjectionSpi {
   private[lagom] def completedProcessing(
       projectionName: String,
       tagName: String,
-      offset: Future[Offset],
-      exCtx: ExecutionContext
-  ): Future[Offset] = offset
+      offset: Offset
+  ): Offset = offset
 
   @InternalStableApi
   private[lagom] def failed(

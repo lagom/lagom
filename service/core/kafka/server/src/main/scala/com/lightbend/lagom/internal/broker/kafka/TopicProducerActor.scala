@@ -150,14 +150,11 @@ private[lagom] class TopicProducerActor[Message](
                       )
                   }
                   .via(eventPublisherFlow) //  Kafka write + offset commit
-                  .map(o =>
-                    ProjectionSpi.completedProcessing(
-                      workerCoordinates.projectionName,
-                      workerCoordinates.tagName,
-                      o,
-                      context.dispatcher
-                    )
-                  )
+                  .map(_.map(offset => {
+                    ProjectionSpi
+                      .completedProcessing(workerCoordinates.projectionName, workerCoordinates.tagName, offset)
+                    offset
+                  }))
             }
         }
       }
