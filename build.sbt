@@ -282,6 +282,7 @@ val mimaSettings: Seq[Setting[_]] = {
     }.toSet,
     mimaBinaryIssueFilters ++= Seq(
       // Add mima filters here.
+      ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal.*"),
     )
   )
 }
