@@ -9,9 +9,9 @@ import java.net.URLEncoder
 import akka.actor.ActorSystem
 import akka.actor.Props
 import akka.stream.Materializer
-import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
+import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.scaladsl.persistence._
 
@@ -59,7 +59,7 @@ private[lagom] class ReadSideImpl(
 
     val readSidePropsFactory: WorkerCoordinates => Props = (coordinates) =>
       ReadSideActor.props(
-        coordinates.tagName,
+        coordinates,
         config,
         eventClass,
         globalPrepareTask,
