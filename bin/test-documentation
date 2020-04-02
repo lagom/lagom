@@ -6,13 +6,10 @@
 
 runSbt unidoc
 
-EXTRA_TASK=""
-
-# Check if it is a scheduled build
-if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then
-    # check external links as well
-    EXTRA_TASK="markdownValidateExternalLinks"
-fi
+declare -a EXTRA_TASKS
+# Previously, we checked external links in docs here for cron jobs. Now it's disabled for 1.6.x
+# because it seems to introduce more noise than value to check links for old documentation pages.
+# EXTRA_TASKS+=("markdownValidateExternalLinks")
 
 cd docs
 runSbt markdownValidateDocs test markdownEvaluateSbtFiles $EXTRA_TASK

@@ -173,7 +173,7 @@ private[lagom] object Producer {
       context.become(active)
     }
 
-    private def eventsPublisherFlow(endpoints: String, offsetDao: OffsetDao) =
+    private def eventsPublisherFlow(endpoints: String, offsetDao: OffsetDao) = {
       Flow.fromGraph(GraphDSL.create(kafkaFlowPublisher(endpoints)) { implicit builder => publishFlow =>
         import GraphDSL.Implicits._
         val unzip = builder.add(Unzip[Message, Offset])
@@ -187,6 +187,7 @@ private[lagom] object Producer {
         zip.out ~> offsetCommitter.in
         FlowShape(unzip.in, offsetCommitter.out)
       })
+    }
 
     private def kafkaFlowPublisher(endpoints: String): Flow[Message, _, _] = {
       def keyOf(message: Message): String = {
