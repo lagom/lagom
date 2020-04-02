@@ -25,18 +25,22 @@ import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.PatienceConfiguration.Interval
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.concurrent.ScalaFutures
-
 import scala.concurrent.duration._
+
 import org.scalatest.time.Seconds
 import org.scalatest.time.Span
-
 import scala.concurrent.Await
+
+import com.lightbend.lagom.internal.cluster.ClusterMultiNodeConfig
 
 class ProjectionRegistrySpecMultiJvmNode1 extends ProjectionRegistrySpec
 class ProjectionRegistrySpecMultiJvmNode2 extends ProjectionRegistrySpec
 class ProjectionRegistrySpecMultiJvmNode3 extends ProjectionRegistrySpec
 
-class ProjectionRegistrySpec extends ClusteredMultiNodeUtils(numOfNodes = 3) with Eventually with ScalaFutures {
+class ProjectionRegistrySpec
+    extends ClusteredMultiNodeUtils(numOfNodes = 3, ClusterMultiNodeConfig)
+    with Eventually
+    with ScalaFutures {
   implicit val exCtx             = system.dispatcher
   private val pc                 = PatienceConfig(timeout = Span(20, Seconds), interval = Span(2, Seconds))
   private val projectionRegistry = new ProjectionRegistry(system)

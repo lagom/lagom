@@ -133,7 +133,7 @@ In the companion object of `ShoppingCart`, define the `EntityTypeKey` and factor
 
 > **Note**: [Akka style guide](https://doc.akka.io/docs/akka/2.6/typed/persistence-style.html?language=Scala) recommends having an `apply` factory method in the companion object.
 
-Finally, initialize the Entity on the `ClusterSharding` using the `typedKey` and the `behavior`. Lagom provides an instance of the `clusterSharding` extension through dependency injection for your convenience. Initializing an entity should be done only once and, in the case of Lagom, it is typically done in the `LagomApplication`:
+Finally, initialize the Entity on the `ClusterSharding` using the `typeKey` and the `behavior`. Lagom provides an instance of the `clusterSharding` extension through dependency injection for your convenience. Initializing an entity should be done only once and, in the case of Lagom, it is typically done in the `LagomApplication`:
 
 @[shopping-cart-loader](code/docs/home/scaladsl/persistence/ShoppingCartLoader.scala)
 
@@ -195,4 +195,4 @@ Read more about the serialization setup and configuration in the [[serialization
 
 ## Testing
 
-The section in [Testing](https://doc.akka.io/docs/akka/2.6/typed/persistence-testing.html?language=Scala) covers all the steps and features you need to write unit tests for your Aggregates. 
+The section in [Testing](https://doc.akka.io/docs/akka/2.6/typed/persistence-testing.html?language=Scala) covers all the steps and features you need to write unit tests for your Aggregates.

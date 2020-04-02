@@ -4,6 +4,7 @@
 package lagom.build
 
 import lagom.build.Dependencies.akkaActorTyped
+import lagom.build.Dependencies.junit
 import sbt.Keys._
 import sbt._
 
@@ -27,50 +28,51 @@ object Dependencies {
     val Twirl            = "1.5.0" // sync with docs/project/plugins.sbt
     val PlayFileWatch    = "1.1.12"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.3") // sync with docs/build.sbt
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.4") // sync with docs/build.sbt
     val AkkaHttp     = "10.1.11"
 
-    val AkkaPersistenceCassandra = "0.102"
-    val AkkaPersistenceJdbc      = "3.5.2"
-    val AkkaManagement           = "1.0.5"
+    val AkkaPersistenceCassandra = "0.103"
+    val AkkaPersistenceJdbc      = "3.5.3"
+    val AkkaManagement           = "1.0.6"
 
     val Disruptor = "3.4.2"
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
     val ScalaTest            = "3.0.8"
-    val Jackson              = "2.10.2"
+    val Jackson              = "2.10.3"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
-    val JacksonDatabind      = "2.10.2"
+    val JacksonDatabind      = Jackson
     val Guava                = "28.2-jre"
-    val Maven                = "3.6.2"
+    val Maven                = "3.6.3"
     val MavenWagon           = "3.3.3"
     val MavenResolver        = "1.4.1"
-    val Netty                = "4.1.45.Final"
+    val Netty                = "4.1.48.Final"
     val NettyReactiveStreams = "2.0.4"
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
-    val AlpakkaKafka = "2.0.1"
+    val AlpakkaKafka = "2.0.2"
     // Keep this version consistent with Alpakka Kafka Connector
-    val Kafka = "2.4.0"
+    val Kafka = "2.4.1"
 
     val Curator       = "2.12.0"
     val Immutables    = "2.8.3"
     val HibernateCore = "5.4.12.Final"
-    val PCollections  = "3.1.2"
+    val PCollections  = "3.1.3"
 
     val ScalaJava8Compat = "0.9.1"
-    val ScalaXml         = "1.2.0"
+    val ScalaXml         = "1.3.0"
     val Slick            = "3.3.2"
     val JUnit            = "4.12"
     val JUnitInterface   = "0.11"
 
     val Slf4j   = "1.7.30"
     val Logback = "1.2.3"
-    val Log4j   = "2.13.0"
+    val Log4j   = "2.13.1"
 
     val jetty = "9.4.20.v20190813"
 
-    val Selenium = "3.141.59"
+    val Selenium  = "3.141.59"
+    val ByteBuddy = "1.10.8"
   }
 
   // Some setup before we start creating ModuleID vals
@@ -94,7 +96,7 @@ object Dependencies {
   private val scalaCollectionCompat  = "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.4"
   private val scalaXml               = "org.scala-lang.modules" %% "scala-xml" % Versions.ScalaXml
   private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
-  private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % "1.10.8"
+  private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % Versions.ByteBuddy
   private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
   private val typesafeConfig         = "com.typesafe" % "config" % "1.4.0"
   private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.2"
@@ -173,12 +175,12 @@ object Dependencies {
   private val pcollections          = "org.pcollections" % "pcollections" % Versions.PCollections
   private val jsr250                = "javax.annotation" % "jsr250-api" % "1.0"
   private val junit                 = "junit" % "junit" % Versions.JUnit
-  private val commonsLang           = "org.apache.commons" % "commons-lang3" % "3.9"
+  private val commonsLang           = "org.apache.commons" % "commons-lang3" % "3.10"
   private val javaxAnnotationApi    = "javax.annotation" % "javax.annotation-api" % "1.3.2"
   private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "3.2.6").excludeAll(excludeSlf4j: _*)
 
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
-  private val okio    = "com.squareup.okio"    % "okio"   % "2.4.3"
+  private val okio    = "com.squareup.okio"    % "okio"   % "2.5.0"
   private val kotlinDeps = Seq(
     "org.jetbrains.kotlin" % "kotlin-stdlib"        % "1.3.50",
     "org.jetbrains.kotlin" % "kotlin-stdlib-common" % "1.3.50",
@@ -199,6 +201,8 @@ object Dependencies {
   private val jnrPosix     = "com.github.jnr" % "jnr-posix"     % "3.0.54"
   private val jnra64asm    = "com.github.jnr" % "jnr-a64asm"    % "1.0.0"
   private val jnrx86asm    = "com.github.jnr" % "jnr-x86asm"    % "1.0.2"
+
+  private val mockitoCore = "org.mockito" % "mockito-core" % "3.2.4"
 
   private val jacksonFamily =
     libraryFamily("com.fasterxml.jackson.core", Versions.JacksonCore)(
@@ -342,7 +346,7 @@ object Dependencies {
       "net.jodah"           % "typetools"               % "0.5.0",
       "org.lz4"             % "lz4-java"                % "1.5.0",
       "com.github.luben"    % "zstd-jni"                % "1.3.7-1",
-      "org.agrona"          % "agrona"                  % "1.1.0",
+      "org.agrona"          % "agrona"                  % "1.3.0",
       commonsLang,
       kafkaClients,
       "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.18",
@@ -373,6 +377,9 @@ object Dependencies {
       "javax.activation"           % "javax.activation-api"   % "1.2.0",
       "jakarta.activation"         % "jakarta.activation-api" % "1.2.1",
       "com.thoughtworks.paranamer" % "paranamer"              % "2.8",
+      mockitoCore,
+      "org.objenesis" % "objenesis"        % "2.6",
+      "net.bytebuddy" % "byte-buddy-agent" % Versions.ByteBuddy
     ) ++ jacksonFamily ++ crossLibraryFamily("com.typesafe.akka", Versions.Akka)(
       "akka-actor",
       "akka-actor-typed",
@@ -571,6 +578,8 @@ object Dependencies {
     scalaXml,
     akkaStream,
     akkaActor,
+    akkaActorTyped,
+    akkaJackson,
     akkaSlf4j,
     akkaProtobuf_v3,
     guava,
@@ -597,7 +606,10 @@ object Dependencies {
   )
 
   val `client-javadsl` = libraryDependencies ++= Seq(
-    scalaTest % Test
+    akkaTestkit % Test,
+    scalaTest   % Test,
+    junit       % Test,
+    mockitoCore % Test
   )
 
   val `client-scaladsl` = libraryDependencies ++= Seq(
@@ -616,6 +628,7 @@ object Dependencies {
     scalaCollectionCompat,
     // update to enforce using snapshots in nightly jobs
     akkaActorTyped % Test,
+    akkaJackson
   )
 
   val server = libraryDependencies ++= Nil
@@ -649,7 +662,10 @@ object Dependencies {
     scalaXml,
     jffi,
     jnrConstants,
-    jnrPosix
+    jnrPosix,
+    // update to enforce using snapshots in nightly jobs
+    akkaActorTyped,
+    akkaJackson
   ) ++ ow2asmDeps // to match allowed versions
 
   val `testkit-javadsl` = libraryDependencies ++= Seq(
@@ -716,7 +732,9 @@ object Dependencies {
 
   val `lagom-akka-discovery-service-locator-scaladsl` = libraryDependencies ++= Seq(
     scalaTest          % Test,
-    playAkkaHttpServer % Test
+    playAkkaHttpServer % Test,
+    // update to enforce using snapshots in nightly jobs
+    akkaStream
   )
 
   val `akka-management-core` = libraryDependencies ++= Seq(
