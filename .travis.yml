@@ -21,6 +21,9 @@ env:
     - TRAVIS_JDK=11
 
 before_install:
+  - find $HOME/.cache/coursier
+  - find $HOME/.ivy2/cache
+  - find $HOME/.sbt
   # See https://github.com/travis-ci/travis-ci/issues/4629#issuecomment-239493916
   - rm ~/.m2/settings.xml
   - curl -Ls https://git.io/jabba | bash && . ~/.jabba/jabba.sh
