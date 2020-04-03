@@ -289,6 +289,8 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomImportCompat"),
       ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.run.RunSupport$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.run.RunSupportCompat"),
+      // Add mima filters here.
+      ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal.*"),
     )
   )
 }
