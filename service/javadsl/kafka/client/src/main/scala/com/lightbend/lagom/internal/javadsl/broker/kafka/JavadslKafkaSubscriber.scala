@@ -19,17 +19,17 @@ import akka.stream.Materializer
 import akka.stream.javadsl.Flow
 import akka.stream.javadsl.Source
 import com.lightbend.lagom.internal.api.UriUtils
+import com.lightbend.lagom.internal.api.broker.MessageMetadataKey
 import com.lightbend.lagom.internal.broker.kafka.ConsumerConfig
 import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
+import com.lightbend.lagom.internal.broker.kafka.KafkaMetadataKeys
 import com.lightbend.lagom.internal.broker.kafka.KafkaSubscriberActor
 import com.lightbend.lagom.internal.broker.kafka.NoKafkaBrokersException
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.javadsl.api.ServiceInfo
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.api.broker.Message
-import com.lightbend.lagom.javadsl.api.broker.MetadataKey
 import com.lightbend.lagom.javadsl.api.broker.Subscriber
-import com.lightbend.lagom.javadsl.broker.kafka.KafkaMetadataKeys
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.LoggerFactory
@@ -93,13 +93,13 @@ private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](
   private def wrapPayload(record: ConsumerRecord[String, Payload]): Message[SubscriberPayload] = {
     Message
       .create(transform(record))
-      .add(MetadataKey.messageKey[String], record.key())
-      .add(KafkaMetadataKeys.OFFSET, record.offset().asInstanceOf[java.lang.Long])
-      .add(KafkaMetadataKeys.PARTITION, record.partition().asInstanceOf[java.lang.Integer])
-      .add(KafkaMetadataKeys.TOPIC, record.topic())
-      .add(KafkaMetadataKeys.HEADERS, record.headers())
-      .add(KafkaMetadataKeys.TIMESTAMP, record.timestamp().asInstanceOf[java.lang.Long])
-      .add(KafkaMetadataKeys.TIMESTAMP_TYPE, record.timestampType())
+      .add(MessageMetadataKey.messageKey[String], record.key())
+      .add(KafkaMetadataKeys.Offset, record.offset())
+      .add(KafkaMetadataKeys.Partition, record.partition())
+      .add(KafkaMetadataKeys.Topic, record.topic())
+      .add(KafkaMetadataKeys.Headers, record.headers())
+      .add(KafkaMetadataKeys.Timestamp, record.timestamp())
+      .add(KafkaMetadataKeys.TimestampType, record.timestampType())
   }
 
   private def consumerSettings = {

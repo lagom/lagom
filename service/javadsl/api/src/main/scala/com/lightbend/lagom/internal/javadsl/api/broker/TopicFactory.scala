@@ -20,7 +20,7 @@ import scala.util.control.NonFatal
  * and should not leak into the user api.
  */
 trait TopicFactory {
-  def create[Message](topicCall: TopicCall[Message]): Topic[Message]
+  def create[Payload](topicCall: TopicCall[Payload]): Topic[Payload]
 }
 
 /**

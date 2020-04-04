@@ -8,7 +8,6 @@ import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import java.util.Arrays;

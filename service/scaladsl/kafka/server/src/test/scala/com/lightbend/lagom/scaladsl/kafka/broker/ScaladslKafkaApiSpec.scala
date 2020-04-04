@@ -23,6 +23,7 @@ import akka.Done
 import akka.NotUsed
 import com.lightbend.lagom.dev.MiniLogger
 import com.lightbend.lagom.dev.Servers.KafkaServer
+import com.lightbend.lagom.internal.broker.kafka.KafkaMetadataKeys
 import com.lightbend.lagom.scaladsl.api.broker.Message
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.broker.kafka.KafkaProperties
@@ -30,7 +31,6 @@ import com.lightbend.lagom.scaladsl.api.broker.kafka.PartitionKeyStrategy
 import com.lightbend.lagom.scaladsl.api.Descriptor
 import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
-import com.lightbend.lagom.scaladsl.broker.kafka.KafkaMetadataKeys
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.client.ConfigurationServiceLocatorComponents
 import com.lightbend.lagom.scaladsl.kafka.broker.ScaladslKafkaApiSpec._
@@ -39,6 +39,7 @@ import com.lightbend.lagom.scaladsl.playjson.EmptyJsonSerializerRegistry
 import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.spi.persistence.InMemoryOffsetStore
 import com.typesafe.config.ConfigFactory
+import org.apache.kafka.common.header.internals.RecordHeaders
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest._
 import org.slf4j.LoggerFactory
@@ -64,7 +65,8 @@ class ScaladslKafkaApiSpec
     def info(message: => String): Unit  = log.info(message)
   }
 
-  implicit override val patienceConfig = PatienceConfig(30.seconds, 150.millis)
+  implicit override val patienceConfig: PatienceConfig =
+    PatienceConfig(30.seconds, 150.millis)
 
   private final val kafkaPort          = 9092
   private final val kafkaZooKeeperPort = 2181
@@ -76,7 +78,8 @@ class ScaladslKafkaApiSpec
       with ConfigurationServiceLocatorComponents {
       override lazy val offsetStore            = new InMemoryOffsetStore
       override lazy val jsonSerializerRegistry = EmptyJsonSerializerRegistry
-      override lazy val lagomServer            = serverFor[TestService](new TestServiceImpl)
+      override lazy val lagomServer =
+        serverFor[TestService](new TestServiceImpl)
 
       override def additionalConfiguration = {
         import scala.collection.JavaConverters._
@@ -93,14 +96,15 @@ class ScaladslKafkaApiSpec
         )
       }
 
-      lazy val testService = serviceClient.implement[TestService]
+      lazy val testService: TestService = serviceClient.implement[TestService]
     }
   }
 
   import application.materializer
 
-  private val kafkaServerClasspath: Seq[File] = TestBuildInfo.fullClasspath.toIndexedSeq
-  private var kafkaServer: Option[Closeable]  = None
+  private val kafkaServerClasspath: Seq[File] =
+    TestBuildInfo.fullClasspath.toIndexedSeq
+  private var kafkaServer: Option[Closeable] = None
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -118,7 +122,8 @@ class ScaladslKafkaApiSpec
       )
     )
 
-    Cluster(application.actorSystem).join(Cluster(application.actorSystem).selfAddress)
+    Cluster(application.actorSystem)
+      .join(Cluster(application.actorSystem).selfAddress)
   }
 
   before {
@@ -223,7 +228,9 @@ class ScaladslKafkaApiSpec
 
     "keep track of the read-side offset when publishing events" in {
       def reloadOffset() =
-        application.offsetStore.prepare("topicProducer-" + testService.test3Topic.topicId.name, "singleton").futureValue
+        application.offsetStore
+          .prepare("topicProducer-" + testService.test3Topic.topicId.name, "singleton")
+          .futureValue
 
       // No message was consumed from this topic, hence we expect the last stored offset to be NoOffset
       val offsetDao     = reloadOffset()
@@ -321,31 +328,53 @@ class ScaladslKafkaApiSpec
     }
 
     "attach metadata to the message" in {
-      test7EventJournal.append("A1")
-      test7EventJournal.append("A2")
-      test7EventJournal.append("A3")
+
+      def messageWithHeader(number: Int) =
+        Message(s"A$number") +
+          (KafkaMetadataKeys.Headers -> new RecordHeaders()
+            .add(s"key-$number", s"value-$number".getBytes))
+
+      test7EventJournal.append(messageWithHeader(1))
+      test7EventJournal.append(messageWithHeader(2))
+      test7EventJournal.append(messageWithHeader(3))
 
       val messages = Await.result(
-        testService.test7Topic.subscribe.withMetadata.atMostOnceSource.take(3).runWith(Sink.seq),
+        testService.test7Topic.subscribe.withMetadata.atMostOnceSource
+          .take(3)
+          .runWith(Sink.seq),
         10.seconds
       )
 
       messages.size shouldBe 3
-      def runAssertions(msg: Message[String]): Unit = {
+      def runAssertions(msg: Message[String], number: Int): Unit = {
+        msg.payload shouldBe s"A$number"
+        val header = msg
+          .getMetadata(KafkaMetadataKeys.Headers)
+          .map(_.lastHeader(s"key-$number").value())
+          .get
+        (header should contain).theSameElementsInOrderAs(s"value-$number".getBytes)
+
         msg.messageKeyAsString shouldBe "A"
-        msg.get(KafkaMetadataKeys.Topic).value shouldBe "test7"
-        msg.get(KafkaMetadataKeys.Headers) should not be None
-        msg.get(KafkaMetadataKeys.Timestamp) should not be None
-        msg.get(KafkaMetadataKeys.TimestampType) should not be None
-        msg.get(KafkaMetadataKeys.Partition).value shouldBe messages.head.get(KafkaMetadataKeys.Partition).value
+        msg.getMetadata(KafkaMetadataKeys.Topic).value shouldBe "test7"
+        msg.getMetadata(KafkaMetadataKeys.Timestamp) should not be None
+        msg.getMetadata(KafkaMetadataKeys.TimestampType) should not be None
+        msg
+          .getMetadata(KafkaMetadataKeys.Partition)
+          .value shouldBe messages.head
+          .getMetadata(KafkaMetadataKeys.Partition)
+          .value
       }
-      messages.foreach(runAssertions)
-      messages.head.payload shouldBe "A1"
-      val offset = messages.head.get(KafkaMetadataKeys.Offset).value
-      messages(1).payload shouldBe "A2"
-      messages(1).get(KafkaMetadataKeys.Offset).value shouldBe (offset + 1)
-      messages(2).payload shouldBe "A3"
-      messages(2).get(KafkaMetadataKeys.Offset).value shouldBe (offset + 2)
+
+      val offset = messages.head.getMetadata(KafkaMetadataKeys.Offset).value
+      val first  = messages.head
+      runAssertions(first, 1)
+      val second = messages(1)
+      runAssertions(second, 2)
+      second.getMetadata(KafkaMetadataKeys.Offset).value shouldBe (offset + 1)
+      val third = messages(2)
+      runAssertions(third, 3)
+      third.getMetadata(KafkaMetadataKeys.Offset).value shouldBe (offset + 2)
+
     }
   }
 }
@@ -357,7 +386,7 @@ object ScaladslKafkaApiSpec {
   private val test4EventJournal = new EventJournal[String]
   private val test5EventJournal = new EventJournal[String]
   private val test6EventJournal = new EventJournal[String]
-  private val test7EventJournal = new EventJournal[String]
+  private val test7EventJournal = new EventJournal[Message[String]]
 
   // Allows tests to insert logic into the producer stream
   @volatile var messageTransformer: String => String = identity
@@ -394,13 +423,20 @@ object ScaladslKafkaApiSpec {
   trait TestEvent extends AggregateEvent[TestEvent]
 
   class TestServiceImpl extends TestService {
-    override def test1Topic: Topic[String] = createTopicProducer(test1EventJournal)
-    override def test2Topic: Topic[String] = createTopicProducer(test2EventJournal)
-    override def test3Topic: Topic[String] = createTopicProducer(test3EventJournal)
-    override def test4Topic: Topic[String] = createTopicProducer(test4EventJournal)
-    override def test5Topic: Topic[String] = createTopicProducer(test5EventJournal)
-    override def test6Topic: Topic[String] = createTopicProducer(test6EventJournal)
-    override def test7Topic: Topic[String] = createTopicProducer(test7EventJournal)
+    override def test1Topic: Topic[String] =
+      createTopicProducer(test1EventJournal)
+    override def test2Topic: Topic[String] =
+      createTopicProducer(test2EventJournal)
+    override def test3Topic: Topic[String] =
+      createTopicProducer(test3EventJournal)
+    override def test4Topic: Topic[String] =
+      createTopicProducer(test4EventJournal)
+    override def test5Topic: Topic[String] =
+      createTopicProducer(test5EventJournal)
+    override def test6Topic: Topic[String] =
+      createTopicProducer(test6EventJournal)
+    override def test7Topic: Topic[String] =
+      createTopicProducerWithMetadata(test7EventJournal)
 
     private def createTopicProducer(eventJournal: EventJournal[String]): Topic[String] = {
       TopicProducer.singleStreamWithOffset { fromOffset =>
@@ -409,6 +445,19 @@ object ScaladslKafkaApiSpec {
           .map(element => (messageTransformer(element._1), element._2))
       }
     }
+
+    private def createTopicProducerWithMetadata(eventJournal: EventJournal[Message[String]]): Topic[String] = {
+      TopicProducer.singleStreamWithOffsetAndMetadata { fromOffset =>
+        eventJournal
+          .eventStream(fromOffset)
+          .map(element => {
+            val message            = element._1
+            val transformedPayload = messageTransformer(message.payload)
+            (message.withPayload(transformedPayload), element._2)
+          })
+      }
+    }
+
   }
 
   class EventJournal[Event] {
@@ -421,7 +470,8 @@ object ScaladslKafkaApiSpec {
       val minOffset: Long = fromOffset match {
         case Sequence(value) => value
         case NoOffset        => -1
-        case _               => throw new IllegalArgumentException(s"Sequence offset required, but got $fromOffset")
+        case _ =>
+          throw new IllegalArgumentException(s"Sequence offset required, but got $fromOffset")
       }
 
       Source

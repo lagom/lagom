@@ -9,6 +9,7 @@ import akka.persistence.query.Offset
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import com.lightbend.internal.broker.TaggedOffsetTopicProducer
+import com.lightbend.lagom.internal.api.broker.MessageWithMetadata
 import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
 import com.lightbend.lagom.internal.broker.kafka.Producer
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
@@ -56,14 +57,15 @@ class ScaladslRegisterTopicProducers(
               case tagged: TaggedOffsetTopicProducer[Any, _] =>
                 val tags = tagged.tags
 
-                val eventStreamFactory: (String, Offset) => Source[(Any, Offset), _] = { (tag, offset) =>
-                  tags.find(_.tag == tag) match {
-                    case Some(aggregateTag) => tagged.readSideStream(aggregateTag, offset)
-                    case None               => throw new RuntimeException("Unknown tag: " + tag)
-                  }
+                val eventStreamFactory: (String, Offset) => Source[(MessageWithMetadata[Any], Offset), _] = {
+                  (tag, offset) =>
+                    tags.find(_.tag == tag) match {
+                      case Some(aggregateTag) => tagged.readSideStream(aggregateTag, offset)
+                      case None               => throw new RuntimeException("Unknown tag: " + tag)
+                    }
                 }
 
-                val partitionKeyStrategy: Option[Any => String] = {
+                val partitionKeyStrategy: Option[MessageWithMetadata[Any] => String] = {
                   topicCall.properties.get(KafkaProperties.partitionKeyStrategy).map { pks => message =>
                     pks.computePartitionKey(message)
                   }

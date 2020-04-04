@@ -410,18 +410,18 @@ public final class Descriptor {
   }
 
   /** Describes a topic call. */
-  public static final class TopicCall<Message> {
+  public static final class TopicCall<Payload> {
 
     private final TopicId topicId;
     private final TopicHolder topicHolder;
-    private final MessageSerializer<Message, ByteString> messageSerializer;
-    private final Properties<Message> properties;
+    private final MessageSerializer<Payload, ByteString> messageSerializer;
+    private final Properties<Payload> properties;
 
     TopicCall(
         TopicId topicId,
         TopicHolder topicHolder,
-        MessageSerializer<Message, ByteString> messageSerializer,
-        Properties<Message> properties) {
+        MessageSerializer<Payload, ByteString> messageSerializer,
+        Properties<Payload> properties) {
       this.topicId = topicId;
       this.topicHolder = topicHolder;
       this.messageSerializer = messageSerializer;
@@ -451,7 +451,7 @@ public final class Descriptor {
      *
      * @return The message serializer.
      */
-    public MessageSerializer<Message, ByteString> messageSerializer() {
+    public MessageSerializer<Payload, ByteString> messageSerializer() {
       return messageSerializer;
     }
 
@@ -460,7 +460,7 @@ public final class Descriptor {
      *
      * @return The properties.
      */
-    public Properties<Message> properties() {
+    public Properties<Payload> properties() {
       return properties;
     }
 
@@ -470,7 +470,7 @@ public final class Descriptor {
      * @param topicHolder The topic holder.
      * @return A copy of this topic call.
      */
-    public TopicCall<Message> withTopicHolder(TopicHolder topicHolder) {
+    public TopicCall<Payload> withTopicHolder(TopicHolder topicHolder) {
       return new TopicCall<>(topicId, topicHolder, messageSerializer, properties);
     }
 
@@ -480,8 +480,8 @@ public final class Descriptor {
      * @param messageSerializer A
      * @return A copy of this topic call.
      */
-    public TopicCall<Message> withMessageSerializer(
-        MessageSerializer<Message, ByteString> messageSerializer) {
+    public TopicCall<Payload> withMessageSerializer(
+        MessageSerializer<Payload, ByteString> messageSerializer) {
       return new TopicCall<>(topicId, topicHolder, messageSerializer, properties);
     }
 
@@ -492,7 +492,7 @@ public final class Descriptor {
      * @param value The value for the property.
      * @return A copy of this topic call.
      */
-    public <T> TopicCall<Message> withProperty(Properties.Property<Message, T> property, T value) {
+    public <T> TopicCall<Payload> withProperty(Properties.Property<Payload, T> property, T value) {
       return new TopicCall<>(
           topicId, topicHolder, messageSerializer, properties.withProperty(property, value));
     }

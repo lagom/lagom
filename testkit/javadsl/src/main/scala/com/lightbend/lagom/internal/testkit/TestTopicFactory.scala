@@ -5,10 +5,12 @@
 package com.lightbend.lagom.internal.testkit
 
 import java.util.concurrent.CompletionStage
-import javax.inject.Inject
 
+import javax.inject.Inject
 import akka.Done
+import akka.NotUsed
 import akka.stream.Materializer
+import akka.stream.scaladsl
 import akka.stream.javadsl.Flow
 import akka.stream.javadsl.Sink
 import akka.stream.javadsl.Source
@@ -36,13 +38,13 @@ class TestTopicFactory @Inject() (resolvedServices: ResolvedServices, materializ
     }
   }.toMap
 
-  override def create[Message](topicCall: TopicCall[Message]): Topic[Message] = {
+  override def create[Payload](topicCall: TopicCall[Payload]): Topic[Payload] = {
     topics.get(topicCall.topicId()) match {
       case Some(service) =>
         topicCall.topicHolder() match {
           case method: MethodTopicHolder =>
             method.create(service) match {
-              case topicProducer: TaggedOffsetTopicProducer[Message, _] =>
+              case topicProducer: TaggedOffsetTopicProducer[Payload, _] =>
                 new TestTopic(topicCall, topicProducer)
               case other =>
                 throw new IllegalArgumentException(s"Testkit does not know how to handle topic $other")
@@ -56,42 +58,53 @@ class TestTopicFactory @Inject() (resolvedServices: ResolvedServices, materializ
       topicCall: TopicCall[Payload],
       topicProducer: TaggedOffsetTopicProducer[Payload, Event]
   ) extends Topic[Payload] {
-    override def topicId = topicCall.topicId
 
-    override def subscribe(): Subscriber[Payload] = new TestSubscriber[Payload](identity)
+    // Create a source for all the tags, and merge them all together.
+    // Then, send the flow through a serializer and deserializer, to simulate sending it over the wire.
+    private val messageSource: scaladsl.Source[Message[Payload], NotUsed] = {
+      val serializer   = topicCall.messageSerializer().serializerForRequest()
+      val deserializer = topicCall.messageSerializer().deserializer(serializer.protocol())
+      Source
+        .from(topicProducer.tags)
+        .asScala
+        .flatMapMerge(topicProducer.tags.size(), { tag =>
+          topicProducer.readSideStream.apply(tag, Offset.NONE).asScala.map(_.first)
+        })
+        .map { message =>
+          val bytes = serializer.serialize(message.payload)
+          message.withPayload(bytes)
+        }
+        .map { messageWithBytes =>
+          val payload = deserializer.deserialize(messageWithBytes.payload)
+          messageWithBytes.withPayload(payload)
+        }
+    }
 
-    private class TestSubscriber[SubscriberPayload](transform: Payload => SubscriberPayload)
-        extends Subscriber[SubscriberPayload] {
-      override def withGroupId(groupId: String): Subscriber[SubscriberPayload] = this
+    override def topicId: TopicId = topicCall.topicId
 
-      override def withMetadata(): Subscriber[Message[SubscriberPayload]] =
-        new TestSubscriber(msg => Message.create(transform(msg)))
+    override def subscribe(): Subscriber[Payload] = new TestSubscriber
 
-      override def atMostOnceSource(): Source[SubscriberPayload, _] = {
-        val serializer   = topicCall.messageSerializer().serializerForRequest()
-        val deserializer = topicCall.messageSerializer().deserializer(serializer.protocol())
+    private class TestSubscriber extends Subscriber[Payload] {
+      override def withGroupId(groupId: String): Subscriber[Payload] = this
 
-        // Create a source for all the tags, and merge them all together.
-        // Then, send the flow through a serializer and deserializer, to simulate sending it over the wire.
-        Source
-          .from(topicProducer.tags)
-          .asScala
-          .flatMapMerge(topicProducer.tags.size(), { tag =>
-            topicProducer.readSideStream.apply(tag, Offset.NONE).asScala.map(_.first)
-          })
-          .map { message =>
-            serializer.serialize(message)
-          }
-          .map { bytes =>
-            deserializer.deserialize(bytes)
-          }
-          .map(transform)
-          .asJava
-      }
+      override def withMetadata(): Subscriber[Message[Payload]] = new TestSubscriberWithMetadata
 
-      override def atLeastOnce(flow: Flow[SubscriberPayload, Done, _]): CompletionStage[Done] = {
+      override def atMostOnceSource(): Source[Payload, _] = messageSource.map(_.payload()).asJava
+
+      override def atLeastOnce(flow: Flow[Payload, Done, _]): CompletionStage[Done] =
         atMostOnceSource().via(flow).runWith(Sink.ignore[Done], materializer)
-      }
+    }
+
+    private class TestSubscriberWithMetadata extends Subscriber[Message[Payload]] {
+      override def withGroupId(groupId: String): Subscriber[Message[Payload]] = this
+
+      override def withMetadata(): Subscriber[Message[Message[Payload]]] =
+        throw new UnsupportedOperationException("Subscriber already has metadata")
+
+      override def atMostOnceSource(): Source[Message[Payload], _] = messageSource.asJava
+
+      override def atLeastOnce(flow: Flow[Message[Payload], Done, _]): CompletionStage[Done] =
+        atMostOnceSource().via(flow).runWith(Sink.ignore[Done], materializer)
     }
   }
 }

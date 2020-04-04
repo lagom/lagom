@@ -17,6 +17,7 @@ import javax.inject.Inject
 import akka.actor.ActorSystem
 import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.scaladsl.Source
+import com.lightbend.lagom.internal.api.broker.MessageWithMetadata
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
 import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
 import com.lightbend.lagom.internal.broker.kafka.Producer
@@ -29,7 +30,6 @@ import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.javadsl.api.broker.kafka.KafkaProperties
 import com.lightbend.lagom.spi.persistence.OffsetStore
 
-import scala.collection.immutable
 import scala.compat.java8.FutureConverters._
 
 class JavadslRegisterTopicProducers @Inject() (
@@ -41,7 +41,8 @@ class JavadslRegisterTopicProducers @Inject() (
     serviceLocator: ServiceLocator,
     projectionRegistryImpl: ProjectionRegistry
 )(implicit ec: ExecutionContext, mat: Materializer) {
-  private val log         = LoggerFactory.getLogger(classOf[JavadslRegisterTopicProducers])
+  private val log =
+    LoggerFactory.getLogger(classOf[JavadslRegisterTopicProducers])
   private val kafkaConfig = KafkaConfig(actorSystem.settings.config)
 
   // Goes through the services' descriptors and publishes the streams registered in
@@ -62,24 +63,28 @@ class JavadslRegisterTopicProducers @Inject() (
               case tagged: TaggedOffsetTopicProducer[AnyRef, _] =>
                 val tags = tagged.tags.asScala.toIndexedSeq
 
-                val eventStreamFactory: (String, AkkaOffset) => Source[(AnyRef, AkkaOffset), _] = { (tag, offset) =>
-                  tags.find(_.tag == tag) match {
-                    case Some(aggregateTag) =>
-                      tagged
-                        .readSideStream(
-                          aggregateTag,
-                          OffsetAdapter.offsetToDslOffset(offset)
-                        )
-                        .asScala
-                        .map { pair =>
-                          pair.first -> OffsetAdapter.dslOffsetToOffset(pair.second)
-                        }
-                    case None => throw new RuntimeException("Unknown tag: " + tag)
-                  }
+                val eventStreamFactory: (String, AkkaOffset) => Source[(MessageWithMetadata[AnyRef], AkkaOffset), _] = {
+                  (tag, offset) =>
+                    tags.find(_.tag == tag) match {
+                      case Some(aggregateTag) =>
+                        tagged
+                          .readSideStream(
+                            aggregateTag,
+                            OffsetAdapter.offsetToDslOffset(offset)
+                          )
+                          .asScala
+                          .map { pair =>
+                            pair.first -> OffsetAdapter.dslOffsetToOffset(pair.second)
+                          }
+                      case None =>
+                        throw new RuntimeException("Unknown tag: " + tag)
+                    }
                 }
 
-                val partitionKeyStrategy: Option[AnyRef => String] = {
-                  val javaPKS = topicCall.properties().getValueOf(KafkaProperties.partitionKeyStrategy())
+                val partitionKeyStrategy: Option[MessageWithMetadata[AnyRef] => String] = {
+                  val javaPKS = topicCall
+                    .properties()
+                    .getValueOf(KafkaProperties.partitionKeyStrategy())
                   if (javaPKS != null) {
                     Some(message => javaPKS.computePartitionKey(message))
                   } else None
@@ -98,7 +103,8 @@ class JavadslRegisterTopicProducers @Inject() (
                   projectionRegistryImpl
                 )
               case null =>
-                val message = s"Expected an instance of ${classOf[MethodTopicHolder]}, but 'null' was passed"
+                val message =
+                  s"Expected an instance of ${classOf[MethodTopicHolder]}, but 'null' was passed"
                 log.error(message, new NullPointerException(message))
 
               case other =>

@@ -17,17 +17,17 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Source
 import com.lightbend.lagom.internal.api.UriUtils
+import com.lightbend.lagom.internal.api.broker.MessageMetadataKey
 import com.lightbend.lagom.internal.broker.kafka.ConsumerConfig
 import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
+import com.lightbend.lagom.internal.broker.kafka.KafkaMetadataKeys
 import com.lightbend.lagom.internal.broker.kafka.KafkaSubscriberActor
 import com.lightbend.lagom.internal.broker.kafka.NoKafkaBrokersException
 import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.scaladsl.api.ServiceInfo
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.broker.Message
-import com.lightbend.lagom.scaladsl.api.broker.MetadataKey
 import com.lightbend.lagom.scaladsl.api.broker.Subscriber
-import com.lightbend.lagom.scaladsl.broker.kafka.KafkaMetadataKeys
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.LoggerFactory
@@ -49,7 +49,8 @@ private[lagom] class ScaladslKafkaSubscriber[Payload, SubscriberPayload](
     transform: ConsumerRecord[String, Payload] => SubscriberPayload
 )(implicit mat: Materializer, ec: ExecutionContext)
     extends Subscriber[SubscriberPayload] {
-  private val log = LoggerFactory.getLogger(classOf[ScaladslKafkaSubscriber[_, _]])
+  private val log =
+    LoggerFactory.getLogger(classOf[ScaladslKafkaSubscriber[_, _]])
 
   import ScaladslKafkaSubscriber._
 
@@ -73,28 +74,30 @@ private[lagom] class ScaladslKafkaSubscriber[Payload, SubscriberPayload](
     }
 
     if (newGroupId == groupId) this
-    else new ScaladslKafkaSubscriber(kafkaConfig, topicCall, newGroupId, info, system, serviceLocator, transform)
+    else
+      new ScaladslKafkaSubscriber(kafkaConfig, topicCall, newGroupId, info, system, serviceLocator, transform)
   }
 
-  override def withMetadata = new ScaladslKafkaSubscriber[Payload, Message[SubscriberPayload]](
-    kafkaConfig,
-    topicCall,
-    groupId,
-    info,
-    system,
-    serviceLocator,
-    wrapPayload
-  )
+  override def withMetadata =
+    new ScaladslKafkaSubscriber[Payload, Message[SubscriberPayload]](
+      kafkaConfig,
+      topicCall,
+      groupId,
+      info,
+      system,
+      serviceLocator,
+      wrapPayload
+    )
 
   private def wrapPayload(record: ConsumerRecord[String, Payload]): Message[SubscriberPayload] = {
     Message(transform(record)) +
-      (MetadataKey.MessageKey[String]  -> record.key()) +
-      (KafkaMetadataKeys.Offset        -> record.offset()) +
-      (KafkaMetadataKeys.Partition     -> record.partition()) +
-      (KafkaMetadataKeys.Topic         -> record.topic()) +
-      (KafkaMetadataKeys.Headers       -> record.headers()) +
-      (KafkaMetadataKeys.Timestamp     -> record.timestamp()) +
-      (KafkaMetadataKeys.TimestampType -> record.timestampType())
+      (MessageMetadataKey.messageKey[String] -> record.key()) +
+      (KafkaMetadataKeys.Offset              -> record.offset()) +
+      (KafkaMetadataKeys.Partition           -> record.partition()) +
+      (KafkaMetadataKeys.Topic               -> record.topic()) +
+      (KafkaMetadataKeys.Headers             -> record.headers()) +
+      (KafkaMetadataKeys.Timestamp           -> record.timestamp()) +
+      (KafkaMetadataKeys.TimestampType       -> record.timestampType())
   }
 
   private def consumerSettings = {
@@ -193,7 +196,8 @@ private[lagom] object ScaladslKafkaSubscriber {
     private val InvalidGroupIdChars =
       Set('/', '\\', ',', '\u0000', ':', '"', '\'', ';', '*', '?', ' ', '\t', '\r', '\n', '=')
     // based on https://github.com/apache/kafka/blob/623ab1e7c6497c000bc9c9978637f20542a3191c/core/src/test/scala/unit/kafka/common/ConfigTest.scala#L60
-    private def isInvalidGroupId(groupId: String): Boolean = groupId.exists(InvalidGroupIdChars.apply)
+    private def isInvalidGroupId(groupId: String): Boolean =
+      groupId.exists(InvalidGroupIdChars.apply)
 
     def default(info: ServiceInfo): GroupId = GroupId(info.serviceName)
   }

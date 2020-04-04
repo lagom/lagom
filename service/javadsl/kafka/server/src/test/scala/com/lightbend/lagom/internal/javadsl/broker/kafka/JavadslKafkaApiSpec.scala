@@ -25,6 +25,8 @@ import akka.NotUsed
 import com.google.inject.AbstractModule
 import com.lightbend.lagom.dev.MiniLogger
 import com.lightbend.lagom.dev.Servers.KafkaServer
+import com.lightbend.lagom.internal.api.broker.MessageWithMetadata
+import com.lightbend.lagom.internal.broker.kafka.KafkaMetadataKeys
 import com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaApiSpec._
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter.dslOffsetToOffset
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter.offsetToDslOffset
@@ -37,7 +39,6 @@ import com.lightbend.lagom.javadsl.api.Descriptor
 import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.broker.TopicProducer
-import com.lightbend.lagom.javadsl.broker.kafka.KafkaMetadataKeys
 import com.lightbend.lagom.javadsl.client.ConfigurationServiceLocator
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
@@ -47,6 +48,7 @@ import com.lightbend.lagom.javadsl.persistence.{ Offset => JOffset }
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import com.lightbend.lagom.spi.persistence.InMemoryOffsetStore
 import com.lightbend.lagom.spi.persistence.OffsetStore
+import org.apache.kafka.common.header.internals.RecordHeaders
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 import org.slf4j.LoggerFactory
@@ -102,8 +104,9 @@ class JavadslKafkaApiSpec
       .build()
   }
 
-  private val kafkaServerClasspath: Seq[File] = TestBuildInfo.fullClasspath.toIndexedSeq
-  private var kafkaServer: Option[Closeable]  = None
+  private val kafkaServerClasspath: Seq[File] =
+    TestBuildInfo.fullClasspath.toIndexedSeq
+  private var kafkaServer: Option[Closeable] = None
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -140,7 +143,8 @@ class JavadslKafkaApiSpec
   import application.materializer
 
   "The Kafka message broker api" should {
-    val testService = application.injector.instanceOf(classOf[JavadslKafkaApiSpec.TestService])
+    val testService =
+      application.injector.instanceOf(classOf[JavadslKafkaApiSpec.TestService])
 
     "eagerly publish event stream registered in the service topic implementation" in {
       val messageReceived = Promise[String]()
@@ -233,9 +237,12 @@ class JavadslKafkaApiSpec
     }
 
     "keep track of the read-side offset when publishing events" in {
-      implicit val ec = application.injector.instanceOf(classOf[ExecutionContext])
+      implicit val ec =
+        application.injector.instanceOf(classOf[ExecutionContext])
       def reloadOffset() =
-        offsetStore.prepare("topicProducer-" + testService.test3Topic().topicId().value(), "singleton").futureValue
+        offsetStore
+          .prepare("topicProducer-" + testService.test3Topic().topicId().value(), "singleton")
+          .futureValue
 
       // No message was consumed from this topic, hence we expect the last stored offset to be NoOffset
       val offsetDao     = reloadOffset()
@@ -348,34 +355,56 @@ class JavadslKafkaApiSpec
     }
 
     "attach metadata to the message" in {
-      test7EventJournal.append("A1")
-      test7EventJournal.append("A2")
-      test7EventJournal.append("A3")
+
+      def messageWithHeader(number: Int) =
+        Message
+          .create(s"A$number")
+          .add(KafkaMetadataKeys.Headers, new RecordHeaders().add(s"key-$number", s"value-$number".getBytes))
+
+      test7EventJournal.append(messageWithHeader(1))
+      test7EventJournal.append(messageWithHeader(2))
+      test7EventJournal.append(messageWithHeader(3))
 
       val messages = Await.result(
-        testService.test7Topic().subscribe.withMetadata.atMostOnceSource.asScala.take(3).runWith(Sink.seq),
+        testService
+          .test7Topic()
+          .subscribe
+          .withMetadata
+          .atMostOnceSource
+          .asScala
+          .take(3)
+          .runWith(Sink.seq),
         10.seconds
       )
 
       messages.size shouldBe 3
 
-      def runAssertions(msg: Message[String]): Unit = {
+      def runAssertions(msg: Message[String], number: Int): Unit = {
+        msg.payload() shouldBe s"A$number"
         msg.messageKeyAsString shouldBe "A"
-        msg.get(KafkaMetadataKeys.TOPIC).asScala.value shouldBe "test7"
-        msg.get(KafkaMetadataKeys.HEADERS).asScala should not be None
-        msg.get(KafkaMetadataKeys.TIMESTAMP).asScala should not be None
-        msg.get(KafkaMetadataKeys.TIMESTAMP_TYPE).asScala should not be None
-        msg.get(KafkaMetadataKeys.PARTITION).asScala.value shouldBe
-          messages.head.get(KafkaMetadataKeys.PARTITION).asScala.value
+        val header = msg
+          .getMetadata(KafkaMetadataKeys.Headers)
+          .map(_.lastHeader(s"key-$number").value())
+          .get
+        (header should contain).theSameElementsInOrderAs(s"value-$number".getBytes)
+
+        msg.get(KafkaMetadataKeys.Topic).asScala.value shouldBe "test7"
+        msg.get(KafkaMetadataKeys.Headers).asScala should not be None
+        msg.get(KafkaMetadataKeys.Timestamp).asScala should not be None
+        msg.get(KafkaMetadataKeys.TimestampType).asScala should not be None
+        msg.get(KafkaMetadataKeys.Partition).asScala.value shouldBe
+          messages.head.get(KafkaMetadataKeys.Partition).asScala.value
       }
 
-      messages.foreach(runAssertions)
-      messages.head.getPayload shouldBe "A1"
-      val offset = messages.head.get(KafkaMetadataKeys.OFFSET).asScala.value
-      messages(1).getPayload shouldBe "A2"
-      messages(1).get(KafkaMetadataKeys.OFFSET).asScala.value shouldBe (offset + 1)
-      messages(2).getPayload shouldBe "A3"
-      messages(2).get(KafkaMetadataKeys.OFFSET).asScala.value shouldBe (offset + 2)
+      val first = messages.head
+      runAssertions(first, 1)
+      val offset = first.get(KafkaMetadataKeys.Offset).asScala.value
+      val second = messages(1)
+      runAssertions(second, 2)
+      second.get(KafkaMetadataKeys.Offset).asScala.value shouldBe (offset + 1)
+      val third = messages(2)
+      runAssertions(third, 3)
+      third.get(KafkaMetadataKeys.Offset).asScala.value shouldBe (offset + 2)
     }
   }
 }
@@ -398,7 +427,7 @@ object JavadslKafkaApiSpec {
   private val test4EventJournal = new EventJournal[String]
   private val test5EventJournal = new EventJournal[String]
   private val test6EventJournal = new EventJournal[String]
-  private val test7EventJournal = new EventJournal[String]
+  private val test7EventJournal = new EventJournal[Message[String]]
 
   // Allows tests to insert logic into the producer stream
   @volatile var messageTransformer: String => String = identity
@@ -422,28 +451,51 @@ object JavadslKafkaApiSpec {
           topic("test5", test5Topic _),
           topic("test6", test6Topic _),
           topic("test7", test7Topic _)
-            .withProperty(KafkaProperties.partitionKeyStrategy(), new PartitionKeyStrategy[String] {
-              override def computePartitionKey(message: String) = message.take(1)
-            })
+            .withProperty(
+              KafkaProperties.partitionKeyStrategy(),
+              new PartitionKeyStrategy[String] {
+                override def computePartitionKey(message: MessageWithMetadata[String]): String =
+                  message.payload.take(1)
+              }
+            )
         )
   }
 
   trait TestEvent extends AggregateEvent[TestEvent]
 
   class TestServiceImpl extends TestService {
-    override def test1Topic(): Topic[String] = createTopicProducer(test1EventJournal)
-    override def test2Topic(): Topic[String] = createTopicProducer(test2EventJournal)
-    override def test3Topic(): Topic[String] = createTopicProducer(test3EventJournal)
-    override def test4Topic(): Topic[String] = createTopicProducer(test4EventJournal)
-    override def test5Topic(): Topic[String] = createTopicProducer(test5EventJournal)
-    override def test6Topic(): Topic[String] = createTopicProducer(test6EventJournal)
-    override def test7Topic(): Topic[String] = createTopicProducer(test7EventJournal)
+    override def test1Topic(): Topic[String] =
+      createTopicProducer(test1EventJournal)
+    override def test2Topic(): Topic[String] =
+      createTopicProducer(test2EventJournal)
+    override def test3Topic(): Topic[String] =
+      createTopicProducer(test3EventJournal)
+    override def test4Topic(): Topic[String] =
+      createTopicProducer(test4EventJournal)
+    override def test5Topic(): Topic[String] =
+      createTopicProducer(test5EventJournal)
+    override def test6Topic(): Topic[String] =
+      createTopicProducer(test6EventJournal)
+    override def test7Topic(): Topic[String] =
+      createTopicProducerWithMetadata(test7EventJournal)
 
     private def createTopicProducer(eventJournal: EventJournal[String]): Topic[String] =
       TopicProducer.singleStreamWithOffset[String]({ fromOffset: JOffset =>
         eventJournal
           .eventStream(dslOffsetToOffset(fromOffset))
           .map(element => new JPair(messageTransformer(element._1), offsetToDslOffset(element._2)))
+          .asJava
+      }.asJava)
+
+    private def createTopicProducerWithMetadata(eventJournal: EventJournal[Message[String]]): Topic[String] =
+      TopicProducer.singleStreamWithOffsetAndMetadata[String]({ fromOffset: JOffset =>
+        eventJournal
+          .eventStream(dslOffsetToOffset(fromOffset))
+          .map(element => {
+            val message            = element._1
+            val transformedPayload = messageTransformer(message.payload)
+            new JPair(message.withPayload(transformedPayload), offsetToDslOffset(element._2))
+          })
           .asJava
       }.asJava)
   }
@@ -464,7 +516,8 @@ object JavadslKafkaApiSpec {
       val minOffset: Long = fromOffset match {
         case Sequence(value) => value
         case NoOffset        => -1
-        case _               => throw new IllegalArgumentException(s"Sequence offset required, but got $fromOffset")
+        case _ =>
+          throw new IllegalArgumentException(s"Sequence offset required, but got $fromOffset")
       }
 
       Source

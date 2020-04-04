@@ -4,8 +4,11 @@
 
 package com.lightbend.lagom.javadsl.api.broker;
 
+import com.lightbend.lagom.internal.api.broker.MessageMetadataKey;
+import com.lightbend.lagom.internal.api.broker.MessageWithMetadata;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
+import scala.Option;
 
 import java.util.Optional;
 
@@ -14,12 +17,12 @@ import java.util.Optional;
  *
  * <p>This provides access to both the message payload, and the metadata.
  */
-public final class Message<Payload> {
+public final class Message<Payload> implements MessageWithMetadata<Payload> {
 
   private final Payload payload;
-  private final PMap<MetadataKey<?>, Object> metadataMap;
+  private final PMap<MessageMetadataKey<?>, Object> metadataMap;
 
-  private Message(Payload payload, PMap<MetadataKey<?>, Object> metadataMap) {
+  private Message(Payload payload, PMap<MessageMetadataKey<?>, Object> metadataMap) {
     this.payload = payload;
     this.metadataMap = metadataMap;
   }
@@ -29,6 +32,17 @@ public final class Message<Payload> {
     return payload;
   }
 
+  @Override
+  public Payload payload() {
+    return getPayload();
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public <Metadata> Option<Metadata> getMetadata(MessageMetadataKey<Metadata> key) {
+    return Option.apply((Metadata) metadataMap.get(key));
+  }
+
   /**
    * Get the metadata for the given metadata key.
    *
@@ -36,7 +50,7 @@ public final class Message<Payload> {
    * @return The metadata, if found for that key.
    */
   @SuppressWarnings("unchecked")
-  public <Metadata> Optional<Metadata> get(MetadataKey<Metadata> key) {
+  public <Metadata> Optional<Metadata> get(MessageMetadataKey<Metadata> key) {
     return Optional.ofNullable((Metadata) metadataMap.get(key));
   }
 
@@ -47,7 +61,7 @@ public final class Message<Payload> {
    * @param metadata The metadata to add.
    * @return A copy of this message with the key and value added.
    */
-  public <Metadata> Message<Payload> add(MetadataKey<Metadata> key, Metadata metadata) {
+  public <Metadata> Message<Payload> add(MessageMetadataKey<Metadata> key, Metadata metadata) {
     return new Message<>(payload, metadataMap.plus(key, metadata));
   }
 
@@ -57,6 +71,7 @@ public final class Message<Payload> {
    * @param payload The payload.
    * @return A copy of this message with the given payload.
    */
+  @Override
   public <P2> Message<P2> withPayload(P2 payload) {
     return new Message<>(payload, metadataMap);
   }
@@ -71,7 +86,7 @@ public final class Message<Payload> {
    * @return A string representation of the message key.
    */
   public String messageKeyAsString() {
-    return get(MetadataKey.messageKey()).map(Object::toString).orElse("");
+    return get(MessageMetadataKey.messageKey()).map(Object::toString).orElse("");
   }
 
   /** Create a message with the given payload. */

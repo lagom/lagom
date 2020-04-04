@@ -28,6 +28,8 @@ Lagom's [`TopicProducer`](api/index.html?com/lightbend/lagom/javadsl/broker/Topi
 
 Lagom will, in the case of the `singleStreamWithOffset` method, ensure that your topic producer only runs on one node of your cluster, or with the `taggedStreamWithOffset` method will distribute the tags evenly across the cluster to distribute the publishing load.
 
+There are also `andMetadata` methods on [`TopicProducer`](api/index.html?com/lightbend/lagom/javadsl/broker/TopicProducer$.html) that provide possibility to create [`Message`](api/index.html?com/lightbend/lagom/javadsl/api/Message$.html) with metadata.
+
 Here's an example of publishing a single, non sharded event stream:
 
 @[implement-topic](code/docs/javadsl/mb/HelloServiceImpl.java)

@@ -37,27 +37,28 @@ import akka.stream.scaladsl.Zip
 import java.net.URI
 
 import akka.kafka.ProducerMessage
-import akka.persistence.query.Offset
 import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.scaladsl.RestartSource
+import com.lightbend.lagom.internal.api.broker.MessageWithMetadata
 import com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.Start
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.internal.spi.projection.ProjectionSpi
+import org.apache.kafka.common.header.Header
 
 private[lagom] object TopicProducerActor {
-  def props[Message](
+  def props[Payload](
       workerCoordinates: WorkerCoordinates,
       kafkaConfig: KafkaConfig,
       producerConfig: ProducerConfig,
       locateService: String => Future[Seq[URI]],
       topicId: String,
-      eventStreamFactory: (String, AkkaOffset) => Source[(Message, AkkaOffset), _],
-      partitionKeyStrategy: Option[Message => String],
-      serializer: Serializer[Message],
+      eventStreamFactory: (String, AkkaOffset) => Source[(MessageWithMetadata[Payload], AkkaOffset), _],
+      partitionKeyStrategy: Option[MessageWithMetadata[Payload] => String],
+      serializer: Serializer[Payload],
       offsetStore: OffsetStore
-  )(implicit mat: Materializer, ec: ExecutionContext) =
+  )(implicit mat: Materializer, ec: ExecutionContext): Props =
     Props(
-      new TopicProducerActor[Message](
+      new TopicProducerActor[Payload](
         workerCoordinates,
         kafkaConfig,
         producerConfig,
@@ -78,21 +79,21 @@ private[lagom] object TopicProducerActor {
  * of a Persistent Entity which this actor will poll, then feed on a user Flow and finally publish into
  * Kafka. See also ReadSideActor.
  */
-private[lagom] class TopicProducerActor[Message](
+private[lagom] class TopicProducerActor[Payload](
     workerCoordinates: WorkerCoordinates,
     kafkaConfig: KafkaConfig,
     producerConfig: ProducerConfig,
     locateService: String => Future[Seq[URI]],
     topicId: String,
-    eventStreamFactory: (String, AkkaOffset) => Source[(Message, AkkaOffset), _],
-    partitionKeyStrategy: Option[Message => String],
-    serializer: Serializer[Message],
+    eventStreamFactory: (String, AkkaOffset) => Source[(MessageWithMetadata[Payload], AkkaOffset), _],
+    partitionKeyStrategy: Option[MessageWithMetadata[Payload] => String],
+    serializer: Serializer[Payload],
     offsetStore: OffsetStore
 )(implicit mat: Materializer, ec: ExecutionContext)
     extends Actor
     with ActorLogging {
 
-  val tagName = workerCoordinates.tagName
+  val tagName: String = workerCoordinates.tagName
 
   /** Switch used to terminate the on-going stream when this actor is stopped.*/
   private var shutdown: Option[KillSwitch] = None
@@ -107,22 +108,24 @@ private[lagom] class TopicProducerActor[Message](
   }
 
   def receive: Receive = {
-    case Start => {
+    case Start =>
       val backoffSource: Source[Future[AkkaOffset], NotUsed] = {
         RestartSource.withBackoff(
           producerConfig.minBackoff,
           producerConfig.maxBackoff,
           producerConfig.randomBackoffFactor
         ) { () =>
-          val brokersAndOffset: Future[(String, OffsetDao)] = eventualBrokersAndOffset(tagName)
+          val brokersAndOffset: Future[(String, OffsetDao)] =
+            eventualBrokersAndOffset(tagName)
           Source
             .future(brokersAndOffset)
             .initialTimeout(producerConfig.offsetTimeout)
             .flatMapConcat {
               case (endpoints, offset) =>
-                val serviceName = kafkaConfig.serviceName.map(name => s"[$name]").getOrElse("")
+                val serviceName =
+                  kafkaConfig.serviceName.map(name => s"[$name]").getOrElse("")
                 log.debug("Kafka service {} located at URIs [{}] for producer of [{}]", serviceName, endpoints, topicId)
-                val eventStreamSource: Source[(Message, AkkaOffset), _] =
+                val eventStreamSource: Source[(MessageWithMetadata[Payload], AkkaOffset), _] =
                   eventStreamFactory(tagName, offset.loadedOffset)
                     .watchTermination() { (_, right: Future[Done]) =>
                       right.recoverWith {
@@ -137,7 +140,7 @@ private[lagom] class TopicProducerActor[Message](
                       }
                     }
 
-                val eventPublisherFlow: Flow[(Message, AkkaOffset), Future[AkkaOffset], Any] =
+                val eventPublisherFlow: Flow[(MessageWithMetadata[Payload], AkkaOffset), Future[AkkaOffset], Any] =
                   eventsPublisherFlow(endpoints, offset)
 
                 // Return a Source[Future[Offset],_] where each produced element is a completed Offset.
@@ -166,7 +169,6 @@ private[lagom] class TopicProducerActor[Message](
 
       shutdown = Some(killSwitch)
       streamDone.pipeTo(self)
-    }
 
     case Done =>
       // This `Done` is materialization of the `Sink.ignore` above.
@@ -188,7 +190,8 @@ private[lagom] class TopicProducerActor[Message](
     // TODO: review the OffsetStore API. I think `prepare()` does more than we need here. Ideally, prepare (create
     // schema and prepared statements) would be used when this actor starts and here we would only query for
     // the latest offset.
-    val daoFuture: Future[OffsetDao] = offsetStore.prepare(s"topicProducer-$topicId", tagName)
+    val daoFuture: Future[OffsetDao] =
+      offsetStore.prepare(s"topicProducer-$topicId", tagName)
 
     // null or empty strings become None, otherwise Some[String]
     def strToOpt(str: String) =
@@ -213,7 +216,8 @@ private[lagom] class TopicProducerActor[Message](
       case None =>
         kafkaConfig.serviceName match {
           case Some(serviceName) =>
-            val msg = s"Unable to locate Kafka service named [$serviceName]. Retrying..."
+            val msg =
+              s"Unable to locate Kafka service named [$serviceName]. Retrying..."
             log.error(msg)
             throw new IllegalArgumentException(msg)
           case None =>
@@ -229,12 +233,13 @@ private[lagom] class TopicProducerActor[Message](
   private def eventsPublisherFlow(endpoints: String, offsetDao: OffsetDao) =
     Flow.fromGraph(GraphDSL.create(kafkaFlowPublisher(endpoints)) { implicit builder => publishFlow =>
       import GraphDSL.Implicits._
-      val unzip = builder.add(Unzip[Message, AkkaOffset])
+      val unzip = builder.add(Unzip[MessageWithMetadata[Payload], AkkaOffset])
       val zip   = builder.add(Zip[Any, AkkaOffset])
-      val offsetCommitter = builder.add(Flow.fromFunction[(Any, AkkaOffset), Future[AkkaOffset]] {
-        case (_, akkaOffset) =>
-          offsetDao.saveOffset(akkaOffset).map(done => akkaOffset)
-      })
+      val offsetCommitter =
+        builder.add(Flow.fromFunction[(Any, AkkaOffset), Future[AkkaOffset]] {
+          case (_, akkaOffset) =>
+            offsetDao.saveOffset(akkaOffset).map(done => akkaOffset)
+        })
 
       unzip.out0 ~> publishFlow ~> zip.in0
       unzip.out1 ~> zip.in1
@@ -242,24 +247,35 @@ private[lagom] class TopicProducerActor[Message](
       FlowShape(unzip.in, offsetCommitter.out)
     })
 
-  private def kafkaFlowPublisher(endpoints: String): Flow[Message, _, _] = {
-    def keyOf(message: Message): String = {
+  private def kafkaFlowPublisher(endpoints: String): Flow[MessageWithMetadata[Payload], _, _] = {
+    def keyOf(message: MessageWithMetadata[Payload]): String = {
       partitionKeyStrategy match {
         case Some(strategy) => strategy(message)
         case None           => null
       }
     }
 
-    Flow[Message]
+    Flow[MessageWithMetadata[Payload]]
       .map { message =>
-        ProducerMessage.Message(new ProducerRecord[String, Message](topicId, keyOf(message), message), NotUsed)
+        {
+          val headers = message.getMetadata(KafkaMetadataKeys.Headers)
+          val record = new ProducerRecord[String, Payload](
+            topicId,
+            null,
+            null,
+            keyOf(message),
+            message.payload,
+            headers.orNull
+          )
+          ProducerMessage.Message(record, NotUsed)
+        }
       }
       .via {
         ReactiveProducer.flexiFlow(producerSettings(endpoints))
       }
   }
 
-  private def producerSettings(endpoints: String): ProducerSettings[String, Message] = {
+  private def producerSettings(endpoints: String): ProducerSettings[String, Payload] = {
     val keySerializer = new StringSerializer
 
     val baseSettings =

@@ -2,9 +2,9 @@
  * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.scaladsl.broker.kafka
+package com.lightbend.lagom.internal.broker.kafka
 
-import com.lightbend.lagom.scaladsl.api.broker.MetadataKey
+import com.lightbend.lagom.internal.api.broker.MessageMetadataKey
 import org.apache.kafka.common.header.Headers
 import org.apache.kafka.common.record.TimestampType
 
@@ -16,30 +16,31 @@ object KafkaMetadataKeys {
   /**
    * The partition the message is published to.
    */
-  val Partition: MetadataKey[Int] = MetadataKey("kafkaPartition")
+  val Partition: MessageMetadataKey[Int] = MessageMetadataKey("kafkaPartition")
 
   /**
    * The offset of the message in its partition.
    */
-  val Offset: MetadataKey[Long] = MetadataKey("kafkaOffset")
+  val Offset: MessageMetadataKey[Long] = MessageMetadataKey("kafkaOffset")
 
   /**
    * The topic the message is published to.
    */
-  val Topic: MetadataKey[String] = MetadataKey("kafkaTopic")
+  val Topic: MessageMetadataKey[String] = MessageMetadataKey("kafkaTopic")
 
   /**
    * The Kafka message headers.
    */
-  val Headers: MetadataKey[Headers] = MetadataKey("kafkaHeaders")
+  val Headers: MessageMetadataKey[Headers] = MessageMetadataKey("kafkaHeaders")
 
   /**
    * The timestamp of the Kafka message. This could have a different meaning depending on TimestampType.
    */
-  val Timestamp: MetadataKey[Long] = MetadataKey("kafkaTimestamp")
+  val Timestamp: MessageMetadataKey[Long] = MessageMetadataKey("kafkaTimestamp")
 
   /**
    * The timestamp type of the Kafka message.
    */
-  val TimestampType: MetadataKey[TimestampType] = MetadataKey("kafkaTimestampType")
+  val TimestampType: MessageMetadataKey[TimestampType] = MessageMetadataKey("kafkaTimestampType")
+
 }

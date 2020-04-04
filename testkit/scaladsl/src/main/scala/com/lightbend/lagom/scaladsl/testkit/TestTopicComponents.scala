@@ -11,6 +11,7 @@ import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import com.lightbend.internal.broker.TaggedOffsetTopicProducer
+import com.lightbend.lagom.internal.api.broker.MessageWithMetadata
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactoryProvider
 import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
@@ -32,15 +33,17 @@ trait TestTopicComponents extends TopicFactoryProvider {
 
   override def optionalTopicFactory: Option[TopicFactory] = Some(topicFactory)
 
-  override def topicPublisherName: Option[String] = super.topicPublisherName match {
-    case Some(other) =>
-      sys.error(
-        s"Cannot provide the test topic factory as the default topic publisher since a default topic publisher has already been mixed into this cake: $other"
-      )
-    case None => Some("test")
-  }
+  override def topicPublisherName: Option[String] =
+    super.topicPublisherName match {
+      case Some(other) =>
+        sys.error(
+          s"Cannot provide the test topic factory as the default topic publisher since a default topic publisher has already been mixed into this cake: $other"
+        )
+      case None => Some("test")
+    }
 
-  lazy val topicFactory: TopicFactory = new TestTopicFactory(lagomServer)(materializer)
+  lazy val topicFactory: TopicFactory =
+    new TestTopicFactory(lagomServer)(materializer)
 }
 
 private[lagom] class TestTopicFactory(lagomServer: LagomServer)(implicit materializer: Materializer)
@@ -78,32 +81,53 @@ private[lagom] class TestTopic[Payload, Event <: AggregateEvent[Event]](
     topicProducer: TaggedOffsetTopicProducer[Payload, Event]
 )(implicit materializer: Materializer)
     extends Topic[Payload] {
+
+  private val messageSource: Source[MessageWithMetadata[Payload], _] = {
+    val serializer = topicCall.messageSerializer
+    Source(topicProducer.tags)
+      .flatMapMerge(topicProducer.tags.size, { tag =>
+        topicProducer.readSideStream.apply(tag, Offset.noOffset).map(_._1)
+      })
+      .map { message =>
+        val bytes = serializer.serializerForRequest.serialize(message.payload)
+        message.withPayload(bytes)
+      }
+      .map { messageWithBytes =>
+        val payload = serializer
+          .deserializer(serializer.acceptResponseProtocols.head)
+          .deserialize(messageWithBytes.payload)
+        messageWithBytes.withPayload(payload)
+      }
+  }
+
   override def topicId: TopicId = topicCall.topicId
 
-  override def subscribe: Subscriber[Payload] = new TestSubscriber[Payload](identity)
+  override def subscribe: Subscriber[Payload] = new TestSubscriber()
 
-  private class TestSubscriber[WrappedPayload](transform: Payload => WrappedPayload)
-      extends Subscriber[WrappedPayload] {
-    override def withGroupId(groupId: String): Subscriber[WrappedPayload] = this
+  private class TestSubscriber extends Subscriber[Payload] {
+    override def withGroupId(groupId: String): Subscriber[Payload] = this
 
-    override def withMetadata = new TestSubscriber[Message[WrappedPayload]](transform.andThen(Message.apply))
+    override def withMetadata: Subscriber[Message[Payload]] =
+      new TestSubscriberWithMetadata
 
-    override def atMostOnceSource: Source[WrappedPayload, _] = {
-      val serializer = topicCall.messageSerializer
-      Source(topicProducer.tags)
-        .flatMapMerge(topicProducer.tags.size, { tag =>
-          topicProducer.readSideStream.apply(tag, Offset.noOffset).map(_._1)
-        })
-        .map { evt =>
-          serializer.serializerForRequest.serialize(evt)
-        }
-        .map { bytes =>
-          serializer.deserializer(serializer.acceptResponseProtocols.head).deserialize(bytes)
-        }
-        .map(transform)
-    }
+    override def atMostOnceSource: Source[Payload, _] =
+      messageSource.map(_.payload)
 
-    override def atLeastOnce(flow: Flow[WrappedPayload, Done, _]): Future[Done] =
+    override def atLeastOnce(flow: Flow[Payload, Done, _]): Future[Done] =
+      atMostOnceSource.via(flow).runWith(Sink.ignore)
+  }
+
+  private class TestSubscriberWithMetadata extends Subscriber[Message[Payload]] {
+    override def withGroupId(groupId: String): Subscriber[Message[Payload]] =
+      this
+
+    override def withMetadata: Subscriber[Message[Message[Payload]]] =
+      throw new UnsupportedOperationException("Subscriber already has metadata")
+
+    override def atMostOnceSource: Source[Message[Payload], _] =
+      messageSource.map(_.asInstanceOf[Message[Payload]])
+
+    override def atLeastOnce(flow: Flow[Message[Payload], Done, _]): Future[Done] =
       atMostOnceSource.via(flow).runWith(Sink.ignore)
   }
 }
