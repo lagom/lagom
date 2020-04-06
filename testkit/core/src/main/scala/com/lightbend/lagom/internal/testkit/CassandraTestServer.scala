@@ -22,7 +22,7 @@ private[lagom] object CassandraTestServer {
   private lazy val log = Logger(getClass)
 
   def run(cassandraDirectoryPrefix: String, lifecycle: ApplicationLifecycle): Int = {
-    val cassandraPort      = CassandraLauncher.randomPort
+
     val cassandraDirectory = Files.createTempDirectory(cassandraDirectoryPrefix)
 
     // Shut down Cassandra and delete its temporary directory when the application shuts down
@@ -40,12 +40,12 @@ private[lagom] object CassandraTestServer {
       cassandraDirectory.toFile,
       LagomTestConfigResource,
       clean = false,
-      port = cassandraPort,
+      port = 0,
       CassandraLauncher.classpathForResources(LagomTestConfigResource)
     )
 
     log.debug(s"Cassandra started in ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)} ms")
 
-    cassandraPort
+    CassandraLauncher.randomPort
   }
 }
