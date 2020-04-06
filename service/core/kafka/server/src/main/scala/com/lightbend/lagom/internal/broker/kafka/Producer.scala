@@ -5,7 +5,7 @@
 package com.lightbend.lagom.internal.broker.kafka
 
 import akka.actor.ActorSystem
-import akka.persistence.query.Offset
+import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.Materializer
 import akka.stream.scaladsl._
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
@@ -24,7 +24,7 @@ private[lagom] object Producer {
       system: ActorSystem,
       tags: immutable.Seq[String],
       topicId: String,
-      eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+      eventStreamFactory: (String, AkkaOffset) => Source[(Message, AkkaOffset), _],
       partitionKeyStrategy: Option[Message => String],
       serializer: Serializer[Message],
       offsetStore: OffsetStore,
@@ -35,7 +35,7 @@ private[lagom] object Producer {
     val producerConfig = ProducerConfig(system.settings.config)
     val topicProducerProps = (coordinates: WorkerCoordinates) =>
       TopicProducerActor.props(
-        coordinates.tagName,
+        coordinates,
         producerConfig,
         topicId,
         eventStreamFactory,

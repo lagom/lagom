@@ -289,66 +289,11 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomImportCompat"),
       ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.run.RunSupport$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.run.RunSupportCompat"),
+      // Add mima filters here.
+      ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal.*"),
       // Upgrade to Alpakka Kafka 2.0 https://github.com/lagom/lagom/issues/2508
-      // Public Scala DSL
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.scaladsl.broker.kafka.ScaladslKafkaTopic.this"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.scaladsl.broker.kafka.ScaladslKafkaSubscriber.this"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.scaladsl.broker.kafka.KafkaTopicFactory.this"
-      ),
-      // Public Java DSL
       ProblemFilters.exclude[DirectMissingMethodProblem](
         "com.lightbend.lagom.javadsl.broker.kafka.KafkaTopicFactory.this"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaSubscriber.this"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaTopic.this"
-      ),
-      // Internal API
-      ProblemFilters.exclude[MissingClassProblem](
-        "com.lightbend.lagom.internal.broker.kafka.NoKafkaBrokersException"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.broker.kafka.KafkaSubscriberActor.props"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.broker.kafka.KafkaSubscriberActor.this"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.broker.kafka.KafkaSubscriberActor.props"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "com.lightbend.lagom.internal.broker.kafka.KafkaConfig$KafkaConfigImpl"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "com.lightbend.lagom.internal.broker.kafka.KafkaConfig"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "com.lightbend.lagom.internal.broker.kafka.KafkaConfig$"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.broker.kafka.Producer.startTaggedOffsetProducer"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.props"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.this"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.broker.kafka.Producer.startTaggedOffsetProducer"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.scaladsl.broker.kafka.ScaladslRegisterTopicProducers.this"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslRegisterTopicProducers.this"
       )
     )
   )

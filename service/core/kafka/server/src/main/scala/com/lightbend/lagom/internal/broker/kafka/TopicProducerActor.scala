@@ -15,10 +15,18 @@ import akka.kafka.ProducerSettings
 import akka.kafka.scaladsl.DiscoverySupport
 import akka.kafka.scaladsl.{ Producer => ReactiveProducer }
 import akka.pattern.pipe
-import akka.persistence.query.Offset
-import akka.stream.FlowShape
-import akka.stream.KillSwitch
-import akka.stream.KillSwitches
+import akka.stream.scaladsl.Flow
+
+import scala.concurrent.Future
+import akka.stream.scaladsl.Sink
+
+import scala.concurrent.ExecutionContext
+import com.lightbend.lagom.internal.api.UriUtils
+import com.lightbend.lagom.spi.persistence.OffsetDao
+import akka.NotUsed
+import akka.actor.ActorLogging
+import akka.stream.scaladsl.Unzip
+import org.apache.kafka.clients.producer.ProducerRecord
 import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.GraphDSL
@@ -28,29 +36,29 @@ import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.Unzip
 import akka.stream.scaladsl.Zip
-import com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.Start
-import com.lightbend.lagom.spi.persistence.OffsetDao
-import com.lightbend.lagom.spi.persistence.OffsetStore
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.serialization.Serializer
-import org.apache.kafka.common.serialization.StringSerializer
+import java.net.URI
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
+import akka.kafka.ProducerMessage
+import akka.persistence.query.Offset
+import akka.persistence.query.{ Offset => AkkaOffset }
+import akka.stream.scaladsl.RestartSource
+import com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.Start
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
+import com.lightbend.lagom.internal.spi.projection.ProjectionSpi
 
 private[lagom] object TopicProducerActor {
   def props[Message](
-      tagName: String,
+      workerCoordinates: WorkerCoordinates,
       producerConfig: ProducerConfig,
       topicId: String,
-      eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+      eventStreamFactory: (String, AkkaOffset) => Source[(Message, AkkaOffset), _],
       partitionKeyStrategy: Option[Message => String],
       serializer: Serializer[Message],
       offsetStore: OffsetStore
   )(implicit mat: Materializer, ec: ExecutionContext) =
     Props(
       new TopicProducerActor[Message](
-        tagName,
+        workerCoordinates,
         producerConfig,
         topicId,
         eventStreamFactory,
@@ -69,16 +77,18 @@ private[lagom] object TopicProducerActor {
  * Kafka. See also ReadSideActor.
  */
 private[lagom] class TopicProducerActor[Message](
-    tagName: String,
+    workerCoordinates: WorkerCoordinates,
     producerConfig: ProducerConfig,
     topicId: String,
-    eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+    eventStreamFactory: (String, AkkaOffset) => Source[(Message, AkkaOffset), _],
     partitionKeyStrategy: Option[Message => String],
     serializer: Serializer[Message],
     offsetStore: OffsetStore
 )(implicit mat: Materializer, ec: ExecutionContext)
     extends Actor
     with ActorLogging {
+
+  val tagName = workerCoordinates.tagName
 
   /** Switch used to terminate the on-going stream when this actor is stopped.*/
   private var shutdown: Option[KillSwitch] = None
@@ -94,7 +104,7 @@ private[lagom] class TopicProducerActor[Message](
 
   def receive: Receive = {
     case Start => {
-      val backoffSource: Source[Future[Done], NotUsed] = {
+      val backoffSource: Source[Future[AkkaOffset], NotUsed] = {
         RestartSource.withBackoff(
           producerConfig.minBackoff,
           producerConfig.maxBackoff,
@@ -105,9 +115,37 @@ private[lagom] class TopicProducerActor[Message](
             .initialTimeout(producerConfig.offsetTimeout)
             .flatMapConcat { offset =>
               log.debug("Kafka service for producer of [{}]", topicId)
-              val eventStreamSource: Source[(Message, Offset), _]       = eventStreamFactory(tagName, offset.loadedOffset)
-              val usersFlow: Flow[(Message, Offset), Future[Done], Any] = eventsPublisherFlow(offset)
-              eventStreamSource.via(usersFlow)
+              val eventStreamSource: Source[(Message, AkkaOffset), _] =
+                eventStreamFactory(tagName, offset.loadedOffset)
+                  .watchTermination() { (_, right: Future[Done]) =>
+                    right.recoverWith {
+                      case t: Throwable =>
+                        ProjectionSpi.failed(
+                          context.system,
+                          workerCoordinates.projectionName,
+                          workerCoordinates.tagName,
+                          t
+                        )
+                        right
+                    }
+                  }
+
+                val eventPublisherFlow: Flow[(Message, AkkaOffset), Future[AkkaOffset], Any] =
+                  eventsPublisherFlow(offset)// Return a Source[Future[Offset],_] where each produced element is a completed Offset.
+              eventStreamSource// read from DB + userFlow
+                  .map {
+                    case (message, offset) =>
+                      (
+                        message,
+                        ProjectionSpi.afterUserFlow(workerCoordinates.projectionName, workerCoordinates.tagName, offset)
+                      )
+                  }
+                  .via(eventPublisherFlow) //  Kafka write + offset commit
+                  .map(_.map(offset => {
+                    ProjectionSpi
+                      .completedProcessing(workerCoordinates.projectionName, workerCoordinates.tagName, offset)
+                    offset
+                  }))
             }
         }
       }
@@ -147,10 +185,11 @@ private[lagom] class TopicProducerActor[Message](
   private def eventsPublisherFlow(offsetDao: OffsetDao) =
     Flow.fromGraph(GraphDSL.create(kafkaFlowPublisher()) { implicit builder => publishFlow =>
       import GraphDSL.Implicits._
-      val unzip = builder.add(Unzip[Message, Offset])
-      val zip   = builder.add(Zip[Any, Offset])
-      val offsetCommitter = builder.add(Flow.fromFunction { e: (Any, Offset) =>
-        offsetDao.saveOffset(e._2)
+      val unzip = builder.add(Unzip[Message, AkkaOffset])
+      val zip   = builder.add(Zip[Any, AkkaOffset])
+      val offsetCommitter = builder.add(Flow.fromFunction[(Any, AkkaOffset), Future[AkkaOffset]] {
+        case (_, akkaOffset) =>
+          offsetDao.saveOffset(akkaOffset).map(done => akkaOffset)
       })
 
       unzip.out0 ~> publishFlow ~> zip.in0

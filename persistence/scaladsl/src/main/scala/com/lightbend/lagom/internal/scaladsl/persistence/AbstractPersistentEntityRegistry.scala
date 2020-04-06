@@ -18,7 +18,11 @@ import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.stream.scaladsl
 import akka.NotUsed
 import com.lightbend.lagom.internal.persistence.cluster.HashCodeMessageExtractor
+import akka.annotation.InternalStableApi
+import akka.persistence.query.EventEnvelope
+import com.lightbend.lagom.internal.spi.projection.ProjectionSpi
 import com.lightbend.lagom.scaladsl.persistence._
+
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 
@@ -130,6 +134,7 @@ class AbstractPersistentEntityRegistry(system: ActorSystem) extends PersistentEn
 
         queries
           .eventsByTag(tag, fromOffset)
+          .map(envelope => ProjectionSpi.startProcessing(system, tag, envelope))
           .map(env =>
             new EventStreamElement[Event](
               PersistentEntityActor.extractEntityId(env.persistenceId),

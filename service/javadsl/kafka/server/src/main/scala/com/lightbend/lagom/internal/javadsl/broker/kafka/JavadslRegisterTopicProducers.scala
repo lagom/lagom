@@ -11,7 +11,7 @@ import com.lightbend.lagom.javadsl.api.ServiceInfo
 import akka.stream.Materializer
 import javax.inject.Inject
 import akka.actor.ActorSystem
-import akka.persistence.query.Offset
+import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.scaladsl.Source
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
 import com.lightbend.lagom.internal.broker.kafka.Producer
@@ -52,7 +52,7 @@ class JavadslRegisterTopicProducers @Inject() (
               case tagged: TaggedOffsetTopicProducer[AnyRef, _] =>
                 val tags = tagged.tags.asScala.toIndexedSeq
 
-                val eventStreamFactory: (String, Offset) => Source[(AnyRef, Offset), _] = { (tag, offset) =>
+                val eventStreamFactory: (String, AkkaOffset) => Source[(AnyRef, AkkaOffset), _] = { (tag, offset) =>
                   tags.find(_.tag == tag) match {
                     case Some(aggregateTag) =>
                       tagged
