@@ -47,6 +47,11 @@ public class PersistentEntityRefTest {
 
   @BeforeClass
   public static void setup() {
+
+    // start Cassandra first to reserve its port
+    File cassandraDirectory = new File("target/PersistentEntityRefTest");
+    CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", true, 0);
+
     Config config =
         ConfigFactory.parseString("akka.loglevel = INFO")
             .withFallback(ClusterConfig())
@@ -60,8 +65,6 @@ public class PersistentEntityRefTest {
 
     Cluster.get(system).join(Cluster.get(system).selfAddress());
 
-    File cassandraDirectory = new File("target/PersistentEntityRefTest");
-    CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", true, 0);
     awaitPersistenceInit(system);
   }
 
