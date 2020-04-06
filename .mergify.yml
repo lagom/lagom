@@ -11,6 +11,17 @@ pull_request_rules:
       merge:
         method: merge
 
+  - name: backport patches to 1.6.x branch
+    conditions:
+      - merged
+      - label=status:needs-backport
+    actions:
+      backport:
+        branches:
+          - 1.6.x
+      label:
+        remove: [status:needs-backport]
+
   - name: backport patches to 1.5.x branch
     conditions:
       - merged
