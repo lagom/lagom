@@ -56,7 +56,7 @@ object Dependencies {
 
     val Curator       = "2.12.0"
     val Immutables    = "2.8.3"
-    val HibernateCore = "5.4.12.Final"
+    val HibernateCore = "5.4.14.Final"
     val PCollections  = "3.1.3"
 
     val ScalaJava8Compat = "0.9.1"
@@ -187,7 +187,7 @@ object Dependencies {
     "org.jetbrains"        % "annotations"          % "13.0"
   )
 
-  val ow2asmDeps = libraryFamily("org.ow2.asm", "7.3.1")(
+  val ow2asmDeps = libraryFamily("org.ow2.asm", "8.0.1")(
     "asm",
     "asm-analysis",
     "asm-commons",
@@ -202,7 +202,7 @@ object Dependencies {
   private val jnra64asm    = "com.github.jnr" % "jnr-a64asm"    % "1.0.0"
   private val jnrx86asm    = "com.github.jnr" % "jnr-x86asm"    % "1.0.2"
 
-  private val mockitoCore = "org.mockito" % "mockito-core" % "3.2.4"
+  private val mockitoCore = "org.mockito" % "mockito-core" % "3.3.3"
 
   private val jacksonFamily =
     libraryFamily("com.fasterxml.jackson.core", Versions.JacksonCore)(
