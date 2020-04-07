@@ -80,11 +80,11 @@ Lagom will choose an appropriate transport for the stream, typically, this will 
 
 ### Message serialization
 
-Message serializers for requests and responses are provided using type classes.  Each of the `call`, `namedCall`, `pathCall` and `restCall` methods take an implicit [`MessageSerializer`](api/com/lightbend/lagom/scaladsl/api/deser/MessageSerializer.html) for each of the request and response messages. Out of the box Lagom provides a serializer for `String` messages, as well as serializers that implicitly convert a Play JSON [`Format`](https://www.playframework.com/documentation/2.7.x/api/scala/play/api/libs/json/Format.html) type class to a message serializer.
+Message serializers for requests and responses are provided using type classes.  Each of the `call`, `namedCall`, `pathCall` and `restCall` methods take an implicit [`MessageSerializer`](api/com/lightbend/lagom/scaladsl/api/deser/MessageSerializer.html) for each of the request and response messages. Out of the box Lagom provides a serializer for `String` messages, as well as serializers that implicitly convert a Play JSON [`Format`](https://www.playframework.com/documentation/2.8.x/api/scala/play/api/libs/json/Format.html) type class to a message serializer.
 
 #### Using Play JSON
 
-Play JSON provides a functional type class based library for composing JSON formatters. For detailed documentation on how to use this library, see the [Play documentation](https://www.playframework.com/documentation/2.7.x/ScalaJsonCombinators). For now, we will just look at how to define JSON formats for case classes using Play's JSON format macro.
+Play JSON provides a functional type class based library for composing JSON formatters. For detailed documentation on how to use this library, see the [Play documentation](https://www.playframework.com/documentation/2.8.x/ScalaJsonCombinators). For now, we will just look at how to define JSON formats for case classes using Play's JSON format macro.
 
 Let's say you have a `User` case class that looks like this:
 

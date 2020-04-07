@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.javadsl.client.integration;
@@ -7,8 +7,8 @@ package com.lightbend.lagom.javadsl.client.integration;
 import akka.actor.ActorSystem;
 import akka.actor.CoordinatedShutdown;
 import akka.japi.function.Effect;
-import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
+import akka.stream.SystemMaterializer;
 import play.api.internal.libs.concurrent.CoordinatedShutdownSupport;
 import com.lightbend.lagom.internal.client.*;
 import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory;
@@ -373,7 +373,7 @@ public class LagomClientFactory implements Closeable {
 
     // Akka
     ActorSystem actorSystem = ActorSystem.create("lagom-client", configuration, classLoader);
-    Materializer materializer = ActorMaterializer.create(actorSystem);
+    Materializer materializer = SystemMaterializer.get(actorSystem).materializer();
 
     return create(
         serviceName,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.server
@@ -32,6 +32,7 @@ trait PlayServiceCall[Request, Response] extends ServiceCall[Request, Response] 
 }
 
 object PlayServiceCall {
+
   /**
    * Convenience function for creating Play service calls.
    *

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.cluster
@@ -21,47 +21,46 @@ import com.typesafe.config.Config
 
 import scala.concurrent.duration._
 
-/**
- *
- */
+object ClusterMultiNodeConfig extends ClusterMultiNodeConfig
+
 // this is reused in multiple multi-jvm tests. There's still some copy/paste around though.
-object ClusterMultiNodeConfig extends MultiNodeConfig {
+abstract class ClusterMultiNodeConfig extends MultiNodeConfig {
   val node1 = role("node1")
   val node2 = role("node2")
   val node3 = role("node3")
 
-  commonConfig(
-    ConfigFactory
-      .parseString(
-        """
-      akka.loglevel = INFO
-      akka.actor.provider = cluster
-      terminate-system-after-member-removed = 60s
+  protected def systemConfig: Config =
+    ConfigFactory.parseString(
+      """
+    akka.loglevel = INFO
+    akka.actor.provider = cluster
+    terminate-system-after-member-removed = 60s
 
-      # increase default timeouts to leave wider margin for Travis.
-      # 30s to 60s
-      akka.testconductor.barrier-timeout=60s
-      akka.test.single-expect-default = 15s
+    # increase default timeouts to leave wider margin for Travis.
+    # 30s to 60s
+    akka.testconductor.barrier-timeout=60s
+    akka.test.single-expect-default = 15s
 
-      akka.cluster.sharding.waiting-for-state-timeout = 5s
+    akka.cluster.sharding.waiting-for-state-timeout = 5s
 
-      # Don't terminate the actor system when doing a coordinated shutdown
-      akka.coordinated-shutdown.terminate-actor-system = off
-      akka.coordinated-shutdown.run-by-jvm-shutdown-hook = off
-      akka.cluster.run-coordinated-shutdown-when-down = off
+    # Don't terminate the actor system when doing a coordinated shutdown
+    akka.coordinated-shutdown.terminate-actor-system = off
+    akka.coordinated-shutdown.run-by-jvm-shutdown-hook = off
+    akka.cluster.run-coordinated-shutdown-when-down = off
 
-      ## The settings below are incidental because this code lives in a project that depends on lagom-cluster and
-      ## lagom-akka-management-core.
+    ## The settings below are incidental because this code lives in a project that depends on lagom-cluster and
+    ## lagom-akka-management-core.
 
-      # multi-jvm tests forms the cluster programmatically
-      # therefore we disable Akka Cluster Bootstrap
-      lagom.cluster.bootstrap.enabled = off
+    # multi-jvm tests forms the cluster programmatically
+    # therefore we disable Akka Cluster Bootstrap
+    lagom.cluster.bootstrap.enabled = off
 
-      # no jvm exit on tests
-      lagom.cluster.exit-jvm-when-system-terminated = off
+    # no jvm exit on tests
+    lagom.cluster.exit-jvm-when-system-terminated = off
     """
-      )
-  )
+    )
+
+  commonConfig(systemConfig)
 }
 
 // heavily inspired by AbstractClusteredPersistentEntitySpec

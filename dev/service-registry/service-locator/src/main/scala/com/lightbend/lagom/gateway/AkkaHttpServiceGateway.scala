@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.gateway
@@ -181,6 +181,8 @@ class AkkaHttpServiceGateway(
     "Sec-WebSocket-Accept",
     "Sec-WebSocket-Version",
     "Sec-WebSocket-Key",
+    "Sec-WebSocket-Extensions",
+    "Sec-WebSocket-Protocol",
     "UpgradeToWebSocket",
     "Upgrade",
     "Connection",

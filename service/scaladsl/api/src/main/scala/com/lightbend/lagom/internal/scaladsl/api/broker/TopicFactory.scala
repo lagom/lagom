@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.scaladsl.api.broker
@@ -13,6 +13,7 @@ import com.lightbend.lagom.scaladsl.api.broker.Topic
  * Abstraction for topic factories.
  */
 trait TopicFactory {
+
   /**
    * Create a client topic for the given topic call.
    */

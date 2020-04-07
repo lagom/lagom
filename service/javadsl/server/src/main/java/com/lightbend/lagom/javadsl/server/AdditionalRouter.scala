@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.javadsl.server
@@ -31,6 +31,7 @@ final case class InstanceBased(router: Router, prefix: Option[String]) extends A
 }
 
 object AdditionalRouter {
+
   /**
    * Simulate Play's withPrefix behavior by prepending new prefix to an existing path.
    */

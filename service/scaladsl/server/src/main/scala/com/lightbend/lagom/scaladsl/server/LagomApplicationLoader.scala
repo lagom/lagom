@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.server
@@ -154,6 +154,7 @@ abstract class LagomApplicationLoader extends ApplicationLoader with ServiceDisc
  * to an app, this can be extended without breaking compatibility.
  */
 sealed trait LagomApplicationContext {
+
   /**
    * The Play application loader context.
    */
@@ -161,6 +162,7 @@ sealed trait LagomApplicationContext {
 }
 
 object LagomApplicationContext {
+
   /**
    * Create a Lagom application loader context.
    *

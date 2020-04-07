@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.maven
@@ -15,6 +15,7 @@ import org.eclipse.aether.artifact.Artifact
  */
 @Singleton
 class ScalaClassLoaderManager @Inject() (logger: MavenLoggerProxy) {
+
   /**
    * The list of Scala libraries. None of these libraries may have a dependency outside of this list, otherwise there
    * will be classloading issues.

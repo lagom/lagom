@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.spi.persistence
@@ -15,6 +15,7 @@ import scala.collection.concurrent
  * Offset store implementation.
  */
 trait OffsetStore {
+
   /**
    * Prepare this offset store to process the given ID and tag.
    *
@@ -29,6 +30,7 @@ trait OffsetStore {
  * A prepared DAO for storing offsets.
  */
 trait OffsetDao {
+
   /**
    * The last offset processed.
    */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.client
@@ -35,11 +35,23 @@ private[lagom] class ServiceNameMapper(config: Config) {
   private case object Empty                  extends ConfigValue
   private case class NonEmpty(value: String) extends ConfigValue
 
-  private def readConfigValue(config: Config, name: String) =
+  private def readConfigValue(config: Config, name: String): ConfigValue =
     if (config.hasPathOrNull(name)) {
       if (config.getIsNull(name)) Empty
       else ConfigValue(config.getString(name))
     } else Undefined
+
+  /**
+   * Reads an optional config.
+   * If the user didn't explicitly set a value, use the passed default, otherwise honour user settings
+   */
+  private def readOptionalConfigValue(config: Config, name: String, defaultValue: Option[String]): Option[String] =
+    readConfigValue(config, name) match {
+      case Undefined => defaultValue
+      // this is the case the user explicitly set the scheme to empty string
+      case Empty           => None
+      case NonEmpty(value) => Option(value)
+    }
 
   private val serviceLookupMapping: Map[String, ServiceLookup] =
     config
@@ -54,31 +66,30 @@ private[lagom] class ServiceNameMapper(config: Config) {
         }
         val configEntry = entry.getValue.asInstanceOf[ConfigObject].toConfig
 
+        // read config values for portName, portProtocol and scheme
+        // when not explicitly overwritten by used, uses default values
+        val portName     = readOptionalConfigValue(configEntry, "port-name", defaultPortName)
+        val portProtocol = readOptionalConfigValue(configEntry, "port-protocol", defaultPortProtocol)
+        val scheme       = readOptionalConfigValue(configEntry, "scheme", defaultScheme)
+
         val lookup: Lookup =
           readConfigValue(configEntry, "lookup").toOption
-            .map(parseSrv)
-            .getOrElse(Lookup(entry.getKey, defaultPortName, defaultPortProtocol))
-
-        // if the user didn't explicitly set a value, use the default scheme,
-        // otherwise honour user settings.
-        val scheme =
-          readConfigValue(configEntry, "scheme") match {
-            case Undefined => defaultScheme
-            // this is the case the user explicitly set the scheme to empty string
-            case Empty           => None
-            case NonEmpty(value) => Option(value)
-          }
+            .map(name => parseSrv(name, portName, portProtocol))
+            .getOrElse(Lookup(entry.getKey, portName, portProtocol))
 
         entry.getKey -> ServiceLookup(lookup, scheme)
       }
       .toMap
 
-  private def parseSrv(name: String) =
+  private def parseSrv(name: String, portName: Option[String], portProtocol: Option[String]) =
     if (Lookup.isValidSrv(name)) Lookup.parseSrv(name)
-    else Lookup(name, defaultPortName, defaultPortProtocol)
+    else Lookup(name, portName, portProtocol)
 
   private[lagom] def mapLookupQuery(name: String): ServiceLookup = {
-    val serviceLookup = serviceLookupMapping.getOrElse(name, ServiceLookup(parseSrv(name), defaultScheme))
+    val serviceLookup = serviceLookupMapping.getOrElse(
+      name,
+      ServiceLookup(parseSrv(name, defaultPortName, defaultPortProtocol), defaultScheme)
+    )
     logger.debug("Lookup service '{}', mapped to {}", name: Any, serviceLookup: Any)
     serviceLookup
   }

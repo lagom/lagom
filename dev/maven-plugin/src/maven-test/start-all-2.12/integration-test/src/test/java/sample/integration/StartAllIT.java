@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package sample.integration;
@@ -7,8 +7,6 @@ package sample.integration;
 import akka.Done;
 import akka.actor.ActorSystem;
 import akka.japi.Effect;
-import akka.stream.ActorMaterializer;
-import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import akka.stream.javadsl.Flow;
@@ -52,7 +50,6 @@ public class StartAllIT {
     private static HelloService helloService;
     private static HelloStream helloStream;
     private static ActorSystem system;
-    private static Materializer mat;
 
     @BeforeClass
     public static void setup() {
@@ -62,7 +59,6 @@ public class StartAllIT {
         helloStream = clientFactory.createDevClient(HelloStream.class, URI.create(SERVICE_LOCATOR_URI));
 
         system = ActorSystem.create();
-        mat = ActorMaterializer.create(system);
     }
 
     @Test
@@ -82,7 +78,7 @@ public class StartAllIT {
         Source<String, ?> response = await(helloStream.stream().invoke(
                 Source.from(Arrays.asList("a", "b", "c"))
                         .concat(Source.maybe())));
-        List<String> messages = await(response.take(3).runWith(Sink.seq(), mat));
+        List<String> messages = await(response.take(3).runWith(Sink.seq(), system));
         assertEquals(Arrays.asList("Hello, a!", "Hello, b!", "Hello, c!"), messages);
     }
 
@@ -112,7 +108,7 @@ public class StartAllIT {
         String messageToPublish = "hello";
 
         // Store the message returned by Kafka into a future.
-        CompletableFuture<String> messageConsumed = new CompletableFuture<>(); 
+        CompletableFuture<String> messageConsumed = new CompletableFuture<>();
         Flow<String, Done, ?> flow = Flow.fromFunction(msg -> {
             messageConsumed.complete(msg);
             return Done.getInstance();
@@ -124,12 +120,12 @@ public class StartAllIT {
         Consumer.atMostOnceSource(consumerSettings(), Subscriptions.topics(topicName))
             .map(record -> record.value())
             .via(flow)
-            .runWith(Sink.ignore(), mat);
+            .runWith(Sink.ignore(), system);
 
         // Let's publish a message to Kafka
         Source.single(messageToPublish)
             .map(elem -> new ProducerRecord<byte[], String>(topicName, elem))
-            .runWith(Producer.plainSink(producerSettings()), mat);
+            .runWith(Producer.plainSink(producerSettings()), system);
 
       // Now we wait until the message is published to Kafka and retrieved by the consumer.
       String message = await(messageConsumed);
@@ -175,8 +171,4 @@ public class StartAllIT {
             system.terminate();
         }
     }
-
-
-
-
 }

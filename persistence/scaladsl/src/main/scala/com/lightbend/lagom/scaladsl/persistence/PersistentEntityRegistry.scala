@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.persistence
@@ -23,6 +23,7 @@ import scala.reflect.ClassTag
  * using a `PersistentEntityRef`.
  */
 trait PersistentEntityRegistry {
+
   /**
    * At system startup all [[com.lightbend.lagom.scaladsl.persistence.PersistentEntity]]
    * classes must be registered with this method.

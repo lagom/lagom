@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.api
@@ -27,6 +27,7 @@ import scala.language.implicitConversions
  * implementation for the [[Service#descriptor]] method.
  */
 trait Service {
+
   /**
    * Describe this service.
    *

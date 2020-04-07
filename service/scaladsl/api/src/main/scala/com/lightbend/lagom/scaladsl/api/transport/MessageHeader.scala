@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.api.transport
@@ -16,6 +16,7 @@ import scala.collection.immutable.Seq
  * A message header.
  */
 sealed trait MessageHeader {
+
   /**
    * The protocol of the message.
    */
@@ -113,6 +114,7 @@ sealed trait MessageHeader {
  * The headers are however still provided, in case information needs to be extracted out of non standard headers.
  */
 sealed trait RequestHeader extends MessageHeader {
+
   /**
    * The method used to make this request.
    */
@@ -248,6 +250,7 @@ object RequestHeader {
  * The headers are however still provided, in case information needs to be extracted out of non standard headers.
  */
 sealed trait ResponseHeader extends MessageHeader {
+
   /**
    * The status code of the response.
    */

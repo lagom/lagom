@@ -32,7 +32,7 @@ Here's an example of publishing a single, non sharded event stream:
 
 @[implement-topic](code/docs/scaladsl/mb/HelloServiceImpl.scala)
 
-Note that the read-side event stream you passed to the topic producer is "activated" as soon as the service is started. That means that in the previous example, all events persisted by your services will eventually be published to the connected topic. Also, you will generally want to map your domain events into some other type, so that other service won't be tightly coupled to another service's domain model events. In other words, domain model events are an implementation detail of the service, and should not be leaked.
+Note that the read-side event stream you passed to the topic producer is, by default, "activated" as soon as the service is started. You can change that default behavior using the [[Projections API|Projections]]. That means all events persisted by your services will eventually be published to the connected topic. Also, you will generally want to map your domain events into some other type, so that other service won't be tightly coupled to another service's domain model events. In other words, domain model events are an implementation detail of the service, and should not be leaked.
 
 ### Filtering events
 
@@ -103,7 +103,7 @@ While the JSON for the `BlogPostPublished` event will look like this:
 }
 ```
 
-You can do that using [Play JSON transformers](https://www.playframework.com/documentation/2.7.x/ScalaJsonTransformers#Case-5:-Put-a-given-value-in-a-new-branch):
+You can do that using [Play JSON transformers](https://www.playframework.com/documentation/2.8.x/ScalaJsonTransformers#Case-5:-Put-a-given-value-in-a-new-branch):
 
 @[polymorphic-play-json](code/docs/scaladsl/mb/BlogPostService.scala)
 

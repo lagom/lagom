@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.javadsl.api
@@ -19,6 +19,7 @@ import java.lang.reflect.Method
  * The SAM that the lambda implements must be Serializable for this to work.
  */
 private[api] object MethodRefResolver {
+
   /**
    * Resolve the method ref for a lambda.
    */
@@ -31,15 +32,16 @@ private[api] object MethodRefResolver {
       )
     }
 
-    val writeReplace = try {
-      lambda.getClass.getDeclaredMethod("writeReplace")
-    } catch {
-      case e: NoSuchMethodError =>
-        throw new IllegalArgumentException(
-          "Passed in object does not provide a writeReplace method, hence it can't be a Java 8 method reference.",
-          e
-        )
-    }
+    val writeReplace =
+      try {
+        lambda.getClass.getDeclaredMethod("writeReplace")
+      } catch {
+        case e: NoSuchMethodError =>
+          throw new IllegalArgumentException(
+            "Passed in object does not provide a writeReplace method, hence it can't be a Java 8 method reference.",
+            e
+          )
+      }
 
     writeReplace.setAccessible(true)
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.projection
@@ -21,6 +21,7 @@ import scala.concurrent.Future
  */
 @ApiMayChange
 final class Projections(private val registry: ProjectionRegistry) {
+
   /**
    * Read an eventually consistent copy of the projections and workers running on the service.
    * Invocations to this method return a local copy of the {{{State}}} so multiple invocations in

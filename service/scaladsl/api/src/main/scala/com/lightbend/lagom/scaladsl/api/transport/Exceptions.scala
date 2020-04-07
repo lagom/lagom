@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.api.transport
@@ -30,6 +30,7 @@ import scala.collection.immutable
  * class uses the generic HTTP 404 error code.
  */
 sealed trait TransportErrorCode extends Serializable {
+
   /**
    * The HTTP status code for this error.
    */
@@ -229,6 +230,7 @@ class TransportException(val errorCode: TransportErrorCode, val exceptionMessage
 }
 
 object TransportException {
+
   /**
    * Convert an error code and exception message to an exception.
    *

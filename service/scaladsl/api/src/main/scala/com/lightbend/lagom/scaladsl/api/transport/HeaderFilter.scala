@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.api.transport
@@ -16,6 +16,7 @@ import scala.collection.immutable
  * negotiation, as well as authentication.
  */
 trait HeaderFilter {
+
   /**
    * Transform the given client request.
    *
@@ -62,6 +63,7 @@ trait HeaderFilter {
 }
 
 object HeaderFilter {
+
   /**
    * A noop header transformer, used to deconfigure specific transformers.
    */

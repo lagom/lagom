@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.persistence.jdbc
@@ -134,16 +134,15 @@ private[lagom] class SlickOffsetStore(
 
   private def offsetRowToOffset(row: Option[OffsetRow]): Offset = {
     row
-      .flatMap(
-        row =>
-          row.sequenceOffset
-            .map(AkkaSequence)
-            .orElse(
-              row.timeUuidOffset
-                .flatMap(uuid => Try(UUID.fromString(uuid)).toOption)
-                .filter(_.version == 1)
-                .map(TimeBasedUUID)
-            )
+      .flatMap(row =>
+        row.sequenceOffset
+          .map(AkkaSequence)
+          .orElse(
+            row.timeUuidOffset
+              .flatMap(uuid => Try(UUID.fromString(uuid)).toOption)
+              .filter(_.version == 1)
+              .map(TimeBasedUUID)
+          )
       )
       .getOrElse(NoOffset)
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.persistence.jdbc
@@ -9,6 +9,7 @@ import java.sql.Connection
 import scala.concurrent.Future
 
 object JdbcSession {
+
   /**
    * Closes this resource after the block has finished.
    */
@@ -22,6 +23,7 @@ object JdbcSession {
 }
 
 trait JdbcSession {
+
   /**
    * Execute the given function with a connection.
    *

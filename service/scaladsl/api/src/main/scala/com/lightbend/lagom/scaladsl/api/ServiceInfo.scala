@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.api
@@ -7,6 +7,7 @@ package com.lightbend.lagom.scaladsl.api
 import scala.collection.immutable
 
 sealed trait ServiceInfo {
+
   /**
    * The name of this service.
    */

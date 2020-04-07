@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.cluster
@@ -9,18 +9,29 @@ import com.lightbend.lagom.internal.cluster.ClusterDistribution.EnsureActive
 import akka.pattern._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.ScalaFutures
-
 import scala.concurrent.duration._
+
 import akka.cluster.sharding.ShardRegion.CurrentShardRegionState
 import akka.cluster.sharding.ShardRegion.GetShardRegionState
 
-import scala.concurrent.Await
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 
 class ClusterDistributionSpecMultiJvmNode1 extends ClusterDistributionSpec
 class ClusterDistributionSpecMultiJvmNode2 extends ClusterDistributionSpec
 class ClusterDistributionSpecMultiJvmNode3 extends ClusterDistributionSpec
 
-class ClusterDistributionSpec extends ClusteredMultiNodeUtils(numOfNodes = 3) with ScalaFutures with Eventually {
+object ClusterDistributionSpec extends ClusterMultiNodeConfig {
+  protected override def systemConfig: Config =
+    ConfigFactory.parseString("""
+      akka.cluster.sharding.rebalance-interval = 1s
+      """).withFallback(super.systemConfig)
+}
+
+class ClusterDistributionSpec
+    extends ClusteredMultiNodeUtils(numOfNodes = 3, ClusterDistributionSpec)
+    with ScalaFutures
+    with Eventually {
   private val ensureActiveInterval: FiniteDuration = 1.second
   private val distributionSettings: ClusterDistributionSettings =
     ClusterDistributionSettings(system)

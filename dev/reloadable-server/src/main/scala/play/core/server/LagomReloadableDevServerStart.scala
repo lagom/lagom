@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package play.core.server
@@ -32,6 +32,7 @@ import scala.util.Try
  * is reloaded whenever its source changes.
  */
 object LagomReloadableDevServerStart {
+
   /**
    * A threshold for retrieving the current hostname.
    *

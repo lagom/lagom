@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.javadsl.persistence
@@ -19,25 +19,38 @@ import akka.stream.scaladsl
 import akka.util.Timeout
 import akka.Done
 import akka.NotUsed
+import akka.japi
+import akka.persistence.query.{ Offset => AkkaOffset }
+import akka.stream.FlowShape
+import akka.stream.javadsl
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.GraphDSL
+import akka.stream.scaladsl.Unzip
+import akka.stream.scaladsl.Zip
 import com.lightbend.lagom.internal.persistence.ReadSideConfig
 import com.lightbend.lagom.internal.persistence.cluster.ClusterStartupTask
-import com.lightbend.lagom.javadsl.persistence._
+import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
+import com.lightbend.lagom.internal.spi.projection.ProjectionSpi
+import com.lightbend.lagom.javadsl.persistence.AggregateEvent
+import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
+import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor
+import com.lightbend.lagom.javadsl.persistence.{ Offset => LagomOffset }
 
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.Future
 
 private[lagom] object ReadSideActor {
   def props[Event <: AggregateEvent[Event]](
-      tagName: String,
+      workerCoordinates: WorkerCoordinates,
       config: ReadSideConfig,
       clazz: Class[Event],
       globalPrepareTask: ClusterStartupTask,
-      eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[akka.japi.Pair[Event, Offset], NotUsed],
+      eventStreamFactory: (AggregateEventTag[Event], LagomOffset) => Source[akka.japi.Pair[Event, LagomOffset], NotUsed],
       processor: () => ReadSideProcessor[Event]
   )(implicit mat: Materializer) =
     Props(
       new ReadSideActor[Event](
-        tagName,
+        workerCoordinates,
         config,
         clazz,
         globalPrepareTask,
@@ -53,11 +66,11 @@ private[lagom] object ReadSideActor {
  * Read side actor
  */
 private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
-    tagName: String,
+    workerCoordinates: WorkerCoordinates,
     config: ReadSideConfig,
     clazz: Class[Event],
     globalPrepareTask: ClusterStartupTask,
-    eventStreamFactory: (AggregateEventTag[Event], Offset) => Source[akka.japi.Pair[Event, Offset], NotUsed],
+    eventStreamFactory: (AggregateEventTag[Event], LagomOffset) => Source[akka.japi.Pair[Event, LagomOffset], NotUsed],
     processorFactory: () => ReadSideProcessor[Event]
 )(implicit mat: Materializer)
     extends Actor
@@ -67,6 +80,8 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   import context.dispatcher
 
   private var shutdown: Option[KillSwitch] = None
+
+  val tagName = workerCoordinates.tagName
 
   override def postStop: Unit = {
     shutdown.foreach(_.shutdown())
@@ -93,15 +108,39 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
           config.randomBackoffFactor
         ) { () =>
           val handler: ReadSideProcessor.ReadSideHandler[Event] = processorFactory().buildHandler()
-          val futureOffset: Future[Offset]                      = handler.prepare(tag).toScala
+          val futureOffset: Future[LagomOffset]                 = handler.prepare(tag).toScala
 
           scaladsl.Source
-            .fromFuture(futureOffset)
+            .future(futureOffset)
             .initialTimeout(config.offsetTimeout)
             .flatMapConcat { offset =>
-              val eventStreamSource = eventStreamFactory(tag, offset).asScala
-              val usersFlow         = handler.handle()
-              eventStreamSource.via(usersFlow)
+              val eventStreamSource: scaladsl.Source[japi.Pair[Event, LagomOffset], NotUsed] =
+                eventStreamFactory(tag, offset).asScala
+              val userFlow: javadsl.Flow[japi.Pair[Event, LagomOffset], Done, _] =
+                handler
+                  .handle()
+                  .asScala
+                  .watchTermination() { (_, right) =>
+                    right.recoverWith {
+                      case t: Throwable =>
+                        ProjectionSpi.failed(
+                          context.system,
+                          workerCoordinates.projectionName,
+                          workerCoordinates.tagName,
+                          t
+                        )
+                        right
+                    }
+                  }
+                  .asJava
+
+              val wrappedFlow = Flow[japi.Pair[Event, LagomOffset]]
+                .map { pair =>
+                  (pair, OffsetAdapter.dslOffsetToOffset(pair.second))
+                }
+                .via(userFlowWrapper(workerCoordinates, userFlow.asScala))
+
+              eventStreamSource.via(wrappedFlow)
             }
         }
 
@@ -122,4 +161,33 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
       // This actor will be restarted by WorkerCoordinator
       throw cause
   }
+
+  private def userFlowWrapper(
+      workerCoordinates: WorkerCoordinates,
+      userFlow: Flow[japi.Pair[Event, LagomOffset], Done, _]
+  ): Flow[(japi.Pair[Event, LagomOffset], AkkaOffset), AkkaOffset, _] =
+    Flow.fromGraph(GraphDSL.create(userFlow) { implicit builder => wrappedFlow =>
+      import GraphDSL.Implicits._
+      val unzip = builder.add(Unzip[japi.Pair[Event, LagomOffset], AkkaOffset])
+      val zip   = builder.add(Zip[Done, AkkaOffset])
+      val metricsReporter: FlowShape[(Done, AkkaOffset), AkkaOffset] = builder.add(Flow.fromFunction {
+        case (_, akkaOffset) =>
+          // TODO: in ReadSide processor we can't report `afterUserFlow` and `completedProcessing` separately
+          //  as we do in TopicProducerActor, unless we moved the invocation of `afterUserFlow` to each
+          //  particular ReadSideHandler (C* and JDBC).
+          ProjectionSpi.afterUserFlow(workerCoordinates.projectionName, workerCoordinates.tagName, akkaOffset)
+          ProjectionSpi.completedProcessing(
+            workerCoordinates.projectionName,
+            workerCoordinates.tagName,
+            akkaOffset
+          )
+          akkaOffset
+      })
+
+      unzip.out0 ~> wrappedFlow ~> zip.in0
+      unzip.out1 ~> zip.in1
+      zip.out ~> metricsReporter.in
+      FlowShape(unzip.in, metricsReporter.out)
+    })
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.maven
@@ -46,6 +46,7 @@ class MavenFacade @Inject() (
     lifecycleExecutionPlanCalculator: LifecycleExecutionPlanCalculator,
     logger: MavenLoggerProxy
 ) {
+
   /**
    * Resolve the classpath for the given artifact.
    *

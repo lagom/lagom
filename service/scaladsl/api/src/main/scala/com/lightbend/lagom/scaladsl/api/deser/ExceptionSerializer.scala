@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.api.deser
@@ -25,6 +25,7 @@ import scala.util.control.NonFatal
  * Handles the serialization and deserialization of exceptions.
  */
 trait ExceptionSerializer {
+
   /**
    * Serialize the given exception to an exception message.
    *
@@ -92,12 +93,13 @@ class DefaultExceptionSerializer(environment: Environment) extends ExceptionSeri
   }
 
   override def deserialize(message: RawExceptionMessage): Throwable = {
-    val messageJson = try {
-      Json.parse(message.message.iterator.asInputStream)
-    } catch {
-      case NonFatal(e) =>
-        Json.obj()
-    }
+    val messageJson =
+      try {
+        Json.parse(message.message.iterator.asInputStream)
+      } catch {
+        case NonFatal(e) =>
+          Json.obj()
+      }
 
     val jsonParseResult = for {
       name   <- (messageJson \ "name").validate[String]
@@ -131,6 +133,7 @@ class DefaultExceptionSerializer(environment: Environment) extends ExceptionSeri
 }
 
 object DefaultExceptionSerializer {
+
   /**
    * Unresolved exception serializer, allows it to be injected later.
    */
@@ -156,6 +159,7 @@ object DefaultExceptionSerializer {
  * aware of this when producing exception messages.
  */
 sealed trait RawExceptionMessage {
+
   /**
    * The error code.
    *

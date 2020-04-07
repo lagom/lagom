@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# Copyright (C) Lightbend Inc. <https://www.lightbend.com>
+
+# shellcheck source=bin/scriptLib
+. "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
+
+SBT_VERSION="1.3.4"
+SCALA_VERSION="${SCALA_VERSION:-2.12.10}"
+
+# disable publishing javadoc for scripted
+runSbtNoisy ";set publishArtifact in (Compile, packageDoc) in ThisBuild := false ;+ server-containers/publishLocal;++$SCALA_VERSION publishScriptedDependencies ;project sbt-plugin ;set scriptedSbt := \"${SBT_VERSION}\" ;project / ;++${SCALA_VERSION} scripted"

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.pubsub
@@ -9,6 +9,7 @@ package com.lightbend.lagom.scaladsl.pubsub
  * that is retrieved via this registry.
  */
 trait PubSubRegistry {
+
   /**
    * Get a [[PubSubRef]] for a given topic.
    */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.javadsl.testkit
@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import akka.stream.SystemMaterializer
 import com.google.inject.AbstractModule
 import com.lightbend.lagom.javadsl.api.ServiceCall
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
@@ -32,9 +32,6 @@ import scala.compat.java8.FunctionConverters._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-/**
- *
- */
 class TestOverTlsSpec extends AnyWordSpec with Matchers with ScalaFutures {
   val timeout      = PatienceConfiguration.Timeout(Span(5, Seconds))
   val defaultSetup = ServiceTest.defaultSetup.withCluster(false)
@@ -102,13 +99,12 @@ class TestOverTlsSpec extends AnyWordSpec with Matchers with ScalaFutures {
     builder.bindings(new TestTlsServiceModule)
 
   private def buildCustomWS(sslContext: SSLContext)(implicit actorSystem: ActorSystem) = {
-    implicit val mat = ActorMaterializer()
     // This setting enables the use of `SSLContext.setDefault` on the following line.
     val sslConfig = ConfigFactory.parseString("play.ws.ssl.default = true").withFallback(ConfigFactory.load())
     SSLContext.setDefault(sslContext)
     val config = AhcWSClientConfigFactory.forConfig(sslConfig)
     // This wsClient will use the `SSLContext` from `SSLContext.getDefault` (instead of the internal config-based)
-    val wsClient = StandaloneAhcWSClient(config)
+    val wsClient = StandaloneAhcWSClient(config)(SystemMaterializer(actorSystem).materializer)
     wsClient
   }
 }

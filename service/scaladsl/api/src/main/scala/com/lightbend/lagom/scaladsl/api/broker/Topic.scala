@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.api.broker
@@ -8,6 +8,7 @@ package com.lightbend.lagom.scaladsl.api.broker
  * A topic can be used to publish/subscribe messages to/from a message broker.
  */
 trait Topic[Payload] {
+
   /**
    * The topic identifier.
    *
@@ -24,10 +25,12 @@ trait Topic[Payload] {
 }
 
 object Topic {
+
   /**
    * A topic identifier.
    */
   sealed trait TopicId {
+
     /**
      * The name of this topic
      */

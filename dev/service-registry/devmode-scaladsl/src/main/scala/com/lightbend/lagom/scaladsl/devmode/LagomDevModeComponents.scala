@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.devmode
@@ -60,6 +60,7 @@ trait LagomDevModeComponents extends LagomDevModeServiceLocatorComponents {
  * will be automatically provided to the service by Lagom's dev mode build plugins.
  */
 trait LagomDevModeServiceLocatorComponents extends CircuitBreakerComponents {
+
   /**
    * If being used in a Lagom service, this will be implemented by
    * [[com.lightbend.lagom.scaladsl.server.LagomServerComponents]], however if it's being

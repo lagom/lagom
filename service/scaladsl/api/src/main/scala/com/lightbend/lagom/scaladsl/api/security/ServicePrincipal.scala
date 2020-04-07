@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.api.security
@@ -13,6 +13,7 @@ import java.security.Principal
  * on behalf of.
  */
 trait ServicePrincipal extends Principal {
+
   /**
    * The service name.
    *
@@ -36,6 +37,7 @@ trait ServicePrincipal extends Principal {
 }
 
 object ServicePrincipal {
+
   /**
    * Get a service principal for the given named service.
    *

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.server.status
@@ -29,6 +29,7 @@ import scala.concurrent.duration._
 import scala.util.control.NonFatal
 
 trait MetricsService extends Service {
+
   /**
    * Snapshot of current circuit breaker status
    */

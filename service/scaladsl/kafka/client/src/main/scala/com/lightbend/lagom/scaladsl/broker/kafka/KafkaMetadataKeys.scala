@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.broker.kafka
@@ -12,6 +12,7 @@ import org.apache.kafka.common.record.TimestampType
  * Metadata keys specific to the Kafka broker implementation.
  */
 object KafkaMetadataKeys {
+
   /**
    * The partition the message is published to.
    */

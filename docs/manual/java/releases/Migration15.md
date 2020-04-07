@@ -28,6 +28,8 @@ addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.5.1")
 
 We also recommend upgrading to sbt 1.2.8 or later, by updating the `sbt.version` in `project/build.properties`.
 
+> **Note:** Since Lagom 1.5.3 auto-aggregation of subprojects is not functioning anymore. Please configure your `build.sbt` for [project aggregation](https://www.scala-sbt.org/1.x/docs/Multi-Project.html#Aggregation).
+
 ## Deprecations
 
 ### Service Ports

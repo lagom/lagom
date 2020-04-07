@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.broker.kafka
@@ -7,7 +7,7 @@ package com.lightbend.lagom.internal.broker.kafka
 import java.net.URI
 
 import akka.actor.ActorSystem
-import akka.persistence.query.Offset
+import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.Materializer
 import akka.stream.scaladsl._
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
@@ -29,7 +29,7 @@ private[lagom] object Producer {
       kafkaConfig: KafkaConfig,
       locateService: String => Future[Seq[URI]],
       topicId: String,
-      eventStreamFactory: (String, Offset) => Source[(Message, Offset), _],
+      eventStreamFactory: (String, AkkaOffset) => Source[(Message, AkkaOffset), _],
       partitionKeyStrategy: Option[Message => String],
       serializer: Serializer[Message],
       offsetStore: OffsetStore,
@@ -40,7 +40,7 @@ private[lagom] object Producer {
     val producerConfig = ProducerConfig(system.settings.config)
     val topicProducerProps = (coordinates: WorkerCoordinates) =>
       TopicProducerActor.props(
-        coordinates.tagName,
+        coordinates,
         kafkaConfig,
         producerConfig,
         locateService,
