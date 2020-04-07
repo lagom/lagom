@@ -6,9 +6,9 @@ package com.example.helloworld.impl
 
 import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
 import com.lightbend.lagom.scaladsl.testkit.ServiceTest
-import org.scalatest.AsyncWordSpec
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
 import com.example.helloworld.api._
 import org.scalatest.concurrent.Eventually
 
