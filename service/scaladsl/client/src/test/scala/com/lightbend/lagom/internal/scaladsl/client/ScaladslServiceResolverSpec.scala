@@ -11,10 +11,10 @@ import com.lightbend.lagom.scaladsl.api.Descriptor
 import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.client.TestServiceClient
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class ScaladslServiceResolverSpec extends FlatSpec with Matchers {
+class ScaladslServiceResolverSpec extends AnyFlatSpec with Matchers {
   behavior.of("ScaladslServiceResolver")
 
   it should "setup circuit-breakers for all method calls using default values when nothing is specified" in {

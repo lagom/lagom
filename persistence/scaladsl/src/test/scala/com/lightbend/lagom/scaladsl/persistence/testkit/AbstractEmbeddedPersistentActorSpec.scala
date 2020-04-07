@@ -13,8 +13,6 @@ import akka.testkit.ImplicitSender
 import akka.testkit.TestKitBase
 import com.lightbend.lagom.persistence.ActorSystemSpec
 import com.lightbend.lagom.persistence.PersistenceSpec
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
 
 import scala.collection.immutable
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry

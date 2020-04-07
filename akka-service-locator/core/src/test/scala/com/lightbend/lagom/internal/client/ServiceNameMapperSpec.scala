@@ -6,10 +6,10 @@ package com.lightbend.lagom.internal.client
 
 import akka.discovery.Lookup
 import com.typesafe.config.ConfigFactory
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ServiceNameMapperSpec extends WordSpec with Matchers {
+class ServiceNameMapperSpec extends AnyWordSpec with Matchers {
   private val defaultConfig = ConfigFactory.defaultReference().getConfig("lagom.akka.discovery")
   private val parser        = new ServiceNameMapper(defaultConfig)
 

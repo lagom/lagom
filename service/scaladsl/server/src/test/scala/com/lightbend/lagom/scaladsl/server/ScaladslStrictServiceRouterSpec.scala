@@ -16,9 +16,7 @@ import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.server.mocks._
 import com.lightbend.lagom.scaladsl.server.testkit.FakeRequest
-import org.scalatest.AsyncFlatSpec
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
 import play.api.http.HttpConfiguration
 import play.api.mvc
 import play.api.mvc.Handler
@@ -28,6 +26,8 @@ import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import org.scalatest.flatspec.AsyncFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
  * This test relies on DefaultExceptionSerializer so in case of failure some information is lost on de/ser. Check the

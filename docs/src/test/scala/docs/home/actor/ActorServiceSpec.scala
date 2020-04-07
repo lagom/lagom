@@ -12,8 +12,6 @@ import akka.testkit.TestKit
 import com.typesafe.config.ConfigFactory
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
 import akka.cluster.Cluster
 import java.util.concurrent.TimeUnit
 

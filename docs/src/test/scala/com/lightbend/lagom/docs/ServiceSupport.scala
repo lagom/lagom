@@ -14,8 +14,8 @@ import com.lightbend.lagom.javadsl.api.ServiceCall
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.server.HeaderServiceCall
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.Application
 import play.api.Configuration
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -35,7 +35,7 @@ import com.typesafe.config.ConfigFactory
 import play.api.db.DBModule
 import play.api.db.HikariCPModule
 
-trait ServiceSupport extends WordSpecLike with Matchers {
+trait ServiceSupport extends AnyWordSpecLike with Matchers {
   def withServer[T](
       applicationBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder()
   )(block: Application => T): T = {

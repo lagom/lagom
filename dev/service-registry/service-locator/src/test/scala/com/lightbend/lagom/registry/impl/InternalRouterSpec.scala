@@ -13,11 +13,10 @@ import com.lightbend.lagom.javadsl.api.ServiceAcl
 import com.lightbend.lagom.javadsl.api.transport.Method
 import com.lightbend.lagom.registry.impl.ServiceRegistryActor.Found
 import com.lightbend.lagom.registry.impl.ServiceRegistryActor.Route
-import org.scalatest.FlatSpec
-import org.scalatest.FunSuite
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class InternalRouterSpec extends FlatSpec with Matchers {
+class InternalRouterSpec extends AnyFlatSpec with Matchers {
   behavior.of("InternalRouter")
 
   it should "find the appropriate URI given the portName" in {
