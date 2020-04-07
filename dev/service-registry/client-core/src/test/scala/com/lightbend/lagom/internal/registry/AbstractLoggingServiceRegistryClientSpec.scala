@@ -6,7 +6,6 @@ package com.lightbend.lagom.internal.registry
 
 import java.net.URI
 
-
 import scala.concurrent.Future
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
