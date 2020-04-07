@@ -20,9 +20,10 @@ import play.api.Environment
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorSystemSpec(_system) {
+abstract class JdbcPersistenceSpec private (actorSystemFactory: () => ActorSystem)
+    extends ActorSystemSpec(actorSystemFactory) {
   def this(testName: String, config: Config) = {
-    this(ActorSystem(testName, config.withFallback(Configuration.load(Environment.simple()).underlying)))
+    this(() => ActorSystem(testName, config.withFallback(Configuration.load(Environment.simple()).underlying)))
   }
 
   def this(config: Config) = this(PersistenceSpec.testNameFromCallStack(classOf[JdbcPersistenceSpec]), config)
