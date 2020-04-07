@@ -13,8 +13,6 @@ import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
 import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 import com.lightbend.lagom.scaladsl.testkit.ServiceTest.TestServer
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 import play.api.http.DefaultWriteables
 import play.api.http.HeaderNames
 import play.api.libs.ws.WSClient
@@ -30,8 +28,10 @@ import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class AdditionalRoutersSpec extends WordSpec with Matchers with ScalaFutures {
+class AdditionalRoutersSpec extends AnyWordSpec with Matchers with ScalaFutures {
   "A LagomServer " should {
     "be extensible with a Play Router" in withServer { server =>
       val request = FakeRequest(GET, "/hello/")

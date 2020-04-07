@@ -18,8 +18,8 @@ import com.typesafe.config.ConfigFactory
 import org.scalactic.CanEqual
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 object ActorSystemSpec {
   // taken from akka-testkit's AkkaSpec
@@ -69,7 +69,7 @@ object ActorSystemSpec {
 
 abstract class ActorSystemSpec(actorSystemFactory: () => ActorSystem)
     extends TestKit(actorSystemFactory())
-    with WordSpecLike
+    with AnyWordSpecLike
     with Matchers
     with BeforeAndAfterAll
     with TypeCheckedTripleEquals

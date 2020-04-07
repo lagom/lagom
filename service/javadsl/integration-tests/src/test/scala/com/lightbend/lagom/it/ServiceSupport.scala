@@ -10,8 +10,6 @@ import java.util.function.{ Function => JFunction }
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import org.scalatest.Inside
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
 import play.api.Application
 import play.api.Configuration
 import play.api.Environment
@@ -30,6 +28,8 @@ import play.api.routing.Router
 import java.util
 
 import com.lightbend.lagom.internal.testkit.EmptyAdditionalRoutersModule
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 sealed trait HttpBackend {
   final val provider: String = s"play.core.server.${codeName}ServerProvider"
@@ -44,7 +44,7 @@ case object Netty extends HttpBackend {
   val codeName = "Netty"
 }
 
-trait ServiceSupport extends WordSpecLike with Matchers with Inside {
+trait ServiceSupport extends AnyWordSpecLike with Matchers with Inside {
   def withServer(
       configureBuilder: GuiceApplicationBuilder => GuiceApplicationBuilder
   )(block: Application => Unit)(implicit httpBackend: HttpBackend): Unit = {

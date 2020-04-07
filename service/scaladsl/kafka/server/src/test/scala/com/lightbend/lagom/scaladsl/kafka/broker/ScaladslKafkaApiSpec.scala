@@ -48,9 +48,11 @@ import scala.collection.mutable
 import scala.concurrent.Await
 import scala.concurrent.Promise
 import scala.concurrent.duration._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 class ScaladslKafkaApiSpec
-    extends WordSpecLike
+    extends AnyWordSpecLike
     with Matchers
     with BeforeAndAfter
     with BeforeAndAfterAll

@@ -9,15 +9,15 @@ import java.util.Optional
 
 import com.lightbend.lagom.javadsl.api.deser.DeserializationException
 import com.lightbend.lagom.javadsl.api.deser.SerializationException
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 
 import scala.collection.immutable
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 /**
  *
  */
-class TransportExceptionSpec extends WordSpec with Matchers {
+class TransportExceptionSpec extends AnyWordSpec with Matchers {
   val protocolTextPlain = new MessageProtocol(Optional.of("text/plain"), Optional.of("utf-8"), Optional.empty[String])
   val protocolJson      = new MessageProtocol(Optional.of("application/json"), Optional.of("utf-8"), Optional.empty[String])
   val protocolHtml      = new MessageProtocol(Optional.of("text/html"), Optional.of("utf-8"), Optional.empty[String])
