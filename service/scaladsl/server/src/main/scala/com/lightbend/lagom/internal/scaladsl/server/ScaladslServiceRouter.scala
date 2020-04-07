@@ -93,7 +93,7 @@ class ScaladslServiceRouter(
 
   protected override def maybeLogException(exc: Throwable, log: => Logger, call: Call[_, _]) = {
     exc match {
-      case _: NotFound | _: Forbidden => // no logging
+      case _: NotFound | _: Forbidden | _: BadRequest => // no logging
       case e @ (_: UnsupportedMediaType | _: PayloadTooLarge | _: NotAcceptable) =>
         log.warn(e.getMessage)
       case e =>
