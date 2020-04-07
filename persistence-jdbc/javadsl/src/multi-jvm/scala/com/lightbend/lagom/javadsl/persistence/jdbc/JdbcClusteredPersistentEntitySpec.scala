@@ -35,7 +35,7 @@ class JdbcClusteredPersistentEntitySpec
 
   protected override def atStartup() {
     runOn(node1) {
-      h2 = Server.createTcpServer("-tcpPort", databasePort.toString).start()
+      h2 = Server.createTcpServer("-tcpPort", databasePort.toString, "-ifNotExists").start()
     }
 
     enterBarrier("h2-started")
