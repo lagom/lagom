@@ -48,7 +48,7 @@ class SlickClusteredPersistentEntitySpec
 
   protected override def atStartup(): Unit = {
     runOn(node1) {
-      h2 = Server.createTcpServer("-tcpPort", databasePort.toString).start()
+      h2 = Server.createTcpServer("-tcpPort", databasePort.toString, "-ifNotExists").start()
     }
     enterBarrier("h2-started")
     super.atStartup()
