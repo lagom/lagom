@@ -16,10 +16,10 @@ import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 import com.lightbend.lagom.scaladsl.testkit._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.time.Seconds
 import org.scalatest.time.Span
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 import play.api.libs.ws.ahc.AhcWSComponents
 
 abstract class AnotherApplication(context: LagomApplicationContext)
@@ -31,7 +31,7 @@ abstract class AnotherApplication(context: LagomApplicationContext)
 }
 
 //#topic-test-consuming-from-a-topic
-class AnotherServiceSpec extends WordSpec with Matchers with Eventually with ScalaFutures {
+class AnotherServiceSpec extends AnyWordSpec with Matchers with Eventually with ScalaFutures {
   var producerStub: ProducerStub[GreetingMessage] = _
 
   "The AnotherService" should {

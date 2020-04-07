@@ -11,8 +11,8 @@ package helloservicespec {
   //#hello-service-spec
   import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
   import com.lightbend.lagom.scaladsl.testkit.ServiceTest
-  import org.scalatest.AsyncWordSpec
-  import org.scalatest.Matchers
+  import org.scalatest.matchers.should.Matchers
+  import org.scalatest.wordspec.AsyncWordSpec
 
   class HelloServiceSpec extends AsyncWordSpec with Matchers {
     "The HelloService" should {
@@ -37,8 +37,8 @@ package helloservicespecshared {
   //#hello-service-spec-shared
   import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
   import com.lightbend.lagom.scaladsl.testkit.ServiceTest
-  import org.scalatest.AsyncWordSpec
-  import org.scalatest.Matchers
+  import org.scalatest.matchers.should.Matchers
+  import org.scalatest.wordspec.AsyncWordSpec
   import org.scalatest.BeforeAndAfterAll
 
   class HelloServiceSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll {
@@ -158,9 +158,9 @@ package streamedservices {
   import com.lightbend.lagom.scaladsl.server.LagomServer
   import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
   import com.lightbend.lagom.scaladsl.testkit.ServiceTest
-  import org.scalatest.AsyncWordSpec
   import org.scalatest.BeforeAndAfterAll
-  import org.scalatest.Matchers
+  import org.scalatest.matchers.should.Matchers
+  import org.scalatest.wordspec.AsyncWordSpec
   import play.api.libs.ws.ahc.AhcWSComponents
 
   import scala.concurrent.Future
