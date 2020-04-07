@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.api
@@ -20,6 +20,7 @@ import scala.concurrent.Future
  * using json.
  */
 trait ServiceCall[Request, Response] {
+
   /**
    * Invoke the service call.
    *
@@ -69,7 +70,7 @@ trait ServiceCall[Request, Response] {
    * For server implementations of service calls, this will be invoked by the server in order to give the service
    * call an opportunity to supply the response header when it supplies the response, but only if the underlying
    * transport supports sending a response header.  Generally, server implementations should not implement this
-   * method directly, rather, they should use <tt>ServerServiceCall</tt>, which provides an appropriate
+   * method directly, rather, they should use <code>ServerServiceCall</code>, which provides an appropriate
    * implementation.
    *
    * @param handler The handler.
@@ -97,6 +98,7 @@ trait ServiceCall[Request, Response] {
 }
 
 object ServiceCall {
+
   /**
    * Create a service call from a function to handle it.
    */

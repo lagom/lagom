@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.javadsl.api.transport;
@@ -49,7 +49,7 @@ public abstract class MessageHeader {
   /**
    * Get the headers for the message.
    *
-   * <p>The returned map is case sensitive, it is recommended that you use <tt>getHeader</tt>
+   * <p>The returned map is case sensitive, it is recommended that you use <code>getHeader</code>
    * instead.
    *
    * @return The headers for this message.

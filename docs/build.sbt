@@ -3,16 +3,16 @@ import akka.CrossJava
 
 val ScalaVersion = "2.12.10"
 
-val AkkaVersion = sys.props.getOrElse("lagom.build.akka.version", "2.6.1") // sync with project/Dependencies.scala
+val AkkaVersion = sys.props.getOrElse("lagom.build.akka.version", "2.6.4") // sync with project/Dependencies.scala
 
 val JUnitVersion          = "4.12"
 val JUnitInterfaceVersion = "0.11"
 val ScalaTestVersion      = "3.0.8"
-val PlayVersion           = "2.8.0-RC5" // sync with project/Dependencies.scala
-val Log4jVersion          = "2.12.1"
+val PlayVersion           = "2.8.1" // sync with project/Dependencies.scala
+val Log4jVersion          = "2.13.1"
 val MacWireVersion        = "2.3.3"
 val LombokVersion         = "1.18.8"
-val HibernateVersion      = "5.4.10.Final"
+val HibernateVersion      = "5.4.12.Final"
 val ValidationApiVersion  = "2.0.1.Final"
 
 val branch = {
@@ -107,7 +107,7 @@ lazy val docs = project
     markdownSourceUrl := Some(url(s"https://github.com/lagom/lagom/edit/$branch/docs/manual/")),
     headerLicense := Some(
       HeaderLicense.Custom(
-        "Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>"
+        "Copyright (C) Lightbend Inc. <https://www.lightbend.com>"
       )
     ),
   )

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.broker.kafka
@@ -15,6 +15,7 @@ import scala.concurrent.duration._
 import scala.util.control.NoStackTrace
 
 sealed trait KafkaConfig {
+
   /** The name of the Kafka server to look up out of the service locator. */
   def serviceName: Option[String]
 

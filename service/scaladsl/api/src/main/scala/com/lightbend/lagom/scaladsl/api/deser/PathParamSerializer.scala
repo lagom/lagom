@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.api.deser
@@ -21,6 +21,7 @@ import scala.collection.immutable.Seq
  * values for query string parameters.
  */
 trait PathParamSerializer[Param] {
+
   /**
    * Serialize the given `parameter` into path parameters.
    */
@@ -37,6 +38,7 @@ trait PathParamSerializer[Param] {
 object PathParamSerializer extends DefaultPathParamSerializers
 
 trait DefaultPathParamSerializers extends LowPriorityPathParamSerializers {
+
   /**
    * Create a PathParamSerializer for required parameters.
    */

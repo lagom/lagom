@@ -1,22 +1,17 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.javadsl.persistence
 
-import java.util.concurrent.CompletionStage
 import java.util.Optional
 import java.util.UUID
 
-import akka.japi.Pair
-import akka.japi.function.Creator
-import akka.stream.javadsl
-import akka.Done
 import akka.NotUsed
+import akka.japi.Pair
+import akka.stream.javadsl
 import com.lightbend.lagom.javadsl.persistence.Offset.Sequence
 import com.lightbend.lagom.javadsl.persistence.Offset.TimeBasedUUID
-
-import scala.concurrent.duration._
 
 /**
  * At system startup all [[PersistentEntity]] classes must be registered here
@@ -26,6 +21,7 @@ import scala.concurrent.duration._
  * Commands are sent to a [[PersistentEntity]] using a `PersistentEntityRef`.
  */
 trait PersistentEntityRegistry {
+
   /**
    * At system startup all [[PersistentEntity]] classes must be registered
    * with this method.

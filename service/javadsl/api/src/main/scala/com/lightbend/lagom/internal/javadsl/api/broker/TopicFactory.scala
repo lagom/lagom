@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.javadsl.api.broker
@@ -35,11 +35,12 @@ trait TopicFactoryProvider {
 
 @Singleton
 class InjectorTopicFactoryProvider @Inject() (injector: Injector) extends TopicFactoryProvider {
-  override lazy val get: Option[TopicFactory] = try {
-    Some(injector.instanceOf[TopicFactory])
-  } catch {
-    case NonFatal(e) => None
-  }
+  override lazy val get: Option[TopicFactory] =
+    try {
+      Some(injector.instanceOf[TopicFactory])
+    } catch {
+      case NonFatal(e) => None
+    }
 }
 
 object NoTopicFactoryProvider extends TopicFactoryProvider {

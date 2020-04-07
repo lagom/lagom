@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.javadsl.persistence.jdbc
@@ -25,7 +25,7 @@ abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorS
     this(ActorSystem(testName, config.withFallback(Configuration.load(Environment.simple()).underlying)))
   }
 
-  def this(config: Config) = this(PersistenceSpec.getCallerName(getClass), config)
+  def this(config: Config) = this(PersistenceSpec.testNameFromCallStack(classOf[JdbcPersistenceSpec]), config)
 
   def this() = this(ConfigFactory.empty())
 

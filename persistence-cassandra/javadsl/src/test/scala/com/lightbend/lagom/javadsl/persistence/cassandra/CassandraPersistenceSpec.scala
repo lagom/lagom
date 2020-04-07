@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.javadsl.persistence.cassandra
@@ -26,7 +26,8 @@ class CassandraPersistenceSpec(system: ActorSystem) extends ActorSystemSpec(syst
       )
     )
 
-  def this(config: Config) = this(PersistenceSpec.getCallerName(getClass), config)
+  def this(config: Config) =
+    this(PersistenceSpec.testNameFromCallStack(classOf[CassandraPersistenceSpec]), config)
 
   def this() = this(ConfigFactory.empty())
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.persistence
@@ -10,6 +10,7 @@ package com.lightbend.lagom.scaladsl.persistence
  * Handles the management of read-sides.
  */
 trait ReadSide {
+
   /**
    * Register a read-side processor with Lagom.
    *

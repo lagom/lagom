@@ -2,7 +2,7 @@ language: scala
 
 # Only build non-pushes (so PRs, API requests & cron jobs) OR tags OR forks OR main branch builds
 # https://docs.travis-ci.com/user/conditional-builds-stages-jobs/
-if: type != push OR tag IS present OR repo != lagom/lagom OR branch IN (master, 1.5.x, 1.4.x)
+if: type != push OR tag IS present OR repo != lagom/lagom OR branch IN (master, 1.6.x, 1.5.x, 1.4.x)
 
 addons:
   apt:
@@ -18,13 +18,13 @@ env:
     # the following `secure` is WHITESOURCE_PASSWORD which is the same for all branches.
     - secure: "A4xDS51pB8ERJPR/a5Lui//E//1L9pJ9Eg1kcRm/OR2izg7rx7p8Wemfp9gRhz8trn1mIrXDSMSK9iwENsfIP1bc/6AgtTWKBPm9DKjG0HW3swFFMBzzd6gxmOi4JD8rOtVc62Cf4qnURz+hsPRcI5C8aAW1fNi/5x1Q3HcAMtxE8EdPR7tU6Ve8utieOFPpqNQMktcL1aFusu+QddO14ZpQ944uAg0YdRRYFMG9SCbTkNDLt66AHTF4rKyZfkbM1tadqvvDez7Uo2eGK+KoQxTyrjct8W4Gqh+obOTyj1ngaPZEKvgbIJowFCrBzY5W+oNl6S+qa6PyAwq1MWKFqyUZt4P9fk3N9MDOYvuaS+YJCQd3VS4qCL9MEWahXNc3ZT+m8u5HT5axuPy+2qiKL/wrGzAXd74K9gNKuZJD7s+79Pwn34ZEbNMZ13AxyF6QkavU+Xcr5tQNwwZ+8P+k5OGoVsJOqZ3J7M+igGDRZh0fD693Wdp+mfORQqIvJFKED4daJYgTLufwt4tBLUxPUvlUZOWZFPn8DSQqTE7vsE9VPdpKSXTv1MyHxeMTiAX+XPabEWoazB8/4rljkC/EPxAButPD+AtUatfa6fIXpyGxHIvX8CFa2UnOQe9YbTRnxqa8TYvyMsWNQn1Q1eQMkvXCetqoefW5hA0UHTU5Zy4="
   matrix:
-    - TRAVIS_JDK=8
+    - TRAVIS_JDK=11
 
 before_install:
   # See https://github.com/travis-ci/travis-ci/issues/4629#issuecomment-239493916
   - rm ~/.m2/settings.xml
   - curl -Ls https://git.io/jabba | bash && . ~/.jabba/jabba.sh
-install: jabba install "adopt@~1.$TRAVIS_JDK.0-0" && jabba use "$_" && java -Xmx32m -version
+install: jabba install $(jabba ls-remote "adopt@~1.$TRAVIS_JDK.0-0" --latest=patch) && jabba use "$_" && java -Xmx32m -version
 
 git:
   depth: false # Avoid sbt-dynver not seeing the tag
@@ -41,40 +41,45 @@ jobs:
     - script: SCALA_VERSION=2.12.10 bin/test-2.1x
       name: "Run tests for Scala 2.12"
     - script: SCALA_VERSION=2.12.10 bin/test-2.1x
-      env: TRAVIS_JDK=11
-      name: "Run tests for Scala 2.12 and Java 11"
+      env: TRAVIS_JDK=8
+      name: "Run tests for Scala 2.12 and Java 8"
     - script: SCALA_VERSION=2.13.0 bin/test-2.1x
       name: "Run tests for Scala 2.13"
     - script: SCALA_VERSION=2.12.10 bin/test-multi-jvm-2.1x
       name: "Run multi-jvm tests for Scala 2.12"
     - script: SCALA_VERSION=2.12.10 bin/test-multi-jvm-2.1x
-      env: TRAVIS_JDK=11
-      name: "Run multi-jvm tests for Scala 2.12 and Java 11"
+      env: TRAVIS_JDK=8
+      name: "Run multi-jvm tests for Scala 2.12 and Java 8"
     - script: SCALA_VERSION=2.13.0 bin/test-multi-jvm-2.1x
       name: "Run multi-jvm tests for Scala 2.13"
     - script: bin/test-documentation
       name: "Documentation validations and tests"
-    - script: bin/test-docs-code-only
-      env: TRAVIS_JDK=11
-      name: "Documentation tests (Java 11)"
+    ## Until the release is run in JDK11 we must have 100% support for docs
+    ## generation in JDK8 (this means `unidoc` must be run in every PR)
+    - script: bin/test-documentation
+    #- script: bin/test-docs-code-only
+      env: TRAVIS_JDK=8
+      name: "Documentation tests (Java 8)"
+
     - stage: test-build-tools
-      script: SCALA_VERSION=2.10.7 bin/test-sbt
-      name: "Scripted tests for sbt 0.13"
-    - script: SCALA_VERSION=2.12.10 bin/test-sbt
+      script: SCALA_VERSION=2.12.10 bin/test-sbt
       name: "Scripted tests for sbt 1"
     - script: SCALA_VERSION=2.12.10 bin/test-sbt
-      env: TRAVIS_JDK=11
-      name: "Scripted tests for sbt 1 and Java 11"
+      env: TRAVIS_JDK=8
+      name: "Scripted tests for sbt 1 and Java 8"
     - script: bin/test-maven
       name: "PublishM2 and test Maven"
     - script: bin/test-maven
-      name: "PublishM2 and test Maven using Java 11"
-      env: TRAVIS_JDK=11
+      name: "PublishM2 and test Maven using Java 8"
+      env: TRAVIS_JDK=8
+    - script: SCALA_VERSION=2.12.10 bin/test-sbt-13x
+      name: "Scripted tests for sbt 1.3"
+      if: type = cron
 
 cache:
   directories:
-    - $HOME/.coursier/cache
-    - $HOME/.ivy2
+    - $HOME/.cache/coursier
+    - $HOME/.ivy2/cache
     - $HOME/.jabba/jdk
     - $HOME/.sbt
     - $HOME/.m2/repository
@@ -83,8 +88,6 @@ before_cache:
   # Ensure changes to the cache aren't persisted
   - rm -rf $HOME/.ivy2/cache/com.lightbend.lagom/*
   - rm -rf $HOME/.ivy2/cache/scala_*/sbt_*/com.lightbend.lagom/*
-  - rm -rf $HOME/.ivy2/local/com.lightbend.lagom/*
-  - rm -rf $HOME/.ivy2/local/scala_*/sbt_*/com.lightbend.lagom/*
   - rm -r $HOME/.m2/repository/com/lightbend/lagom/*
   # Delete all ivydata files since ivy touches them on each build
   - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
@@ -93,7 +96,9 @@ before_cache:
 notifications:
   email:
     recipients:
-      secure: dg0b5oUBfma5RZtYoK/kG7x0TuQ2y95SpQqEG8w9cK7yyY1hDNvNKcdibrOupsttKWeng0gEgpzIAwBLypwQTdelembEZcJKuDRwl8fWISJqxuE90VVH+oiIyjG/MXvGNdkZVBni32Ye/xh5OR+YXSs5DzrwYVKBY/mEq+e3SgN7fqQ1Cxt7Kp0uufMgy6zfRu8qNh1IoRVTcxX1vL14G9FHrhyfSt5+scvIE4rQsXy4f783tnLqOKbqK4/incfnPf7Q2j0qnps9iA/xpzb9aCq4LgILAiJ/mxncZ5jmFfJ4NWibJzikXJlTAfVVaOlQt0O7BDoJY1AyV7nZw9mBf9RseXPkXZ8IqoM7MBMvaatjlh5d2RbHXRzMQaBLtKud38x83M/gjNObiGKBBGHy1FlYnhHOJGBHVjSZcDcToPE5Bb44T8bfraYVMsKgWgpdoFWTpAM5ctGqnQdmm/45yUaXcMnJbc5k3Xu5N/IpfPx2NXROHpmh7Su/KSIHf1yGAREInV6JIJIMyjZmXixqxWRGyKCAD2iLEhUTWRMMji8Dm2TLBJpDXEAgKjfmZYTHpBohUeVNOZZTRYAHsGw/MXJObqud9VO+MUxc7PtFijN7zJMzFL0tt3vSBIjKpwH4rfxxIlZGHcNhufPloNUzHOuB7AesExBum8XsRQ/sV6I=
+      secure: n0XjpDQQ9eIPvQRJvqpUvnj300XyLu80cC5+FCcmWpndN36HLUTpZs6QpjY7cXDSyPDa86UxhWf/2N1wlr+XpafTxDweolsMGRAlGgF7ojnxIgMMKDzm6NgIUlUlMJcNg39pmQzDk8PFB3hXM1sHQ+Mt1Wxyv3Fttu/JEFo3JeO3vyOXl7oC8EabxQkxCmtBNelgIvDPFgsbW6qtF69u6K2q7eI0NgL6qry4CqejUx/tCaWidMvAZ8aelx8BhrKI0FDPo0ph5fwfJqM/s3y65v63A1rdOmFweGZkMLcNP2iXe5sH8ogte+F3l4l6WSqaGdWeN/g1d16nVkZ71qYpN1Xub22Uz7iZZ1dJc89On3v7Cau6chSaVFMmjUICm261zyK5LIt4MZh1NDBPAYpniCqCtj1AntJd78KiL3qYyxEVIeG9yArA9c3JHjBbvxCC5j6VGJiZRiRwx7LH+DbO3bxvsy71/Pf/qgHmk1+373uXn/xkguoVyjYI/OrFKlrpZRj98+NfWOzs3/LToosdtNp0SjNkP3k4WYzlI6LVXcR67Ny5UxBIyelteFoPNMDJSchhkWtc5Q3UFxXmFQk7BxfUJp/3dQyWagre5MRt9q7sM/nvdT7UKswOfTdEjrlxDQL3uwgdvGWedOehqdoaQ8/+dmBFDakh6fp41V/fW/8=
+    on_success: never
+    on_failure: always
   webhooks:
     urls:
       - https://webhooks.gitter.im/e/2aa0aeda88d31fe293d4

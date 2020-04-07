@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.maven
@@ -74,8 +74,8 @@ class ServiceManager @Inject() (
       devModeDependencies(
         scalaBinaryVersion,
         Seq("lagom-reloadable-server") ++
-          serviceLocatorUrl.fold(Seq.empty[String])(
-            _ => Seq("lagom-service-registry-client", "lagom-service-registration")
+          serviceLocatorUrl.fold(Seq.empty[String])(_ =>
+            Seq("lagom-service-registry-client", "lagom-service-registration")
           )
       )
     }

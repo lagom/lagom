@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package docs.scaladsl.gettingstarted
@@ -57,9 +57,7 @@ package helloservice {
 
     override def useGreeting(id: String) = ServiceCall { request =>
       entityRef(id)
-        .ask[Confirmation](
-          replyTo => UseGreetingMessage(request.message, replyTo)
-        )
+        .ask[Confirmation](replyTo => UseGreetingMessage(request.message, replyTo))
         .map {
           case Accepted => Done
           case _        => throw BadRequest("Can't upgrade the greeting message.")

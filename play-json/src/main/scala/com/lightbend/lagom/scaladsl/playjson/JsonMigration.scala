@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.playjson
@@ -75,6 +75,7 @@ object JsonMigrations {
  * current class name.
  */
 abstract class JsonMigration(val currentVersion: Int) {
+
   /**
    * Override to provide transformation of the old JSON structure to the new
    * JSON structure.

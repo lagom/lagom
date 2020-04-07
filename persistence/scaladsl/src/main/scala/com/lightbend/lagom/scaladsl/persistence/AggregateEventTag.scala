@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.persistence
@@ -7,6 +7,7 @@ package com.lightbend.lagom.scaladsl.persistence
 import scala.reflect.ClassTag
 
 object AggregateEventTag {
+
   /**
    * Convenience factory method of [[AggregateEventTag]] that uses the
    * class name of the event type as `tag`. Note that it is needed to
@@ -143,6 +144,7 @@ final class AggregateEventShards[Event <: AggregateEvent[Event]](
     val tag: String,
     val numShards: Int
 ) extends AggregateEventTagger[Event] {
+
   /**
    * Get the tag for the given entity ID.
    *

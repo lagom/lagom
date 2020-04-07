@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.persistence
@@ -9,6 +9,7 @@ import akka.cluster.sharding.typed.scaladsl.EntityContext
 
 @ApiMayChange
 object AkkaTaggerAdapter {
+
   /**
    * Adapts an existing Lagom [[AggregateEventTagger]] to a
    * function {{{Event => Set[String]}}} as expected by Akka Persistence Typed {{{EventSourcedBehavior.withTagger}}} API.

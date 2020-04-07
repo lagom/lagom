@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.persistence.cassandra
@@ -57,11 +57,11 @@ private[lagom] abstract class CassandraOffsetStore(
   } else None
 
   private def createTable(): Future[Done] = {
-    session.executeCreateTable(s"""
-                                  |CREATE TABLE IF NOT EXISTS offsetStore (
-                                  |  eventProcessorId text, tag text, timeUuidOffset timeuuid, sequenceOffset bigint,
-                                  |  PRIMARY KEY (eventProcessorId, tag)
-                                  |)""".stripMargin)
+    session.executeDDL(s"""
+                          |CREATE TABLE IF NOT EXISTS offsetStore (
+                          |  eventProcessorId text, tag text, timeUuidOffset timeuuid, sequenceOffset bigint,
+                          |  PRIMARY KEY (eventProcessorId, tag)
+                          |)""".stripMargin)
   }
 
   protected def doPrepare(eventProcessorId: String, tag: String): Future[(Offset, PreparedStatement)] = {

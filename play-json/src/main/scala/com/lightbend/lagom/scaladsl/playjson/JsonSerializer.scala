@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.playjson
@@ -10,6 +10,7 @@ import scala.collection.immutable.Seq
 import scala.reflect.ClassTag
 
 object JsonSerializer {
+
   /**
    * Creates a format that will serialize and deserialize a singleton to an empty js object
    */

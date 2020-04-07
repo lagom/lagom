@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.server
@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import akka.stream.Materializer
+import akka.stream.SystemMaterializer
 import com.lightbend.lagom.internal.scaladsl.server.ScaladslServiceRouter
 import com.lightbend.lagom.scaladsl.api.transport._
 import com.lightbend.lagom.scaladsl.api.Service
@@ -34,9 +34,9 @@ import org.scalatest.matchers.should.Matchers
  * status code of the response (won't be 200) and locate the suspect line of code where that status code is launched.
  */
 class ScaladslStrictServiceRouterSpec extends AsyncFlatSpec with Matchers with BeforeAndAfterAll {
-  private val system                        = ActorSystem("ScaladslServiceRouterSpec")
+  private implicit val system: ActorSystem  = ActorSystem("ScaladslServiceRouterSpec")
   private implicit val ec: ExecutionContext = system.dispatcher
-  private implicit val mat: Materializer    = ActorMaterializer.create(system)
+  private val mat: Materializer             = SystemMaterializer(system).materializer
 
   protected override def afterAll(): Unit = {
     Await.ready(system.terminate(), 10.seconds)
@@ -54,7 +54,7 @@ class ScaladslStrictServiceRouterSpec extends AsyncFlatSpec with Matchers with B
       }
     }
 
-    val x: mvc.EssentialAction => mvc.RequestHeader => Future[mvc.Result] = { (action) => (rh) =>
+    val x: mvc.EssentialAction => mvc.RequestHeader => Future[mvc.Result] = { action => (rh) =>
       action(rh).run()
     }
 
@@ -81,7 +81,7 @@ class ScaladslStrictServiceRouterSpec extends AsyncFlatSpec with Matchers with B
       }
     }
 
-    val x: mvc.EssentialAction => mvc.RequestHeader => Future[mvc.Result] = { (action) =>
+    val x: mvc.EssentialAction => mvc.RequestHeader => Future[mvc.Result] = { action =>
       new VerboseHeaderPlayFilter(atomicInt, mat).apply(rh => action(rh).run())
     }
 
@@ -125,7 +125,7 @@ class ScaladslStrictServiceRouterSpec extends AsyncFlatSpec with Matchers with B
       }
     }
 
-    val x: mvc.EssentialAction => mvc.RequestHeader => Future[mvc.Result] = { (action) =>
+    val x: mvc.EssentialAction => mvc.RequestHeader => Future[mvc.Result] = { action =>
       new VerboseHeaderPlayFilter(atomicInt, mat).apply(rh => action(rh).run())
     }
 

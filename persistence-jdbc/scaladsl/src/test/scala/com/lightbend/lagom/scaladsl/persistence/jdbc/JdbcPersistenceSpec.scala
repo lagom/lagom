@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.persistence.jdbc
@@ -41,7 +41,7 @@ abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorS
     )
 
   def this(config: Config, registry: JsonSerializerRegistry) =
-    this(PersistenceSpec.getCallerName(getClass), config, registry)
+    this(PersistenceSpec.testNameFromCallStack(classOf[JdbcPersistenceSpec]), config, registry)
 
   def this(registry: JsonSerializerRegistry) = this(ConfigFactory.empty(), registry)
 

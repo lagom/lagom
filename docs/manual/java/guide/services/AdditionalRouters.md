@@ -21,7 +21,7 @@ The second variant should be used when the Router does not have any other depend
 
 The following example shows how you can add a file upload endpoint to an existing Lagom Service.
 
-The example is based on [JavaRoutingDsl](https://www.playframework.com/documentation/2.7.x/JavaRoutingDsl) that allows you to build a Play Router programmatically. It adds an extra path (`/api/files`) that receives POST calls for multipart-form data.
+The example is based on [JavaRoutingDsl](https://www.playframework.com/documentation/2.8.x/JavaRoutingDsl) that allows you to build a Play Router programmatically. It adds an extra path (`/api/files`) that receives POST calls for multipart-form data.
 
 @[file-upload-router](code/docs/services/AdditionalRouters.java)
 
@@ -58,4 +58,4 @@ curl -X POST -F "data=@somefile.txt" -v  http://localhost:9000/api/files
 
 Additional routers are not part of the Service API and therefore are not accessible from generated Lagom clients. Lagom clients only have access to methods defined on the Service interface.
 
-Additional routers are only part of the exposed HTTP endpoints. To access then, you will need to use an HTTP client, eg: [Play-WS](https://www.playframework.com/documentation/2.7.x/JavaWS)
+Additional routers are only part of the exposed HTTP endpoints. To access then, you will need to use an HTTP client, eg: [Play-WS](https://www.playframework.com/documentation/2.8.x/JavaWS)

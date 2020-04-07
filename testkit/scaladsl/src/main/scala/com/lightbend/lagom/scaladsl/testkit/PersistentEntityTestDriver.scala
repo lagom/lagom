@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.testkit
@@ -27,6 +27,7 @@ object PersistentEntityTestDriver {
       sideEffects: immutable.Seq[SideEffect],
       issues: immutable.Seq[Issue]
   ) {
+
     /**
      * The messages that were sent as replies using the context that is
      * passed as parameter to the command handler functions.
@@ -176,8 +177,9 @@ class PersistentEntityTestDriver[C, E, S](
 
         issues ++= checkSerialization(cmd)
 
-        val actions = try behavior(state)
-        catch unhandledState
+        val actions =
+          try behavior(state)
+          catch unhandledState
         val commandHandler = actions.commandHandlers.get(cmd.getClass) match {
           case Some(h) => h
           case None    => PartialFunction.empty
@@ -241,8 +243,9 @@ class PersistentEntityTestDriver[C, E, S](
   }
 
   private def applyEvent(event: E): Unit = {
-    val actions = try behavior(state)
-    catch unhandledState
+    val actions =
+      try behavior(state)
+      catch unhandledState
     state = actions.eventHandler.applyOrElse((event, state), unhandledEvent)
   }
 

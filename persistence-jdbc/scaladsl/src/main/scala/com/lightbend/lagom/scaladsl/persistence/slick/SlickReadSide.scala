@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.persistence.slick
@@ -37,6 +37,7 @@ trait SlickReadSide {
    * Builder for the handler.
    */
   trait ReadSideHandlerBuilder[Event <: AggregateEvent[Event]] {
+
     /**
      * Set a global prepare Database I/O Action.
      *

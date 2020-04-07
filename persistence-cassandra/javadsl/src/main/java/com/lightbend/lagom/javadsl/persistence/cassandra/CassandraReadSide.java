@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.javadsl.persistence.cassandra;
@@ -10,7 +10,6 @@ import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler;
-import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,15 +26,6 @@ import java.util.function.Supplier;
  * <p>This should be used to build and register a read side processor.
  */
 public interface CassandraReadSide {
-  /**
-   * At system startup all {@link CassandraReadSideProcessor} classes must be registered with this
-   * method.
-   *
-   * @deprecated Use the builder method to create and register a Cassandra read side processor.
-   */
-  @Deprecated
-  <Event extends AggregateEvent<Event>> void register(
-      Class<? extends CassandraReadSideProcessor<Event>> processorClass);
 
   /**
    * Create a builder for a Cassandra read side event handler.

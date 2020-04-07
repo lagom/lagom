@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.persistence.jdbc
@@ -21,6 +21,7 @@ import scala.reflect.ClassTag
  * Offsets are automatically handled.
  */
 trait JdbcReadSide {
+
   /**
    * Create a builder for a JDBC read side event handler.
    *
@@ -33,6 +34,7 @@ trait JdbcReadSide {
    * Builder for the handler.
    */
   trait ReadSideHandlerBuilder[Event <: AggregateEvent[Event]] {
+
     /**
      * Set a global prepare callback.
      *

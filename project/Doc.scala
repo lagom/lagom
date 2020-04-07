@@ -1,19 +1,15 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 package lagom
 
 import sbt._
-import sbtunidoc.BaseUnidocPlugin
-import sbtunidoc.GenJavadocPlugin
 import sbtunidoc.JavaUnidocPlugin
 import sbtunidoc.ScalaUnidocPlugin
-
 import sbtunidoc.BaseUnidocPlugin.autoImport._
 import sbtunidoc.JavaUnidocPlugin.autoImport._
 import sbtunidoc.GenJavadocPlugin.autoImport._
 import sbtunidoc.ScalaUnidocPlugin.autoImport._
-
 import sbt.Keys._
 import sbt.File
 import sbt.ScopeFilter.ProjectFilter
@@ -112,16 +108,24 @@ object UnidocRoot extends AutoPlugin {
     case _                                                  => Seq("--allow-script-in-comments")
   }
 
-  override lazy val projectSettings = Seq(
-    unidocAllSources in (JavaUnidoc, unidoc) ++= allGenjavadocSources.value,
-    unidocAllSources in (JavaUnidoc, unidoc) := {
-      (unidocAllSources in (JavaUnidoc, unidoc)).value
-        .map(_.filterNot(f => excludeJavadoc.exists(f.getCanonicalPath.contains)))
-    },
-    // Override the Scala unidoc target to *not* include the Scala version, since we don't cross-build docs
-    target in (ScalaUnidoc, unidoc) := target.value / "unidoc",
-    scalacOptions in (ScalaUnidoc, unidoc) ++= Seq("-skip-packages", "com.lightbend.lagom.internal"),
-    javacOptions in doc := Seq(
+  val extraJavadocArguments =
+    if (akka.JavaVersion.isJdk8)
+      Nil
+    else {
+      Seq(
+        // when generating java code from scala code in unidoc, the generated javadoc
+        // may not compile but that's fine because we only are interested in the
+        // docs of that code, not that the code is 100% valid java code.
+        // Unfortunately, this flag doesn't prevent the output of the error messages, you will
+        // see compiler errors on the sbt output but the HTMl generation complete successfully so
+        // from sbt's point of view, the task is successful.
+        "--ignore-source-errors",
+        "--frames",
+      )
+    }
+
+  val baseJavaDocArguments =
+    Seq(
       "-windowtitle",
       "Lagom Services API",
       // Adding a user agent when we run `javadoc` is necessary to create link docs
@@ -187,8 +191,22 @@ object UnidocRoot extends AutoPlugin {
       "-notimestamp",
       "-footer",
       framesHashScrollingCode
-    )
-      ++ enableScriptsArgs
+    ) ++ enableScriptsArgs
+
+  override lazy val projectSettings = Seq(
+    unidocAllSources in (JavaUnidoc, unidoc) ++= allGenjavadocSources.value,
+    unidocAllSources in (JavaUnidoc, unidoc) := {
+      (unidocAllSources in (JavaUnidoc, unidoc)).value
+        .map(_.filterNot(f => excludeJavadoc.exists(f.getCanonicalPath.contains)))
+    },
+    // Override the Scala unidoc target to *not* include the Scala version, since we don't cross-build docs
+    target in (ScalaUnidoc, unidoc) := target.value / "unidoc",
+    scalacOptions in (ScalaUnidoc, unidoc) ++= Seq("-skip-packages", "com.lightbend.lagom.internal"),
+    // The settings below are very similar. JDK8 honours both `javacOptions in doc`
+    // and `javacOptions in (JavaUnidoc, unidoc)` but JDK11 only seems to pick `javacOptions in (JavaUnidoc, unidoc)`.
+    // We're keeping both just in case.
+    javacOptions in doc := baseJavaDocArguments ++ extraJavadocArguments,
+    javacOptions in (JavaUnidoc, unidoc) := baseJavaDocArguments ++ extraJavadocArguments,
   )
 
   def packageList(names: String*): String =
@@ -211,7 +229,7 @@ object Unidoc extends AutoPlugin {
   // down to two assuming https://github.com/typesafehub/genjavadoc/issues/66 is possible.
   override lazy val projectSettings = inConfig(Genjavadoc)(Defaults.configSettings) ++ Seq(
     ivyConfigurations += GenjavadocCompilerPlugin,
-    libraryDependencies += ("com.typesafe.genjavadoc" % "genjavadoc-plugin" % "0.15" % "genjavadocplugin->default(compile)")
+    libraryDependencies += ("com.typesafe.genjavadoc" % "genjavadoc-plugin" % "0.16" % "genjavadocplugin->default(compile)")
       .cross(CrossVersion.full),
     scalacOptions in Genjavadoc ++= Seq(
       "-P:genjavadoc:out=" + (target.value / "java"),

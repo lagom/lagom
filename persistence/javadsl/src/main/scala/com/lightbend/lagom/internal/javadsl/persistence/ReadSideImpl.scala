@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.javadsl.persistence
@@ -59,16 +59,17 @@ private[lagom] class ReadSideImpl @Inject() (
       clazz: Class[_]
   ) = {
     // Capture and improve failure messages. This improvement is only required due to using runtime DI
-    val readSideProcessor = try {
-      processorFactory()
-    } catch {
-      case NonFatal(e) =>
-        throw new IllegalArgumentException(
-          "Cannot create instance of " +
-            s"[${clazz.getName}]",
-          e
-        )
-    }
+    val readSideProcessor =
+      try {
+        processorFactory()
+      } catch {
+        case NonFatal(e) =>
+          throw new IllegalArgumentException(
+            "Cannot create instance of " +
+              s"[${clazz.getName}]",
+            e
+          )
+      }
 
     val readSideName           = name.asScala.fold("")(_ + "-") + readSideProcessor.readSideName()
     val tags                   = readSideProcessor.aggregateTags().asScala
@@ -96,7 +97,7 @@ private[lagom] class ReadSideImpl @Inject() (
 
     val readSidePropsFactory = (coordinates: WorkerCoordinates) =>
       ReadSideActor.props(
-        coordinates.tagName,
+        coordinates,
         config,
         eventClass,
         globalPrepareTask,

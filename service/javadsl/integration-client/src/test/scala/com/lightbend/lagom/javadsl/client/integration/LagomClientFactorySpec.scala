@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.javadsl.client.integration
@@ -15,7 +15,7 @@ import org.scalatest.BeforeAndAfterEach
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import akka.pattern._
-import akka.stream.ActorMaterializer
+import akka.stream.SystemMaterializer
 import akka.util.Timeout
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -34,12 +34,12 @@ class LagomClientFactorySpec extends AnyFlatSpec with Matchers with BeforeAndAft
     (echoActor ? "hey").mapTo[String].futureValue shouldBe "hey"
 
     LagomClientFactory
-    // create a factory by passing an existing ActorSystem
+    // create a factory by passing the existing ActorSystem
       .create(
         "test",
         this.getClass.getClassLoader,
         system,
-        ActorMaterializer()(system)
+        SystemMaterializer(system).materializer
       )
       // closing the factory should not close the existing ActorSystem
       .close()

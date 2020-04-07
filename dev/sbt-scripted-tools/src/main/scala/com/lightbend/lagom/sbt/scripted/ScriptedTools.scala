@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.sbt.scripted
@@ -46,7 +46,7 @@ object ScriptedTools extends AutoPlugin {
     // This is copy & pasted from project/AkkaSnapshotRepositories so that scripted tests
     // can use Akka snapshot repositories as well. If you change it here, remember to keep
     // project/AkkaSnapshotRepositories in sync.
-    resolvers ++= (sys.env.get("TRAVIS_EVENT_TYPE").filter(_.equalsIgnoreCase("cron")) match {
+    resolvers ++= (sys.props.get("lagom.build.akka.version") match {
       case Some(_) =>
         Seq(
           "akka-snapshot-repository".at("https://repo.akka.io/snapshots"),
@@ -178,32 +178,30 @@ object ScriptedTools extends AutoPlugin {
     def bodyAssertionOption(opt: String, description: String)(
         assertion: (String, String) => Boolean
     ): Parser[ApplyOption] = {
-      optionArg(opt, StringBasic)(
-        expected =>
-          v => {
-            val oldAssertion = v.bodyAssertion
-            v.copy(bodyAssertion = body => {
-              // First run the existing assertion
-              oldAssertion(body)
-              // Now run this assertion
-              if (!assertion(body, expected)) sys.error(s"Expected body to $description '$expected' but got '$body'")
-            })
-          }
+      optionArg(opt, StringBasic)(expected =>
+        v => {
+          val oldAssertion = v.bodyAssertion
+          v.copy(bodyAssertion = body => {
+            // First run the existing assertion
+            oldAssertion(body)
+            // Now run this assertion
+            if (!assertion(body, expected)) sys.error(s"Expected body to $description '$expected' but got '$body'")
+          })
+        }
       )
     }
 
     def statusAssertionOption(opt: String, description: String)(
         assertion: (Int, Int) => Boolean
     ): Parser[ApplyOption] = {
-      optionArg(opt, NatBasic)(
-        expected =>
-          v => {
-            val oldAssertion = v.statusAssertion
-            v.copy(statusAssertion = status => {
-              oldAssertion(status)
-              if (!assertion(status, expected)) sys.error(s"Expected status to $description $expected but got $status")
-            })
-          }
+      optionArg(opt, NatBasic)(expected =>
+        v => {
+          val oldAssertion = v.statusAssertion
+          v.copy(statusAssertion = status => {
+            oldAssertion(status)
+            if (!assertion(status, expected)) sys.error(s"Expected status to $description $expected but got $status")
+          })
+        }
       )
     }
 
@@ -245,17 +243,16 @@ object ScriptedTools extends AutoPlugin {
     def assertionOption[A](opt: String, parser: Parser[A])(
         assertion: (String, A) => Unit
     ): Parser[ValidateFile => ValidateFile] = {
-      (literal(opt) ~> Space ~> parser).map(
-        expected =>
-          (v: ValidateFile) => {
-            val oldAssertions = v.assertions
-            v.copy(assertions = contents => {
-              // First run the existing assertion
-              oldAssertions(contents)
-              // Now run this assertion
-              assertion(contents, expected)
-            })
-          }
+      (literal(opt) ~> Space ~> parser).map(expected =>
+        (v: ValidateFile) => {
+          val oldAssertions = v.assertions
+          v.copy(assertions = contents => {
+            // First run the existing assertion
+            oldAssertions(contents)
+            // Now run this assertion
+            assertion(contents, expected)
+          })
+        }
       )
     }
 
@@ -265,13 +262,11 @@ object ScriptedTools extends AutoPlugin {
       val count = contents.linesIterator.size
       if (count != expected) sys.error(s"Expected line count of $expected but got $count")
     }
-    val contains = assertionOption("contains", StringBasic)(
-      (contents, expected) =>
-        if (!contents.contains(expected)) sys.error(s"Expected file to contain '$expected' but got '$contents'")
+    val contains = assertionOption("contains", StringBasic)((contents, expected) =>
+      if (!contents.contains(expected)) sys.error(s"Expected file to contain '$expected' but got '$contents'")
     )
-    val notContains = assertionOption("not-contains", StringBasic)(
-      (contents, expected) =>
-        if (contents.contains(expected)) sys.error(s"Expected file to not contain '$expected' but got '$contents'")
+    val notContains = assertionOption("not-contains", StringBasic)((contents, expected) =>
+      if (contents.contains(expected)) sys.error(s"Expected file to not contain '$expected' but got '$contents'")
     )
 
     val file = StringBasic.map(fileName => (v: ValidateFile) => v.copy(file = Some(fileName)))

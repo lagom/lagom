@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.dev
@@ -59,11 +59,10 @@ class ConsoleHelper(colors: Colors) {
 
     try {
       //Stop services in asynchronous manner
-      val closing = Future.traverse(services)(
-        serv =>
-          Future {
-            serv.close()
-          }
+      val closing = Future.traverse(services)(serv =>
+        Future {
+          serv.close()
+        }
       )
       closing.onComplete(_ => log.info("All services are stopped"))
       Await.result(closing, 60.seconds)
@@ -71,11 +70,10 @@ class ConsoleHelper(colors: Colors) {
       println()
       // and finally shut down any other possibly running embedded server
       Await.result(
-        Future.traverse(infrastructureServices)(
-          serv =>
-            Future {
-              serv.close()
-            }
+        Future.traverse(infrastructureServices)(serv =>
+          Future {
+            serv.close()
+          }
         ),
         60.seconds
       )

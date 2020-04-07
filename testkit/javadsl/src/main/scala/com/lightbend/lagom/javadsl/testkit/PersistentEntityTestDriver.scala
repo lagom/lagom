@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.javadsl.testkit
@@ -43,6 +43,7 @@ object PersistentEntityTestDriver {
       sideEffects: JList[SideEffect],
       issues: JList[Issue]
   ) {
+
     /**
      * The messages that were sent as replies using the context that is
      * passed as parameter to the command handler functions.

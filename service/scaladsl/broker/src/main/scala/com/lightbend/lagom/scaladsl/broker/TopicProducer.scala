@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.broker
@@ -21,6 +21,7 @@ import scala.collection.immutable
  * automatically have these streams published while the service is running, sharded across the services nodes.
  */
 object TopicProducer {
+
   /**
    * Publish a single stream.
    *

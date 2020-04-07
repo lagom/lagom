@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.persistence.slick
@@ -41,7 +41,7 @@ abstract class SlickPersistenceSpec private (_system: ActorSystem) extends Actor
     )
 
   def this(config: Config, registry: JsonSerializerRegistry) =
-    this(PersistenceSpec.getCallerName(getClass), config, registry)
+    this(PersistenceSpec.testNameFromCallStack(classOf[SlickPersistenceSpec]), config, registry)
 
   def this(registry: JsonSerializerRegistry) =
     this(ConfigFactory.empty(), registry)

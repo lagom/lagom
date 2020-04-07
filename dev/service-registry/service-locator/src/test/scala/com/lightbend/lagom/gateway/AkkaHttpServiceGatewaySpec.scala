@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.gateway
@@ -14,11 +14,9 @@ import akka.http.scaladsl.model.ws.Message
 import akka.http.scaladsl.model.ws.TextMessage
 import akka.http.scaladsl.model.ws.UpgradeToWebSocket
 import akka.http.scaladsl.model.ws.WebSocketRequest
-import akka.http.scaladsl.model.HttpEntity
-import akka.http.scaladsl.model.HttpRequest
-import akka.http.scaladsl.model.HttpResponse
-import akka.stream.ActorMaterializer
+import akka.http.scaladsl.model._
 import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
@@ -39,7 +37,6 @@ import org.scalatest.wordspec.AnyWordSpec
 class AkkaHttpServiceGatewaySpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
   implicit val actorSystem = ActorSystem()
   import actorSystem.dispatcher
-  implicit val mat        = ActorMaterializer()
   val coordinatedShutdown = CoordinatedShutdown(actorSystem)
   val http                = Http()
 
@@ -54,7 +51,17 @@ class AkkaHttpServiceGatewaySpec extends AnyWordSpec with Matchers with BeforeAn
           case req if req.uri.path.toString() == "/echo-headers" =>
             HttpResponse(entity = HttpEntity(req.headers.map(h => s"${h.name()}: ${h.value}").mkString("\n")))
           case stream if stream.uri.path.toString() == "/stream" =>
-            stream.header[UpgradeToWebSocket].get.handleMessages(Flow[Message])
+            stream
+              .header[UpgradeToWebSocket]
+              .get
+              .handleMessages(
+                Flow[Message],
+                stream.headers
+                  .find(_.lowercaseName() == "sec-websocket-protocol")
+                  .map(_.value)
+                  .map(_.split(","))
+                  .map(_.head)
+              )
         },
         "localhost",
         port = 0
@@ -116,6 +123,30 @@ class AkkaHttpServiceGatewaySpec extends AnyWordSpec with Matchers with BeforeAn
       )
 
       (result should contain).inOrderOnly("Hello", "world")
+    }
+
+    "serve websocket requests with the correct response" in {
+      val flow = http.webSocketClientFlow(
+        WebSocketRequest(
+          s"$gatewayWsUri/stream",
+          collection.immutable.Seq.empty[HttpHeader],
+          collection.immutable.Seq("echo")
+        )
+      )
+      val result = Await.result(
+        Source
+          .single(TextMessage("hello world!"))
+          .viaMat(flow)(Keep.right)
+          .to(Sink.ignore)
+          .run(),
+        10.seconds
+      )
+
+      result.response.status should equal(StatusCodes.SwitchingProtocols)
+      result.response.headers.count(_.lowercaseName() == "sec-websocket-protocol") should equal(1)
+      result.response.headers.find(_.lowercaseName() == "sec-websocket-protocol").map(_.value()).get should equal(
+        "echo"
+      )
     }
 
     "serve not found when no ACL matches" in {

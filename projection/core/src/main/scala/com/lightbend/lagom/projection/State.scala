@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.projection
@@ -106,6 +106,7 @@ object Projection {
  */
 @ApiMayChange
 final class State(val projections: Seq[Projection]) extends ProjectionSerializable {
+
   /** Java API  */
   def getProjections: java.util.List[Projection] = projections.asJava
 

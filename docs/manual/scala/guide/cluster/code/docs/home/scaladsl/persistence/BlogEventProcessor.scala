@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package docs.home.scaladsl.persistence
@@ -17,6 +17,7 @@ import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandle
 
 //#my-database
 trait MyDatabase {
+
   /**
    * Create the tables needed for this read side if not already created.
    */

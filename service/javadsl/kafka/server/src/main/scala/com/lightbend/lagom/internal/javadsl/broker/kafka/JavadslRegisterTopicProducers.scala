@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.javadsl.broker.kafka
@@ -15,7 +15,7 @@ import com.lightbend.lagom.javadsl.api.ServiceLocator
 import akka.stream.Materializer
 import javax.inject.Inject
 import akka.actor.ActorSystem
-import akka.persistence.query.Offset
+import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.scaladsl.Source
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
 import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
@@ -62,7 +62,7 @@ class JavadslRegisterTopicProducers @Inject() (
               case tagged: TaggedOffsetTopicProducer[AnyRef, _] =>
                 val tags = tagged.tags.asScala.toIndexedSeq
 
-                val eventStreamFactory: (String, Offset) => Source[(AnyRef, Offset), _] = { (tag, offset) =>
+                val eventStreamFactory: (String, AkkaOffset) => Source[(AnyRef, AkkaOffset), _] = { (tag, offset) =>
                   tags.find(_.tag == tag) match {
                     case Some(aggregateTag) =>
                       tagged
@@ -97,6 +97,9 @@ class JavadslRegisterTopicProducers @Inject() (
                   offsetStore,
                   projectionRegistryImpl
                 )
+              case null =>
+                val message = s"Expected an instance of ${classOf[MethodTopicHolder]}, but 'null' was passed"
+                log.error(message, new NullPointerException(message))
 
               case other =>
                 log.warn {

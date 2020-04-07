@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.javadsl.persistence.cassandra
@@ -18,8 +18,10 @@ import com.lightbend.lagom.javadsl.persistence.TestEntityReadSide
 import com.typesafe.config.Config
 
 object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
-  override def additionalCommonConfig(databasePort: Int): Config =
+  override def additionalCommonConfig(databasePort: Int): Config = {
     cassandraConfigOnly("ClusteredPersistentEntitySpec", databasePort)
+      .withFallback(CassandraReadSideSpec.readSideConfig)
+  }
 }
 
 class CassandraClusteredPersistentEntitySpecMultiJvmNode1 extends CassandraClusteredPersistentEntitySpec

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.broker.kafka
@@ -45,6 +45,7 @@ private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
 )(implicit mat: Materializer, ec: ExecutionContext)
     extends Actor
     with ActorLogging {
+
   /** Switch used to terminate the on-going Kafka publishing stream when this actor fails.*/
   private var shutdown: Option[KillSwitch] = None
 
@@ -70,7 +71,7 @@ private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
 
   private def locatingService(name: String): Receive = {
     case Status.Failure(e) =>
-      log.error(s"Error locating Kafka service named [$name]", e)
+      log.error(e, s"Error locating Kafka service named [{}]", name)
       throw e
 
     case None =>

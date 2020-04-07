@@ -1,13 +1,13 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.scaladsl.persistence.slick
 
 import akka.actor.ActorSystem
 import akka.actor.CoordinatedShutdown
-import akka.stream.ActorMaterializer
 import akka.stream.Materializer
+import akka.stream.SystemMaterializer
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence.multinode.AbstractClusteredPersistentEntityConfig
 import com.lightbend.lagom.scaladsl.persistence.multinode.AbstractClusteredPersistentEntitySpec
@@ -68,7 +68,7 @@ class SlickClusteredPersistentEntitySpec
       override def executionContext: ExecutionContext       = system.dispatcher
       override def coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(actorSystem)
 
-      override lazy val materializer: Materializer                 = ActorMaterializer.create(system)
+      override lazy val materializer: Materializer                 = SystemMaterializer(actorSystem).materializer
       override lazy val configuration: Configuration               = Configuration(system.settings.config)
       override def environment: Environment                        = SlickClusteredPersistentEntityConfig.environment
       override lazy val applicationLifecycle: ApplicationLifecycle = defaultApplicationLifecycle

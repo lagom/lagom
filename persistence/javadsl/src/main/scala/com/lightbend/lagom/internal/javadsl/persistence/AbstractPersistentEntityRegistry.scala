@@ -1,31 +1,27 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.javadsl.persistence
 
 import java.util.Optional
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionStage
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
-
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
 import akka.cluster.sharding.ClusterSharding
 import akka.cluster.sharding.ClusterShardingSettings
 import akka.cluster.sharding.ShardRegion
-import akka.event.Logging
 import akka.japi.Pair
 import akka.persistence.query.scaladsl.EventsByTagQuery
 import akka.persistence.query.PersistenceQuery
 import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.javadsl
-import akka.Done
 import akka.NotUsed
+import com.lightbend.lagom.internal.persistence.cluster.HashCodeMessageExtractor
+import com.lightbend.lagom.internal.spi.projection.ProjectionSpi
 import com.lightbend.lagom.javadsl.persistence._
 import play.api.inject.Injector
-
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
@@ -77,7 +73,9 @@ class AbstractPersistentEntityRegistry(
 
   private val extractShardId: ShardRegion.ExtractShardId = {
     case CommandEnvelope(entityId, _) =>
-      (math.abs(entityId.hashCode) % maxNumberOfShards).toString
+      HashCodeMessageExtractor.shardId(entityId, maxNumberOfShards)
+    case ShardRegion.StartEntity(entityId) =>
+      HashCodeMessageExtractor.shardId(entityId, maxNumberOfShards)
   }
 
   private val registeredTypeNames = new ConcurrentHashMap[String, Class[_]]()
@@ -90,17 +88,18 @@ class AbstractPersistentEntityRegistry(
       () => injector.instanceOf(entityClass)
 
     // try to create one instance to fail fast (e.g. wrong constructor)
-    val entityTypeName = try {
-      entityFactory().entityTypeName
-    } catch {
-      case NonFatal(e) =>
-        throw new IllegalArgumentException(
-          "Cannot create instance of " +
-            s"[${entityClass.getName}]. The class must extend PersistentEntity and have a " +
-            "constructor without parameters or annotated with @Inject.",
-          e
-        )
-    }
+    val entityTypeName =
+      try {
+        entityFactory().entityTypeName
+      } catch {
+        case NonFatal(e) =>
+          throw new IllegalArgumentException(
+            "Cannot create instance of " +
+              s"[${entityClass.getName}]. The class must extend PersistentEntity and have a " +
+              "constructor without parameters or annotated with @Inject.",
+            e
+          )
+      }
 
     // detect non-unique short class names, since that is used as sharding type name
     val alreadyRegistered = registeredTypeNames.putIfAbsent(entityTypeName, entityClass)
@@ -152,6 +151,7 @@ class AbstractPersistentEntityRegistry(
 
         queries
           .eventsByTag(tag, startingOffset)
+          .map(envelope => ProjectionSpi.startProcessing(system, tag, envelope))
           .map { env =>
             Pair.create(env.event.asInstanceOf[Event], OffsetAdapter.offsetToDslOffset(env.offset))
           }

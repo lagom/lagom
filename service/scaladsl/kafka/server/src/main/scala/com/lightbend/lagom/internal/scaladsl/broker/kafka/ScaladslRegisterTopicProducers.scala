@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
 package com.lightbend.lagom.internal.scaladsl.broker.kafka
@@ -81,6 +81,10 @@ class ScaladslRegisterTopicProducers(
                   offsetStore,
                   projectionRegistryImpl
                 )
+              case null =>
+                val message =
+                  s"Expected an instance of ${classOf[TaggedOffsetTopicProducer[_, _]]}, but 'null' was passed"
+                log.error(message, new NullPointerException(message))
 
               case other =>
                 log.warn {
