@@ -67,20 +67,21 @@ object ActorSystemSpec {
   }
 }
 
-abstract class ActorSystemSpec(system: ActorSystem)
-    extends TestKit(system)
+abstract class ActorSystemSpec(actorSystemFactory: () => ActorSystem)
+    extends TestKit(actorSystemFactory())
     with WordSpecLike
     with Matchers
     with BeforeAndAfterAll
     with TypeCheckedTripleEquals
     with ImplicitSender {
+
   def this(testName: String, config: Config) =
-    this(ActorSystem(testName, config))
+    this(() => ActorSystem(testName, config))
 
   def this(config: Config) = this(ActorSystemSpec.testNameFromCallStack(classOf[ActorSystemSpec]), config)
 
   def this(setup: ActorSystemSetup) =
-    this(ActorSystem(ActorSystemSpec.testNameFromCallStack(classOf[ActorSystemSpec]), setup))
+    this(() => ActorSystem(ActorSystemSpec.testNameFromCallStack(classOf[ActorSystemSpec]), setup))
 
   def this() = this(ConfigFactory.empty())
 
