@@ -53,11 +53,18 @@ class PersistentEntityRefSpec
 
   implicit override val patienceConfig = PatienceConfig(5.seconds, 150.millis)
 
+  // start Cassandra before sharing its port and before starting the ActorSystem
+  val cassandraPort: Int = {
+    val cassandraDirectory: File = new File("target/PersistentEntityRefTest")
+    CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", clean = true, port = 0)
+    CassandraLauncher.randomPort
+  }
+
   val config: Config =
     ConfigFactory
       .parseString("akka.loglevel = INFO")
       .withFallback(ClusterConfig)
-      .withFallback(cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort))
+      .withFallback(cassandraConfig("PersistentEntityRefTest", cassandraPort))
 
   private val system: ActorSystem = ActorSystem(
     "PersistentEntityRefSpec",
@@ -69,10 +76,7 @@ class PersistentEntityRefSpec
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-
     Cluster.get(system).join(Cluster.get(system).selfAddress)
-    val cassandraDirectory: File = new File("target/PersistentEntityRefTest")
-    CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", true, 0)
     awaitPersistenceInit(system)
   }
 

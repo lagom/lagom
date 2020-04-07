@@ -33,8 +33,8 @@ object ActorSystemSpec {
 
 }
 
-abstract class ActorSystemSpec(system: ActorSystem)
-    extends TestKit(system)
+abstract class ActorSystemSpec(actorSystemFactory: () => ActorSystem)
+    extends TestKit(actorSystemFactory())
     with WordSpecLike
     with Matchers
     with BeforeAndAfterAll
@@ -42,11 +42,12 @@ abstract class ActorSystemSpec(system: ActorSystem)
     with ImplicitSender {
 
   def this(testName: String, config: Config) =
-    this(ActorSystem(testName, config))
+    this(() => ActorSystem(testName, config))
 
   def this(config: Config) = this(ActorSystemSpec.getCallerName(getClass), config)
 
-  def this(setup: ActorSystemSetup) = this(ActorSystem(ActorSystemSpec.getCallerName(getClass), setup))
+  def this(setup: ActorSystemSetup) =
+    this(() => ActorSystem(ActorSystemSpec.getCallerName(getClass), setup))
 
   def this() = this(ConfigFactory.empty())
 

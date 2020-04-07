@@ -28,19 +28,20 @@ import play.api.Environment
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-abstract class JdbcPersistenceSpec private (_system: ActorSystem) extends ActorSystemSpec(_system) {
-
+abstract class JdbcPersistenceSpec private (actorSystemFactory: () => ActorSystem)
+    extends ActorSystemSpec(actorSystemFactory) {
   def this(testName: String, config: Config, registry: JsonSerializerRegistry) =
     this(
-      ActorSystem(
-        testName,
-        ActorSystemSetup(
-          BootstrapSetup(
-            config.withFallback(Configuration.load(Environment.simple()).underlying)
-          ),
-          JsonSerializerRegistry.serializationSetupFor(registry)
+      () =>
+        ActorSystem(
+          testName,
+          ActorSystemSetup(
+            BootstrapSetup(
+              config.withFallback(Configuration.load(Environment.simple()).underlying)
+            ),
+            JsonSerializerRegistry.serializationSetupFor(registry)
+          )
         )
-      )
     )
 
   def this(config: Config, registry: JsonSerializerRegistry) =
