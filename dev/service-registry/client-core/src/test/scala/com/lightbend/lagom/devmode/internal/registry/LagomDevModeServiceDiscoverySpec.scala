@@ -4,7 +4,8 @@
 
 package com.lightbend.lagom.devmode.internal.registry
 
-import java.net.{InetAddress, URI}
+import java.net.InetAddress
+import java.net.URI
 
 import akka.actor.ActorSystem
 import akka.discovery.ServiceDiscovery.Resolved
