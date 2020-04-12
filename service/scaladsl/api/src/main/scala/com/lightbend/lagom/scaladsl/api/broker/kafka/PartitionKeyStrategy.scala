@@ -28,7 +28,8 @@ trait PartitionKeyStrategy[Payload] {
    * @param payload The message payload to publish into a Kafka topic.
    * @return A key used to decide on what topic's partition the passed message is published to.
    */
-  def computePartitionKey(payload: Payload): String
+  def computePartitionKey(payload: Payload): String =
+    computePartitionKey(Message(payload))
 }
 
 object PartitionKeyStrategy {
@@ -37,21 +38,12 @@ object PartitionKeyStrategy {
    * Create a partition key strategy from payload.
    */
   def apply[Payload](f: Payload => String): PartitionKeyStrategy[Payload] =
-    new PartitionKeyStrategy[Payload] {
-      override def computePartitionKey(message: MessageWithMetadata[Payload]): String = f(message.payload)
-
-      override def computePartitionKey(payload: Payload): String = f(payload)
-    }
+    (message: MessageWithMetadata[Payload]) => f(message.payload)
 
   /**
    * Create a partition key strategy from message with metadata.
    */
   def withMetadata[Payload](f: MessageWithMetadata[Payload] => String): PartitionKeyStrategy[Payload] =
-    new PartitionKeyStrategy[Payload] {
-      override def computePartitionKey(message: MessageWithMetadata[Payload]): String = f(message)
-
-      override def computePartitionKey(payload: Payload): String =
-        f(Message(payload))
-    }
+    (message: MessageWithMetadata[Payload]) => f(message)
 
 }

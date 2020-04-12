@@ -10,12 +10,12 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-import akka.japi.{ Pair => JPair }
+import akka.japi.{Pair => JPair}
 import akka.persistence.query.NoOffset
 import akka.persistence.query.Offset
 import akka.persistence.query.Sequence
 import akka.stream.OverflowStrategy
-import akka.stream.javadsl.{ Source => JSource }
+import akka.stream.javadsl.{Source => JSource}
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
@@ -44,7 +44,7 @@ import com.lightbend.lagom.javadsl.persistence.AggregateEvent
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry
-import com.lightbend.lagom.javadsl.persistence.{ Offset => JOffset }
+import com.lightbend.lagom.javadsl.persistence.{Offset => JOffset}
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import com.lightbend.lagom.spi.persistence.InMemoryOffsetStore
 import com.lightbend.lagom.spi.persistence.OffsetStore
@@ -75,12 +75,12 @@ class JavadslKafkaApiSpec
   private val log = LoggerFactory.getLogger(getClass)
   private val miniLogger = new MiniLogger {
     def debug(message: => String): Unit = log.debug(message)
-    def info(message: => String): Unit  = log.info(message)
+    def info(message: => String): Unit = log.info(message)
   }
 
   private lazy val offsetStore = new InMemoryOffsetStore
 
-  private final val kafkaPort          = 9092
+  private final val kafkaPort = 9092
   private final val kafkaZooKeeperPort = 2181
 
   private val application = {
@@ -92,14 +92,14 @@ class JavadslKafkaApiSpec
         bind[ServiceLocator].to[ConfigurationServiceLocator]
       )
       .configure(
-        "akka.remote.artery.canonical.port"             -> "0",
-        "akka.remote.artery.canonical.hostname"         -> "127.0.0.1",
-        "akka.persistence.journal.plugin"               -> "akka.persistence.journal.inmem",
-        "akka.persistence.snapshot-store.plugin"        -> "akka.persistence.snapshot-store.local",
-        "lagom.cluster.join-self"                       -> "on",
+        "akka.remote.artery.canonical.port" -> "0",
+        "akka.remote.artery.canonical.hostname" -> "127.0.0.1",
+        "akka.persistence.journal.plugin" -> "akka.persistence.journal.inmem",
+        "akka.persistence.snapshot-store.plugin" -> "akka.persistence.snapshot-store.local",
+        "lagom.cluster.join-self" -> "on",
         "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
-        "lagom.cluster.bootstrap.enabled"               -> "off",
-        "lagom.services.kafka_native"                   -> s"tcp://localhost:$kafkaPort"
+        "lagom.cluster.bootstrap.enabled" -> "off",
+        "lagom.services.kafka_native" -> s"tcp://localhost:$kafkaPort"
       )
       .build()
   }
@@ -169,7 +169,7 @@ class JavadslKafkaApiSpec
 
     "self-heal if failure occurs while running the publishing stream" in {
       // Create a subscriber that tracks the first two messages it receives
-      val firstTimeReceived  = Promise[String]()
+      val firstTimeReceived = Promise[String]()
       val secondTimeReceived = Promise[String]()
       testService
         .test2Topic()
@@ -210,7 +210,8 @@ class JavadslKafkaApiSpec
       val secondMessageTriggeredErrorTwice = new CountDownLatch(2)
       messageTransformer = { message =>
         secondMessageTriggeredErrorTwice.countDown()
-        println(s"Expect to see an error below: Error processing message: [$message]")
+        println(
+          s"Expect to see an error below: Error processing message: [$message]")
         throw new RuntimeException(s"Error processing message: [$message]")
       }
 
@@ -241,11 +242,13 @@ class JavadslKafkaApiSpec
         application.injector.instanceOf(classOf[ExecutionContext])
       def reloadOffset() =
         offsetStore
-          .prepare("topicProducer-" + testService.test3Topic().topicId().value(), "singleton")
+          .prepare(
+            "topicProducer-" + testService.test3Topic().topicId().value(),
+            "singleton")
           .futureValue
 
       // No message was consumed from this topic, hence we expect the last stored offset to be NoOffset
-      val offsetDao     = reloadOffset()
+      val offsetDao = reloadOffset()
       val initialOffset = offsetDao.loadedOffset
       initialOffset shouldBe NoOffset
 
@@ -290,7 +293,8 @@ class JavadslKafkaApiSpec
               .map { _ =>
                 if (failOnMessageReceived) {
                   failOnMessageReceived = false
-                  println("Expect to see an error below: Simulate consumer failure")
+                  println(
+                    "Expect to see an error below: Simulate consumer failure")
                   throw new IllegalStateException("Simulate consumer failure")
                 } else Done
               }
@@ -335,7 +339,7 @@ class JavadslKafkaApiSpec
 
     "allow the consumer to batch" in {
       val batchSize = 4
-      val latch     = new CountDownLatch(batchSize)
+      val latch = new CountDownLatch(batchSize)
       testService
         .test6Topic()
         .subscribe()
@@ -359,7 +363,9 @@ class JavadslKafkaApiSpec
       def messageWithHeader(number: Int) =
         Message
           .create(s"A$number")
-          .add(KafkaMetadataKeys.Headers, new RecordHeaders().add(s"key-$number", s"value-$number".getBytes))
+          .add(
+            KafkaMetadataKeys.Headers,
+            new RecordHeaders().add(s"key-$number", s"value-$number".getBytes))
 
       test7EventJournal.append(messageWithHeader(1))
       test7EventJournal.append(messageWithHeader(2))
@@ -386,7 +392,8 @@ class JavadslKafkaApiSpec
           .getMetadata(KafkaMetadataKeys.Headers)
           .map(_.lastHeader(s"key-$number").value())
           .get
-        (header should contain).theSameElementsInOrderAs(s"value-$number".getBytes)
+        (header should contain).theSameElementsInOrderAs(
+          s"value-$number".getBytes)
 
         msg.get(KafkaMetadataKeys.Topic).asScala.value shouldBe "test7"
         msg.get(KafkaMetadataKeys.Headers).asScala should not be None
@@ -454,11 +461,9 @@ object JavadslKafkaApiSpec {
             .withProperty(
               KafkaProperties.partitionKeyStrategy(),
               new PartitionKeyStrategy[String] {
-                override def computePartitionKey(message: MessageWithMetadata[String]): String =
+                override def computePartitionKey(
+                    message: MessageWithMetadata[String]): String =
                   message.payload.take(1)
-
-                override def computePartitionKey(payload: String): String =
-                  payload.take(1)
               }
             )
         )
@@ -482,24 +487,30 @@ object JavadslKafkaApiSpec {
     override def test7Topic(): Topic[String] =
       createTopicProducerWithMetadata(test7EventJournal)
 
-    private def createTopicProducer(eventJournal: EventJournal[String]): Topic[String] =
+    private def createTopicProducer(
+        eventJournal: EventJournal[String]): Topic[String] =
       TopicProducer.singleStreamWithOffset[String]({ fromOffset: JOffset =>
         eventJournal
           .eventStream(dslOffsetToOffset(fromOffset))
-          .map(element => new JPair(messageTransformer(element._1), offsetToDslOffset(element._2)))
+          .map(element =>
+            new JPair(messageTransformer(element._1),
+                      offsetToDslOffset(element._2)))
           .asJava
       }.asJava)
 
-    private def createTopicProducerWithMetadata(eventJournal: EventJournal[Message[String]]): Topic[String] =
-      TopicProducer.singleStreamWithOffsetAndMetadata[String]({ fromOffset: JOffset =>
-        eventJournal
-          .eventStream(dslOffsetToOffset(fromOffset))
-          .map(element => {
-            val message            = element._1
-            val transformedPayload = messageTransformer(message.payload)
-            new JPair(message.withPayload(transformedPayload), offsetToDslOffset(element._2))
-          })
-          .asJava
+    private def createTopicProducerWithMetadata(
+        eventJournal: EventJournal[Message[String]]): Topic[String] =
+      TopicProducer.singleStreamWithOffsetAndMetadata[String]({
+        fromOffset: JOffset =>
+          eventJournal
+            .eventStream(dslOffsetToOffset(fromOffset))
+            .map(element => {
+              val message = element._1
+              val transformedPayload = messageTransformer(message.payload)
+              new JPair(message.withPayload(transformedPayload),
+                        offsetToDslOffset(element._2))
+            })
+            .asJava
       }.asJava)
   }
 
@@ -511,16 +522,17 @@ object JavadslKafkaApiSpec {
 
   class EventJournal[Event] {
     private type Element = (Event, Sequence)
-    private val offset       = new AtomicLong()
+    private val offset = new AtomicLong()
     private val storedEvents = mutable.ListBuffer.empty[Element]
-    private val subscribers  = mutable.ListBuffer.empty[SourceQueue[Element]]
+    private val subscribers = mutable.ListBuffer.empty[SourceQueue[Element]]
 
     def eventStream(fromOffset: Offset): Source[(Event, Offset), _] = {
       val minOffset: Long = fromOffset match {
         case Sequence(value) => value
         case NoOffset        => -1
         case _ =>
-          throw new IllegalArgumentException(s"Sequence offset required, but got $fromOffset")
+          throw new IllegalArgumentException(
+            s"Sequence offset required, but got $fromOffset")
       }
 
       Source
@@ -553,13 +565,19 @@ object JavadslKafkaApiSpec {
       JSource.empty()
 
     override def refFor[C](
-        entityClass: Class[_ <: com.lightbend.lagom.javadsl.persistence.PersistentEntity[C, _, _]],
+        entityClass: Class[
+          _ <: com.lightbend.lagom.javadsl.persistence.PersistentEntity[C,
+                                                                        _,
+                                                                        _]],
         entityId: String
     ): PersistentEntityRef[C] =
       ???
 
     override def register[C, E, S](
-        entityClass: Class[_ <: com.lightbend.lagom.javadsl.persistence.PersistentEntity[C, E, S]]
+        entityClass: Class[
+          _ <: com.lightbend.lagom.javadsl.persistence.PersistentEntity[C,
+                                                                        E,
+                                                                        S]]
     ): Unit = ()
   }
 }
