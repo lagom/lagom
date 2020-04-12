@@ -456,6 +456,9 @@ object JavadslKafkaApiSpec {
               new PartitionKeyStrategy[String] {
                 override def computePartitionKey(message: MessageWithMetadata[String]): String =
                   message.payload.take(1)
+
+                override def computePartitionKey(payload: String): String =
+                  payload.take(1)
               }
             )
         )

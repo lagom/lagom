@@ -90,14 +90,14 @@ private[lagom] class ScaladslKafkaSubscriber[Payload, SubscriberPayload](
     )
 
   private def wrapPayload(record: ConsumerRecord[String, Payload]): Message[SubscriberPayload] = {
-    Message(transform(record)) +
-      (MessageMetadataKey.messageKey[String] -> record.key()) +
-      (KafkaMetadataKeys.Offset              -> record.offset()) +
-      (KafkaMetadataKeys.Partition           -> record.partition()) +
-      (KafkaMetadataKeys.Topic               -> record.topic()) +
-      (KafkaMetadataKeys.Headers             -> record.headers()) +
-      (KafkaMetadataKeys.Timestamp           -> record.timestamp()) +
-      (KafkaMetadataKeys.TimestampType       -> record.timestampType())
+    Message(transform(record))
+      .add(MessageMetadataKey.messageKey[String] -> record.key())
+      .add(KafkaMetadataKeys.Offset -> record.offset())
+      .add(KafkaMetadataKeys.Partition -> record.partition())
+      .add(KafkaMetadataKeys.Topic -> record.topic())
+      .add(KafkaMetadataKeys.Headers -> record.headers())
+      .add(KafkaMetadataKeys.Timestamp -> record.timestamp())
+      .add(KafkaMetadataKeys.TimestampType -> record.timestampType())
   }
 
   private def consumerSettings = {

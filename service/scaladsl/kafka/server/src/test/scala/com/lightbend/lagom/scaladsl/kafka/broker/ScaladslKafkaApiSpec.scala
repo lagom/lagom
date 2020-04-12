@@ -330,9 +330,10 @@ class ScaladslKafkaApiSpec
     "attach metadata to the message" in {
 
       def messageWithHeader(number: Int) =
-        Message(s"A$number") +
-          (KafkaMetadataKeys.Headers -> new RecordHeaders()
-            .add(s"key-$number", s"value-$number".getBytes))
+        Message(s"A$number").add(
+          KafkaMetadataKeys.Headers -> new RecordHeaders()
+            .add(s"key-$number", s"value-$number".getBytes)
+        )
 
       test7EventJournal.append(messageWithHeader(1))
       test7EventJournal.append(messageWithHeader(2))

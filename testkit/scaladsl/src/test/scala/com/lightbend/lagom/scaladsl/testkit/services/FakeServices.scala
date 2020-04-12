@@ -61,14 +61,14 @@ object AlphaEvent {
     val headers = new RecordHeaders()
       .add("header-one", s"ho-$number".getBytes)
       .add("header-two", s"ht-$number".getBytes)
-    Message(event) +
-      (MessageMetadataKey.messageKey[String] -> s"key-$number") +
-      (KafkaMetadataKeys.Offset              -> 10L * number) +
-      (KafkaMetadataKeys.Partition           -> 100 * number) +
-      (KafkaMetadataKeys.Topic               -> s"topic-$number") +
-      (KafkaMetadataKeys.Headers             -> headers) +
-      (KafkaMetadataKeys.Timestamp           -> 1000L * number) +
-      (KafkaMetadataKeys.TimestampType       -> TimestampType.LOG_APPEND_TIME)
+    Message(event)
+      .add(MessageMetadataKey.messageKey[String] -> s"key-$number")
+      .add(KafkaMetadataKeys.Offset -> 10L * number)
+      .add(KafkaMetadataKeys.Partition -> 100 * number)
+      .add(KafkaMetadataKeys.Topic -> s"topic-$number")
+      .add(KafkaMetadataKeys.Headers -> headers)
+      .add(KafkaMetadataKeys.Timestamp -> 1000L * number)
+      .add(KafkaMetadataKeys.TimestampType -> TimestampType.LOG_APPEND_TIME)
   }
 }
 

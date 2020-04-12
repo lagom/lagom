@@ -55,6 +55,17 @@ public final class Message<Payload> implements MessageWithMetadata<Payload> {
   }
 
   /**
+   * Get the metadata for the given metadata key.
+   *
+   * @param key The key of the metadata.
+   * @return The metadata, if found for that key.
+   */
+  @SuppressWarnings("unchecked")
+  public <Metadata> Optional<Metadata> get(MetadataKey<Metadata> key) {
+    return Optional.ofNullable((Metadata) metadataMap.get(key.asMessageMetadataKey()));
+  }
+
+  /**
    * Add a metadata key and value to this message.
    *
    * @param key The key to add.
@@ -63,6 +74,17 @@ public final class Message<Payload> implements MessageWithMetadata<Payload> {
    */
   public <Metadata> Message<Payload> add(MessageMetadataKey<Metadata> key, Metadata metadata) {
     return new Message<>(payload, metadataMap.plus(key, metadata));
+  }
+
+  /**
+   * Add a metadata key and value to this message.
+   *
+   * @param key The key to add.
+   * @param metadata The metadata to add.
+   * @return A copy of this message with the key and value added.
+   */
+  public <Metadata> Message<Payload> add(MetadataKey<Metadata> key, Metadata metadata) {
+    return new Message<>(payload, metadataMap.plus(key.asMessageMetadataKey(), metadata));
   }
 
   /**

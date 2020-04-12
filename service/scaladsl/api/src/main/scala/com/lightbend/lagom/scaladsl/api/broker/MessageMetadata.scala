@@ -33,7 +33,23 @@ sealed trait Message[Payload] extends MessageWithMetadata[Payload] {
    * @param keyValue The key and value to add.
    * @return A copy of this message with the key and value added.
    */
-  def +[Metadata](keyValue: (MessageMetadataKey[Metadata], Metadata)): Message[Payload]
+  def add[Metadata](keyValue: (MessageMetadataKey[Metadata], Metadata)): Message[Payload]
+
+  /**
+   * Get the metadata for the given metadata key.
+   *
+   * @param key The key of the metadata.
+   * @return The metadata, if found for that key.
+   */
+  def get[Metadata](key: MetadataKey[Metadata]): Option[Metadata]
+
+  /**
+   * Add a metadata key and value to this message.
+   *
+   * @param keyValue The key and value to add.
+   * @return A copy of this message with the key and value added.
+   */
+  def +[Metadata](keyValue: (MetadataKey[Metadata], Metadata)): Message[Payload]
 
   /**
    * Return a copy of this message with the given payload.
@@ -70,11 +86,61 @@ object Message {
     override def getMetadata[Metadata](key: MessageMetadataKey[Metadata]): Option[Metadata] = {
       metadataMap.get(key).asInstanceOf[Option[Metadata]]
     }
-    override def +[Metadata](keyValue: (MessageMetadataKey[Metadata], Metadata)): Message[Payload] = {
+
+    override def add[Metadata](keyValue: (MessageMetadataKey[Metadata], Metadata)): Message[Payload] = {
       MessageImpl(payload, metadataMap + keyValue)
     }
+
+    override def get[Metadata](key: MetadataKey[Metadata]): Option[Metadata] =
+      getMetadata(key.asMessageMetadataKey)
+
+    override def +[Metadata](keyValue: (MetadataKey[Metadata], Metadata)): Message[Payload] =
+      add((keyValue._1.asMessageMetadataKey, keyValue._2))
 
     override def withPayload[P2](payload: P2): Message[P2] =
       MessageImpl(payload, metadataMap)
   }
+
+}
+
+/**
+ * A metadata key.
+ *
+ * @deprecated Use [[MessageMetadataKey]].
+ */
+sealed trait MetadataKey[Metadata] {
+
+  /**
+   * The name of the metadata key.
+   */
+  def name: String
+
+  /** Transforms this key to [[MessageMetadataKey]]. **/
+  def asMessageMetadataKey: MessageMetadataKey[Metadata]
+
+}
+
+object MetadataKey {
+
+  /**
+   * Create a metadata key with the given name.
+   */
+  def apply[Metadata](name: String): MetadataKey[Metadata] = {
+    MetadataKeyImpl(name)
+  }
+
+  private case class MetadataKeyImpl[Metadata](
+      name: String
+  ) extends MetadataKey[Metadata] {
+    override def asMessageMetadataKey: MessageMetadataKey[Metadata] =
+      MessageMetadataKey(name)
+  }
+
+  /**
+   * The message key metadata key.
+   */
+  def MessageKey[Key]: MetadataKey[Key] =
+    MessageKeyObj.asInstanceOf[MetadataKey[Key]]
+
+  private val MessageKeyObj = MetadataKey[Any]("messageKey")
 }
