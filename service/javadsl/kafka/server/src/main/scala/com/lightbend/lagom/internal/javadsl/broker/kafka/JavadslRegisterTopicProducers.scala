@@ -26,10 +26,12 @@ import com.lightbend.lagom.internal.javadsl.api.broker.TopicFactory
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter
 import com.lightbend.lagom.internal.javadsl.server.ResolvedServices
 import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
+import com.lightbend.lagom.javadsl.api.broker.Message
 import com.lightbend.lagom.javadsl.api.broker.kafka.KafkaProperties
+import com.lightbend.lagom.javadsl.broker.kafka.KafkaMetadataKeys
 import com.lightbend.lagom.spi.persistence.OffsetStore
+import org.apache.kafka.clients.producer.ProducerRecord
 
-import scala.collection.immutable
 import scala.compat.java8.FutureConverters._
 
 class JavadslRegisterTopicProducers @Inject() (
@@ -62,27 +64,30 @@ class JavadslRegisterTopicProducers @Inject() (
               case tagged: TaggedOffsetTopicProducer[AnyRef, _] =>
                 val tags = tagged.tags.asScala.toIndexedSeq
 
-                val eventStreamFactory: (String, AkkaOffset) => Source[(AnyRef, AkkaOffset), _] = { (tag, offset) =>
-                  tags.find(_.tag == tag) match {
-                    case Some(aggregateTag) =>
-                      tagged
-                        .readSideStream(
-                          aggregateTag,
-                          OffsetAdapter.offsetToDslOffset(offset)
-                        )
-                        .asScala
-                        .map { pair =>
-                          pair.first -> OffsetAdapter.dslOffsetToOffset(pair.second)
-                        }
-                    case None => throw new RuntimeException("Unknown tag: " + tag)
-                  }
+                val eventStreamFactory: (String, AkkaOffset) => Source[(Message[AnyRef], AkkaOffset), _] = {
+                  (tag, offset) =>
+                    tags.find(_.tag == tag) match {
+                      case Some(aggregateTag) =>
+                        tagged
+                          .readSideStream(
+                            aggregateTag,
+                            OffsetAdapter.offsetToDslOffset(offset)
+                          )
+                          .asScala
+                          .map { pair =>
+                            pair.first -> OffsetAdapter.dslOffsetToOffset(pair.second)
+                          }
+                      case None => throw new RuntimeException("Unknown tag: " + tag)
+                    }
                 }
 
-                val partitionKeyStrategy: Option[AnyRef => String] = {
-                  val javaPKS = topicCall.properties().getValueOf(KafkaProperties.partitionKeyStrategy())
-                  if (javaPKS != null) {
-                    Some(message => javaPKS.computePartitionKey(message))
-                  } else None
+                val transform: Message[AnyRef] => ProducerRecord[String, AnyRef] = message => {
+                  val key = Option(topicCall.properties.getValueOf(KafkaProperties.partitionKeyStrategy())) match {
+                    case Some(javaPKS) => javaPKS.computePartitionKey(message.getPayload)
+                    case None          => null
+                  }
+                  val headers = message.get(KafkaMetadataKeys.HEADERS).orElseGet(() => null)
+                  new ProducerRecord(topicId.value(), null, null, key, message.getPayload, headers)
                 }
 
                 Producer.startTaggedOffsetProducer(
@@ -92,7 +97,7 @@ class JavadslRegisterTopicProducers @Inject() (
                   locateService,
                   topicId.value(),
                   eventStreamFactory,
-                  partitionKeyStrategy,
+                  transform,
                   new JavadslKafkaSerializer(topicCall.messageSerializer().serializerForRequest()),
                   offsetStore,
                   projectionRegistryImpl

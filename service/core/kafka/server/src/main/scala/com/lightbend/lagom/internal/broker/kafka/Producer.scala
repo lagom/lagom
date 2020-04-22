@@ -13,6 +13,7 @@ import akka.stream.scaladsl._
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.spi.persistence.OffsetStore
+import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serializer
 
 import scala.collection.immutable
@@ -23,15 +24,15 @@ import scala.concurrent.Future
  * A Producer for publishing messages in Kafka using the Alpakka Kafka API.
  */
 private[lagom] object Producer {
-  def startTaggedOffsetProducer[Message](
+  def startTaggedOffsetProducer[Payload, ProducerPayload](
       system: ActorSystem,
       tags: immutable.Seq[String],
       kafkaConfig: KafkaConfig,
       locateService: String => Future[Seq[URI]],
       topicId: String,
-      eventStreamFactory: (String, AkkaOffset) => Source[(Message, AkkaOffset), _],
-      partitionKeyStrategy: Option[Message => String],
-      serializer: Serializer[Message],
+      eventStreamFactory: (String, AkkaOffset) => Source[(ProducerPayload, AkkaOffset), _],
+      transform: ProducerPayload => ProducerRecord[String, Payload],
+      serializer: Serializer[Payload],
       offsetStore: OffsetStore,
       projectionRegistry: ProjectionRegistry
   )(implicit mat: Materializer, ec: ExecutionContext): Unit = {
@@ -46,7 +47,7 @@ private[lagom] object Producer {
         locateService,
         topicId,
         eventStreamFactory,
-        partitionKeyStrategy,
+        transform,
         serializer,
         offsetStore
       )
