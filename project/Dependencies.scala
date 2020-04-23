@@ -36,10 +36,10 @@ object Dependencies {
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
     val ScalaTest            = "3.0.8"
-    val Jackson              = "2.10.2"
+    val Jackson              = "2.10.3"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
-    val JacksonDatabind      = "2.10.2"
+    val JacksonDatabind      = "2.10.3"
     val Guava                = "28.1-jre"
     val Maven                = "3.6.2"
     val MavenWagon           = "3.3.3"
@@ -341,7 +341,7 @@ object Dependencies {
       "net.jodah"           % "typetools"               % "0.5.0",
       "org.lz4"             % "lz4-java"                % "1.5.0",
       "com.github.luben"    % "zstd-jni"                % "1.3.7-1",
-      "org.agrona"          % "agrona"                  % "1.3.0",
+      "org.agrona"          % "agrona"                  % "1.4.0",
       commonsLang,
       kafkaClients,
       "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.18",
