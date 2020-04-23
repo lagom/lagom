@@ -47,6 +47,7 @@ import com.lightbend.lagom.javadsl.persistence.{ Offset => JOffset }
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import com.lightbend.lagom.spi.persistence.InMemoryOffsetStore
 import com.lightbend.lagom.spi.persistence.OffsetStore
+import org.apache.kafka.common.header.internals.RecordHeaders
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 import org.slf4j.LoggerFactory
@@ -348,9 +349,15 @@ class JavadslKafkaApiSpec
     }
 
     "attach metadata to the message" in {
-      test7EventJournal.append("A1")
-      test7EventJournal.append("A2")
-      test7EventJournal.append("A3")
+
+      def messageWithHeader(number: Int) =
+        Message
+          .create(s"A$number")
+          .add(KafkaMetadataKeys.HEADERS, new RecordHeaders().add(s"key-$number", s"value-$number".getBytes))
+
+      test7EventJournal.append(messageWithHeader(1))
+      test7EventJournal.append(messageWithHeader(2))
+      test7EventJournal.append(messageWithHeader(3))
 
       val messages = Await.result(
         testService.test7Topic().subscribe.withMetadata.atMostOnceSource.asScala.take(3).runWith(Sink.seq),
@@ -358,24 +365,30 @@ class JavadslKafkaApiSpec
       )
 
       messages.size shouldBe 3
+      val first          = messages.head
+      val firstPartition = first.get(KafkaMetadataKeys.PARTITION).asScala.get
+      val firstOffset    = first.get(KafkaMetadataKeys.OFFSET).asScala.get
 
-      def runAssertions(msg: Message[String]): Unit = {
+      def runAssertions(msg: Message[String], number: Int): Unit = {
+        msg.getPayload shouldBe s"A$number"
         msg.messageKeyAsString shouldBe "A"
+        val headers = msg.get(KafkaMetadataKeys.HEADERS).get()
+        headers.toArray.length shouldBe 1
+        val headerValue: Array[Byte] = headers.lastHeader(s"key-$number").value()
+
+        (headerValue should contain).theSameElementsInOrderAs(s"value-$number".getBytes)
+
         msg.get(KafkaMetadataKeys.TOPIC).asScala.value shouldBe "test7"
         msg.get(KafkaMetadataKeys.HEADERS).asScala should not be None
         msg.get(KafkaMetadataKeys.TIMESTAMP).asScala should not be None
         msg.get(KafkaMetadataKeys.TIMESTAMP_TYPE).asScala should not be None
-        msg.get(KafkaMetadataKeys.PARTITION).asScala.value shouldBe
-          messages.head.get(KafkaMetadataKeys.PARTITION).asScala.value
+        msg.get(KafkaMetadataKeys.PARTITION).asScala.value shouldBe firstPartition
+        msg.get(KafkaMetadataKeys.OFFSET).asScala.value shouldBe (firstOffset + number - 1)
       }
 
-      messages.foreach(runAssertions)
-      messages.head.getPayload shouldBe "A1"
-      val offset = messages.head.get(KafkaMetadataKeys.OFFSET).asScala.value
-      messages(1).getPayload shouldBe "A2"
-      messages(1).get(KafkaMetadataKeys.OFFSET).asScala.value shouldBe (offset + 1)
-      messages(2).getPayload shouldBe "A3"
-      messages(2).get(KafkaMetadataKeys.OFFSET).asScala.value shouldBe (offset + 2)
+      runAssertions(first, 1)
+      runAssertions(messages(1), 2)
+      runAssertions(messages(2), 3)
     }
   }
 }
@@ -398,7 +411,7 @@ object JavadslKafkaApiSpec {
   private val test4EventJournal = new EventJournal[String]
   private val test5EventJournal = new EventJournal[String]
   private val test6EventJournal = new EventJournal[String]
-  private val test7EventJournal = new EventJournal[String]
+  private val test7EventJournal = new EventJournal[Message[String]]
 
   // Allows tests to insert logic into the producer stream
   @volatile var messageTransformer: String => String = identity
@@ -437,13 +450,25 @@ object JavadslKafkaApiSpec {
     override def test4Topic(): Topic[String] = createTopicProducer(test4EventJournal)
     override def test5Topic(): Topic[String] = createTopicProducer(test5EventJournal)
     override def test6Topic(): Topic[String] = createTopicProducer(test6EventJournal)
-    override def test7Topic(): Topic[String] = createTopicProducer(test7EventJournal)
+    override def test7Topic(): Topic[String] = createTopicProducerWithMetadata(test7EventJournal)
 
     private def createTopicProducer(eventJournal: EventJournal[String]): Topic[String] =
       TopicProducer.singleStreamWithOffset[String]({ fromOffset: JOffset =>
         eventJournal
           .eventStream(dslOffsetToOffset(fromOffset))
           .map(element => new JPair(messageTransformer(element._1), offsetToDslOffset(element._2)))
+          .asJava
+      }.asJava)
+
+    private def createTopicProducerWithMetadata(eventJournal: EventJournal[Message[String]]): Topic[String] =
+      TopicProducer.singleStreamWithOffsetAndMetadata[String]({ fromOffset: JOffset =>
+        eventJournal
+          .eventStream(dslOffsetToOffset(fromOffset))
+          .map(element => {
+            val message            = element._1
+            val transformedPayload = messageTransformer(message.getPayload)
+            new JPair(message.withPayload(transformedPayload), offsetToDslOffset(element._2))
+          })
           .asJava
       }.asJava)
   }
