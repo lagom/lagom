@@ -46,7 +46,7 @@ class MultiNodeExpect(probe: TestProbe)(implicit system: ActorSystem) {
    * replicating under the provided `expectationKey` (which must not be reused).
    */
   def expectMsg[T](t: T, expectationKey: String, max: FiniteDuration): Future[Done] = {
-    val eventualT = () => Future(errorAsRuntime(probe.expectMsg(max, t)))
+    val eventualT = () => Future(errorAsRuntime(probe.expectMsg(max, expectationKey, t)))
     doExpect(eventualT)(expectationKey, max)
   }
 

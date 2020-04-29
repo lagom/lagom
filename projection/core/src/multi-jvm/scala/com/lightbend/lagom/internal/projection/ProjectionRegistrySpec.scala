@@ -8,33 +8,24 @@ import akka.Done
 import akka.actor.Actor
 import akka.actor.ActorLogging
 import akka.actor.Props
-import akka.actor.Terminated
 import akka.remote.testconductor.RoleName
 import akka.testkit.TestProbe
+import com.lightbend.lagom.internal.cluster.ClusterMultiNodeConfig
 import com.lightbend.lagom.internal.cluster.ClusteredMultiNodeUtils
 import com.lightbend.lagom.internal.cluster.MultiNodeExpect
 import com.lightbend.lagom.internal.projection.FakeProjectionActor.FakeStarting
 import com.lightbend.lagom.internal.projection.FakeProjectionActor.FakeStopping
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
-import com.lightbend.lagom.projection.Projection
-import com.lightbend.lagom.projection.Started
-import com.lightbend.lagom.projection.State
-import com.lightbend.lagom.projection.Status
-import com.lightbend.lagom.projection.Stopped
-import com.lightbend.lagom.projection.Worker
-import org.scalatest.concurrent.Eventually
+import com.lightbend.lagom.projection._
 import org.scalatest.concurrent.PatienceConfiguration.Interval
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
+import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.ScalaFutures
-
-import scala.concurrent.duration._
 import org.scalatest.time.Seconds
 import org.scalatest.time.Span
 
 import scala.concurrent.Await
-import com.lightbend.lagom.internal.cluster.ClusterMultiNodeConfig
-
-import scala.collection.immutable
+import scala.concurrent.duration._
 
 class ProjectionRegistrySpecMultiJvmNode1 extends ProjectionRegistrySpec
 class ProjectionRegistrySpecMultiJvmNode2 extends ProjectionRegistrySpec
@@ -164,7 +155,8 @@ class ProjectionRegistrySpec
       val allButTag001   = tagNames.tail
       val coordinates001 = WorkerCoordinates(projectionName, tagNames.head)
 
-      val testProbe = registerProjection(projectionName, tagNames.toSet)
+      val testProbe = TestProbe()
+      registerProjection(projectionName, tagNames.toSet, testProbe)
 
       // await until all seen as 'Started'
       expectProjectionStatus(projectionName, 5, Started)
@@ -191,14 +183,15 @@ class ProjectionRegistrySpec
       val allButTag001   = tagNames.tail
       val coordinates001 = WorkerCoordinates(projectionName, tagNames.head)
 
-      val testProbe = registerProjection(projectionName, tagNames.toSet)
-
+      val testProbe = TestProbe()
       // only let tagName001 messages pass
       testProbe.ignoreMsg {
         case FakeStarting(`tagName001`) => false
         case FakeStopping(`tagName001`) => false
         case _                          => true
       }
+
+      registerProjection(projectionName, tagNames.toSet, testProbe)
 
       // await until all seen as 'Started'
       expectProjectionStatus(projectionName, 5, Started)
@@ -222,7 +215,7 @@ class ProjectionRegistrySpec
       // should see one FakeStopping coming from tagName001
       expectMsgFromWorker(
         FakeStopping(tagName001),
-        s"do-pause-and-resume-worker-test-expect-stopped",
+        "do-pause-and-resume-worker-test-expect-stopped",
         testProbe,
         multiExpectTimeout
       )
@@ -256,7 +249,8 @@ class ProjectionRegistrySpec
       val coordinates001 = WorkerCoordinates(projectionName, tagName001)
 
       // build a projection with a single worker bound to run on `node3`
-      val testProbe = registerProjection(projectionName, tagNames.toSet)
+      val testProbe = TestProbe()
+      registerProjection(projectionName, tagNames.toSet, testProbe)
 
       // await until all seen as 'Started'
       expectWorkerStatus(projectionName, tagName001, Started)
@@ -291,7 +285,8 @@ class ProjectionRegistrySpec
       val coordinates001 = WorkerCoordinates(projectionName, tagName001)
 
       // build a projection with a single worker bound to run on `node3`
-      val testProbe = registerProjection(projectionName, tagNames.toSet)
+      val testProbe = TestProbe()
+      registerProjection(projectionName, tagNames.toSet, testProbe)
 
       // await until all seen as 'Started'
       expectProjectionStatus(projectionName, 5, Started)
@@ -351,19 +346,20 @@ class ProjectionRegistrySpec
   private def registerProjection(
       projectionName: String,
       tagNames: Set[String],
-      runInRole: Option[String] = None
-  ): TestProbe = {
-    val testProbe = TestProbe()
+  ): Unit =
+    registerProjection(projectionName, tagNames, TestProbe())
 
+  private def registerProjection(
+      projectionName: String,
+      tagNames: Set[String],
+      testProbe: TestProbe,
+  ): Unit = {
     val workerProps = (workerCoordinates: WorkerCoordinates) =>
       FakeProjectionActor.props(
         workerCoordinates.tagName,
         testProbe
       )
-
-    projectionRegistry.registerProjection(projectionName, tagNames, workerProps, runInRole)
-
-    testProbe
+    projectionRegistry.registerProjection(projectionName, tagNames, workerProps)
   }
 }
 
