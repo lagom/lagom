@@ -19,6 +19,7 @@ import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
 import com.lightbend.lagom.scaladsl.persistence.multinode.AbstractClusteredPersistentEntityConfig
 import com.lightbend.lagom.scaladsl.persistence.multinode.AbstractClusteredPersistentEntitySpec
+import com.lightbend.lagom.scaladsl.persistence.multinode.AbstractClusteredPersistentEntitySpec.Ports
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.Config
 import play.api.inject.DefaultApplicationLifecycle
@@ -30,8 +31,14 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
-  override def additionalCommonConfig(databasePort: Int): Config =
-    cassandraConfig("CassandraClusteredPersistentEntityConfig", databasePort)
+
+  override def specPorts: Ports.SpecPorts = Ports.cassandraSpecPorts
+
+  override def additionalCommonConfig: Config = {
+    cassandraConfigOnly("CassandraClusteredPersistentEntityConfig", specPorts.database)
+      .withFallback(CassandraReadSideSpec.readSideConfig)
+  }
+
 }
 
 class CassandraClusteredPersistentEntitySpecMultiJvmNode1 extends CassandraClusteredPersistentEntitySpec
@@ -52,7 +59,7 @@ class CassandraClusteredPersistentEntitySpec
         cassandraDirectory,
         "lagom-test-embedded-cassandra.yaml",
         clean = true,
-        port = databasePort
+        port = specPorts.database
       )
       awaitPersistenceInit(system)
     }
