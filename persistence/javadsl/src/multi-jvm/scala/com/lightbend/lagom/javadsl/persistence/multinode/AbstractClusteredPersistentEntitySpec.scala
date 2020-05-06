@@ -124,8 +124,8 @@ object AbstractClusteredPersistentEntityConfig {
       val node3    = base + 3
     }
 
-    val cassandraSpecPorts = new SpecPorts(10030)
-    val jdbcSpecPorts      = new SpecPorts(10040)
+    val cassandraSpecPorts = new SpecPorts(20030)
+    val jdbcSpecPorts      = new SpecPorts(20040)
   }
 
 }
