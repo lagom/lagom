@@ -12,15 +12,15 @@ import akka.testkit.TestKit
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.MustMatchers
-import org.scalatest.WordSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import scala.concurrent.Future
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ServiceLocatorSessionProviderSpec extends WordSpec with MustMatchers with BeforeAndAfterAll {
+class ServiceLocatorSessionProviderSpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
   val system         = ActorSystem("test")
   val config: Config = ConfigFactory.load()
   val uri            = new URI("http://localhost:8080")

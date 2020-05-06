@@ -12,12 +12,12 @@ import com.lightbend.lagom.scaladsl.api.ServiceAcl
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
 import com.lightbend.lagom.scaladsl.api.transport.Method
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 
 import scala.concurrent.Future
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ServiceAclResolverSpec extends WordSpec with Matchers {
+class ServiceAclResolverSpec extends AnyWordSpec with Matchers {
   class SomeService extends Service {
     private def echo[A]                                                                 = ServiceCall[A, A](Future.successful)
     def callString: ServiceCall[String, String]                                         = echo

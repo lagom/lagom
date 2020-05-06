@@ -6,10 +6,9 @@ package com.lightbend.lagom.internal.registry
 
 import java.net.URI
 
-import org.scalatest.AsyncWordSpec
-import org.scalatest.Matchers
-
 import scala.concurrent.Future
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
 
 class AbstractLoggingServiceRegistryClientSpec extends AsyncWordSpec with Matchers {
   private val client = new AbstractLoggingServiceRegistryClient {

@@ -34,27 +34,34 @@ import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
 import play.api.Environment
 import play.api.{ Mode => PlayMode }
 
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 class PersistentEntityRefSpec
-    extends WordSpecLike
+    extends AnyWordSpecLike
     with Matchers
     with BeforeAndAfterAll
     with ScalaFutures
     with TypeCheckedTripleEquals {
   implicit override val patienceConfig = PatienceConfig(5.seconds, 150.millis)
 
+  // start Cassandra before sharing its port and before starting the ActorSystem
+  val cassandraPort: Int = {
+    val cassandraDirectory: File = new File("target/PersistentEntityRefTest")
+    CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", clean = true, port = 0)
+    CassandraLauncher.randomPort
+  }
+
   val config: Config =
     ConfigFactory
       .parseString("akka.loglevel = INFO")
-      .withFallback(cassandraConfig("PersistentEntityRefTest", CassandraLauncher.randomPort))
+      .withFallback(cassandraConfig("PersistentEntityRefTest", cassandraPort))
 
   private val system: ActorSystem = ActorSystem(
     "PersistentEntityRefSpec",
@@ -66,10 +73,7 @@ class PersistentEntityRefSpec
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-
     Cluster.get(system).join(Cluster.get(system).selfAddress)
-    val cassandraDirectory: File = new File("target/PersistentEntityRefTest")
-    CassandraLauncher.start(cassandraDirectory, "lagom-test-embedded-cassandra.yaml", true, 0)
     awaitPersistenceInit(system)
   }
 

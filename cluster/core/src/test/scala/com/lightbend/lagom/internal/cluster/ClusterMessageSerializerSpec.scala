@@ -13,8 +13,8 @@ import com.lightbend.lagom.internal.cluster.protobuf.msg.ClusterMessages.{ Ensur
 import com.typesafe.config.ConfigFactory
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 object ClusterMessageSerializerSpec {
   def actorSystem(): ActorSystem = {
@@ -25,7 +25,7 @@ object ClusterMessageSerializerSpec {
 
 class ClusterMessageSerializerSpec
     extends TestKit(ClusterMessageSerializerSpec.actorSystem())
-    with WordSpecLike
+    with AnyWordSpecLike
     with Matchers
     with BeforeAndAfterAll
     with TypeCheckedTripleEquals

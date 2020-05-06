@@ -8,30 +8,24 @@ import akka.Done
 import akka.actor.Actor
 import akka.actor.ActorLogging
 import akka.actor.Props
-import akka.actor.Terminated
 import akka.remote.testconductor.RoleName
 import akka.testkit.TestProbe
+import com.lightbend.lagom.internal.cluster.ClusterMultiNodeConfig
 import com.lightbend.lagom.internal.cluster.ClusteredMultiNodeUtils
 import com.lightbend.lagom.internal.cluster.MultiNodeExpect
 import com.lightbend.lagom.internal.projection.FakeProjectionActor.FakeStarting
+import com.lightbend.lagom.internal.projection.FakeProjectionActor.FakeStopping
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
-import com.lightbend.lagom.projection.Projection
-import com.lightbend.lagom.projection.Started
-import com.lightbend.lagom.projection.State
-import com.lightbend.lagom.projection.Status
-import com.lightbend.lagom.projection.Stopped
-import com.lightbend.lagom.projection.Worker
-import org.scalatest.concurrent.Eventually
+import com.lightbend.lagom.projection._
 import org.scalatest.concurrent.PatienceConfiguration.Interval
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
+import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.ScalaFutures
-import scala.concurrent.duration._
-
 import org.scalatest.time.Seconds
 import org.scalatest.time.Span
-import scala.concurrent.Await
 
-import com.lightbend.lagom.internal.cluster.ClusterMultiNodeConfig
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 class ProjectionRegistrySpecMultiJvmNode1 extends ProjectionRegistrySpec
 class ProjectionRegistrySpecMultiJvmNode2 extends ProjectionRegistrySpec
@@ -73,18 +67,24 @@ class ProjectionRegistrySpec
       val tagNamePrefix  = projectionName
       val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
       val tagName001     = tagNames.head
+      val allButTag001   = tagNames.tail
       val coordinates001 = WorkerCoordinates(projectionName, tagNames.head)
 
       registerProjection(projectionName, tagNames.toSet)
 
-      // await until seen as ready
-      expectWorkerStatus(projectionName, tagName001, Started)
+      // await until all seen as 'Started'
+      expectProjectionStatus(projectionName, 5, Started)
 
       enterBarrier("request-pause-worker-test-all-nodes-ready")
       runOn(RoleName("node2")) {
         projectionRegistry.stopWorker(coordinates001)
       }
       expectWorkerStatus(projectionName, tagName001, Stopped)
+
+      // all other tags should be 'Started'
+      allButTag001.foreach { tag =>
+        expectWorkerStatus(projectionName, tag, Started)
+      }
     }
 
     "request the pause of a projection worker (before projection is registered)" in {
@@ -93,6 +93,7 @@ class ProjectionRegistrySpec
       val tagNamePrefix  = projectionName
       val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
       val tagName001     = tagNames.head
+      val allButTag001   = tagNames.tail
       val coordinates001 = WorkerCoordinates(projectionName, tagNames.head)
 
       runOn(RoleName("node2")) {
@@ -102,6 +103,11 @@ class ProjectionRegistrySpec
       registerProjection(projectionName, tagNames.toSet)
 
       expectWorkerStatus(projectionName, tagName001, Stopped)
+
+      // all other tags should be 'Started'
+      allButTag001.foreach { tag =>
+        expectWorkerStatus(projectionName, tag, Started)
+      }
     }
 
     "request the pause of a complete projection" in {
@@ -112,7 +118,7 @@ class ProjectionRegistrySpec
 
       registerProjection(projectionName, tagNames.toSet)
 
-      // await until seen as ready
+      // await until all seen as 'Started'
       expectProjectionStatus(projectionName, 5, Started)
 
       // Don't try to `stopWorkers` until we've seen `desired` propagate completely
@@ -136,6 +142,7 @@ class ProjectionRegistrySpec
       registerProjection(projectionName, tagNames.toSet)
       enterBarrier("sync-request-pause-projection-test-before-registering")
 
+      // await until all seen as 'Stopped'
       expectProjectionStatus(projectionName, 5, Stopped)
     }
 
@@ -145,55 +152,88 @@ class ProjectionRegistrySpec
       val tagNamePrefix  = projectionName
       val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
       val tagName001     = tagNames.head
+      val allButTag001   = tagNames.tail
       val coordinates001 = WorkerCoordinates(projectionName, tagNames.head)
 
-      val testProbe = registerProjection(projectionName, tagNames.toSet)
-      testProbe.ignoreMsg {
-        case Terminated(_) => false
-        case _             => true
-      }
+      val testProbe = TestProbe()
+      registerProjection(projectionName, tagNames.toSet, testProbe)
 
-      expectWorkerStatus(projectionName, tagName001, Started)
+      // await until all seen as 'Started'
+      expectProjectionStatus(projectionName, 5, Started)
 
       enterBarrier("do-pause-worker-test-all-nodes-ready")
       runOn(RoleName("node2")) {
         projectionRegistry.stopWorker(coordinates001)
       }
       expectWorkerStatus(projectionName, tagName001, Stopped)
+
+      // all other tags should be 'Started'
+      allButTag001.foreach { tag =>
+        expectWorkerStatus(projectionName, tag, Started)
+      }
     }
 
     "tell a projection worker to stop and then start when requested" in {
+
       enterBarrier("do-pause-and-resume-worker-test")
       val projectionName = "do-pause-and-resume-worker"
       val tagNamePrefix  = projectionName
       val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
       val tagName001     = tagNames.head
+      val allButTag001   = tagNames.tail
       val coordinates001 = WorkerCoordinates(projectionName, tagNames.head)
 
-      val testProbe = registerProjection(projectionName, tagNames.toSet)
+      val testProbe = TestProbe()
+      // only let tagName001 messages pass
       testProbe.ignoreMsg {
-        case _ => true
+        case FakeStarting(`tagName001`) => false
+        case FakeStopping(`tagName001`) => false
+        case _                          => true
       }
 
-      // await until seen as ready
-      expectWorkerStatus(projectionName, tagName001, Started)
+      registerProjection(projectionName, tagNames.toSet, testProbe)
 
-      enterBarrier("do-pause-and-resume-worker-test-all-nodes-ready-001")
+      // await until all seen as 'Started'
+      expectProjectionStatus(projectionName, 5, Started)
+
+      // should see the starting for tagName001
+      expectMsgFromWorker(
+        FakeStarting(tagName001),
+        "do-pause-and-resume-worker-test-expect-starting",
+        testProbe,
+        multiExpectTimeout
+      )
+
+      enterBarrier("do-pause-and-resume-worker-test-tag001-started")
+
       runOn(RoleName("node2")) {
         projectionRegistry.stopWorker(coordinates001)
       }
 
       expectWorkerStatus(projectionName, tagName001, Stopped)
-      enterBarrier("do-pause-and-resume-worker-test-all-nodes-ready-002")
 
-      // once the worker is stopped we no longer want to ignore messages in the probe.
-      testProbe.ignoreNoMsg()
+      // should see one FakeStopping coming from tagName001
+      expectMsgFromWorker(
+        FakeStopping(tagName001),
+        "do-pause-and-resume-worker-test-expect-stopped",
+        testProbe,
+        multiExpectTimeout
+      )
+      // all other tags should be 'Started'
+      allButTag001.foreach { tag =>
+        expectWorkerStatus(projectionName, tag, Started)
+      }
+
+      enterBarrier("do-pause-and-resume-worker-test-tag001-stopped")
+
       runOn(RoleName("node3")) {
         projectionRegistry.startWorker(coordinates001)
       }
+
+      // get FakeStarting message from tagName001 once again
       expectMsgFromWorker(
         FakeStarting(tagName001),
-        "do-pause-and-resume-worker-test-expect-starting",
+        "do-pause-and-resume-worker-test-expect-restarting",
         testProbe,
         multiExpectTimeout
       )
@@ -205,13 +245,14 @@ class ProjectionRegistrySpec
       val tagNamePrefix  = projectionName
       val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
       val tagName001     = tagNames.head
-      val tagName002     = tagNames.drop(1).head
+      val allButTag001   = tagNames.tail
       val coordinates001 = WorkerCoordinates(projectionName, tagName001)
 
       // build a projection with a single worker bound to run on `node3`
-      val testProbe = registerProjection(projectionName, tagNames.toSet)
+      val testProbe = TestProbe()
+      registerProjection(projectionName, tagNames.toSet, testProbe)
 
-      // await until seen as ready
+      // await until all seen as 'Started'
       expectWorkerStatus(projectionName, tagName001, Started)
 
       enterBarrier(s"$projectionName-stop-a-single-worker")
@@ -220,13 +261,17 @@ class ProjectionRegistrySpec
       }
 
       expectWorkerStatus(projectionName, tagName001, Stopped)
-      expectWorkerStatus(projectionName, tagName002, Started)
+      // all other tags should be 'Started'
+      allButTag001.foreach { tag =>
+        expectWorkerStatus(projectionName, tag, Started)
+      }
       enterBarrier(s"$projectionName-start-all-workers")
 
       runOn(RoleName("node1")) {
         projectionRegistry.startAllWorkers(projectionName)
       }
 
+      // await until all seen as 'Started'
       expectProjectionStatus(projectionName, 5, Started)
     }
 
@@ -236,20 +281,21 @@ class ProjectionRegistrySpec
       val tagNamePrefix  = projectionName
       val tagNames       = (1 to 5).map(id => s"$tagNamePrefix-$id")
       val tagName001     = tagNames.head
-      val tagName002     = tagNames.drop(1).head
+      val allButTag001   = tagNames.tail
       val coordinates001 = WorkerCoordinates(projectionName, tagName001)
 
       // build a projection with a single worker bound to run on `node3`
-      val testProbe = registerProjection(projectionName, tagNames.toSet)
+      val testProbe = TestProbe()
+      registerProjection(projectionName, tagNames.toSet, testProbe)
 
-      // await until seen as ready
-      expectWorkerStatus(projectionName, tagName001, Started)
+      // await until all seen as 'Started'
+      expectProjectionStatus(projectionName, 5, Started)
 
       enterBarrier(s"$projectionName-start-all-workers")
       runOn(RoleName("node2")) {
         projectionRegistry.stopAllWorkers(projectionName)
       }
-
+      // await until all seen as 'Stopped'
       expectProjectionStatus(projectionName, 5, Stopped)
       enterBarrier(s"$projectionName-stop-a-single-worker")
 
@@ -257,14 +303,17 @@ class ProjectionRegistrySpec
         projectionRegistry.startWorker(coordinates001)
       }
       expectWorkerStatus(projectionName, tagName001, Started)
-      expectWorkerStatus(projectionName, tagName002, Stopped)
+      // all other tags should be 'Started'
+      allButTag001.foreach { tag =>
+        expectWorkerStatus(projectionName, tag, Stopped)
+      }
     }
   }
 
   private def expectMsgFromWorker[T](t: T, expectationKey: String, testProbe: TestProbe, max: FiniteDuration): Unit = {
     val multiNodeExpect = new MultiNodeExpect(testProbe)
     val expectStarting  = multiNodeExpect.expectMsg(t, expectationKey, max)
-    Await.result(expectStarting, multiExpectTimeout) shouldBe Done
+    Await.result(expectStarting, max) shouldBe Done
   }
 
   private def expectWorkerStatus(projectionName: String, tagName: String, expectedStatus: Status) = {
@@ -297,24 +346,26 @@ class ProjectionRegistrySpec
   private def registerProjection(
       projectionName: String,
       tagNames: Set[String],
-      runInRole: Option[String] = None
-  ): TestProbe = {
-    val testProbe = TestProbe()
+  ): Unit =
+    registerProjection(projectionName, tagNames, TestProbe())
 
+  private def registerProjection(
+      projectionName: String,
+      tagNames: Set[String],
+      testProbe: TestProbe,
+  ): Unit = {
     val workerProps = (workerCoordinates: WorkerCoordinates) =>
       FakeProjectionActor.props(
         workerCoordinates.tagName,
         testProbe
       )
-
-    projectionRegistry.registerProjection(projectionName, tagNames, workerProps, runInRole)
-
-    testProbe
+    projectionRegistry.registerProjection(projectionName, tagNames, workerProps)
   }
 }
 
 object FakeProjectionActor {
   case class FakeStarting(tagName: String)
+  case class FakeStopping(tagName: String)
 
   def props(tagName: String, testProbe: TestProbe): Props =
     Props(new FakeProjectionActor(tagName, testProbe))
@@ -325,6 +376,11 @@ class FakeProjectionActor(tagName: String, testProbe: TestProbe) extends Actor w
   override def preStart(): Unit = {
     super.preStart()
     testProbe.ref ! FakeStarting(tagName)
+  }
+
+  override def postStop(): Unit = {
+    super.postStop()
+    testProbe.ref ! FakeStopping(tagName)
   }
 
   override def receive: Receive = {

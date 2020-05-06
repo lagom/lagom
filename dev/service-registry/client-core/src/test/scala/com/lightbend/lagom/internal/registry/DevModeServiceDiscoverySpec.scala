@@ -13,16 +13,16 @@ import akka.discovery.ServiceDiscovery.ResolvedTarget
 import akka.testkit.TestKit
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures._
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
 
 import scala.collection.immutable
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 class DevModeServiceDiscoverySpec
     extends TestKit(ActorSystem("DevModeSimpleServiceDiscoverySpec"))
-    with WordSpecLike
+    with AnyWordSpecLike
     with Matchers
     with BeforeAndAfterAll {
   private val client = new StaticServiceRegistryClient(

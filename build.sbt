@@ -193,20 +193,6 @@ val defaultMultiJvmOptions: List[String] = {
   "-Xmx256m" :: properties
 }
 
-def databasePortSetting: List[String] = {
-  def gimmePort = {
-    val serverSocket = ServerSocketChannel.open().socket()
-    try {
-      serverSocket.bind(new InetSocketAddress("127.0.0.1", 0))
-      serverSocket.getLocalPort
-    } finally serverSocket.close()
-  }
-  List(
-    s"-Djavadsl.database.port=$gimmePort",
-    s"-Dscaladsl.database.port=$gimmePort",
-  )
-}
-
 def multiJvm(project: Project): Project = {
   project
     .enablePlugins(MultiJvmPlugin)
@@ -234,7 +220,7 @@ def multiJvm(project: Project): Project = {
           // -o D(report the duration of the tests) F(show full stack traces)
           // -u select the JUnit XML reporter
           scalatestOptions in MultiJvm := Seq("-oDF", "-u", (target.value / "test-reports").getAbsolutePath),
-          MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting ::: defaultMultiJvmOptions,
+          MultiJvmKeys.jvmOptions in MultiJvm := defaultMultiJvmOptions,
           // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
           executeTests in MultiJvm := (executeTests in MultiJvm).tag(Tags.Test).value,
           // change multi-jvm lib folder to reflect the scala version used during crossbuild

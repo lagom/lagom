@@ -17,15 +17,15 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
 import com.lightbend.lagom.scaladsl.playjson.EmptyJsonSerializerRegistry
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.lightbend.lagom.scaladsl.server._
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 import play.api.db.HikariCPComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.collection.JavaConverters._
 import scala.util.Properties
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ServiceTestSpec extends WordSpec with Matchers {
+class ServiceTestSpec extends AnyWordSpec with Matchers {
   "ServiceTest" when {
     "started with Cassandra" should {
       "create a temporary directory" in {

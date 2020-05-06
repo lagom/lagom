@@ -14,16 +14,16 @@ import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.broker.Topic.TopicId
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.typesafe.config.ConfigFactory
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 import play.api.ApplicationLoader.Context
 import play.api.Environment
 import play.api.inject.DefaultApplicationLifecycle
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.concurrent.Future
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class LagomApplicationSpec extends WordSpec with Matchers {
+class LagomApplicationSpec extends AnyWordSpec with Matchers {
   "The Lagom Application" should {
     "fail to start if there are topics to publish but no topic publisher is provided" in {
       // Need to provide our own lifecycle so we can shutdown any components that started

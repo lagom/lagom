@@ -31,8 +31,6 @@ import com.lightbend.lagom.scaladsl.it.mocks.MockServiceImpl
 import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 import com.typesafe.config.ConfigFactory;
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 import play.api.libs.streams.AkkaStreams
 import play.api.Configuration
 import play.api.Environment
@@ -44,6 +42,8 @@ import scala.concurrent.Await
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 /**
  * A brief explanation of this spec.
@@ -57,7 +57,7 @@ import scala.util.control.NonFatal
  * this suite of tests is then executed once for each combination of strict/streamed request/responses, which tells
  * the test suite which endpoint in the descriptor to modify, and how to make a call to that endpoint.
  */
-class ScaladslErrorHandlingSpec extends WordSpec with Matchers {
+class ScaladslErrorHandlingSpec extends AnyWordSpec with Matchers {
   List(AkkaHttp, Netty).foreach { implicit backend =>
     s"Service error handling (${backend.codeName})" when {
       "handling errors with plain HTTP calls" should {

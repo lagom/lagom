@@ -18,8 +18,8 @@ import com.typesafe.config.ConfigFactory
 import org.scalactic.CanEqual
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 object ActorSystemSpec {
   // taken from akka-testkit's AkkaSpec
@@ -67,20 +67,21 @@ object ActorSystemSpec {
   }
 }
 
-abstract class ActorSystemSpec(system: ActorSystem)
-    extends TestKit(system)
-    with WordSpecLike
+abstract class ActorSystemSpec(actorSystemFactory: () => ActorSystem)
+    extends TestKit(actorSystemFactory())
+    with AnyWordSpecLike
     with Matchers
     with BeforeAndAfterAll
     with TypeCheckedTripleEquals
     with ImplicitSender {
+
   def this(testName: String, config: Config) =
-    this(ActorSystem(testName, config))
+    this(() => ActorSystem(testName, config))
 
   def this(config: Config) = this(ActorSystemSpec.testNameFromCallStack(classOf[ActorSystemSpec]), config)
 
   def this(setup: ActorSystemSetup) =
-    this(ActorSystem(ActorSystemSpec.testNameFromCallStack(classOf[ActorSystemSpec]), setup))
+    this(() => ActorSystem(ActorSystemSpec.testNameFromCallStack(classOf[ActorSystemSpec]), setup))
 
   def this() = this(ConfigFactory.empty())
 

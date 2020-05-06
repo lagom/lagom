@@ -15,7 +15,6 @@ import akka.actor.Props
 import akka.actor.UnhandledMessage
 import akka.cluster.sharding.ShardRegion
 import com.lightbend.lagom.internal.javadsl.persistence.PersistentEntityActor
-import org.scalatest.WordSpecLike
 import com.lightbend.lagom.persistence.ActorSystemSpec
 
 object AbstractPersistentEntityActorSpec {

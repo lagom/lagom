@@ -11,16 +11,16 @@ import akka.actor.Props
 import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
 
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import akka.pattern._
 import akka.stream.SystemMaterializer
 import akka.util.Timeout
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class LagomClientFactorySpec extends FlatSpec with Matchers with BeforeAndAfterEach with ScalaFutures {
+class LagomClientFactorySpec extends AnyFlatSpec with Matchers with BeforeAndAfterEach with ScalaFutures {
   private var system: ActorSystem = _
   private var echoActor: ActorRef = _
   implicit val timeout            = Timeout(5.seconds)
