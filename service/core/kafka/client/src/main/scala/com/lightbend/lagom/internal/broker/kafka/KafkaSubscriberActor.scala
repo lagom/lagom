@@ -9,24 +9,25 @@ import akka.actor.Actor
 import akka.actor.ActorLogging
 import akka.actor.Props
 import akka.actor.Status
-import akka.kafka.ConsumerMessage.CommittableOffset
-import akka.kafka.scaladsl.Committer
-import akka.kafka.scaladsl.{ Consumer => ReactiveConsumer }
 import akka.kafka.AutoSubscription
+import akka.kafka.ConsumerMessage.CommittableOffset
 import akka.kafka.ConsumerSettings
+import akka.kafka.scaladsl.Committer
+import akka.kafka.scaladsl.Consumer
+import akka.kafka.scaladsl.Consumer.DrainingControl
 import akka.pattern.pipe
+import akka.stream._
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.GraphDSL
 import akka.stream.scaladsl.Keep
-import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.Unzip
 import akka.stream.scaladsl.Zip
-import akka.stream._
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Promise
+import scala.concurrent.duration.Duration
 
 private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
     consumerConfig: ConsumerConfig,
@@ -40,23 +41,16 @@ private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
     extends Actor
     with ActorLogging {
 
-  /** Switch used to terminate the on-going Kafka publishing stream when this actor fails.*/
-  private var shutdown: Option[KillSwitch] = None
-
   override def preStart(): Unit = {
-    val (killSwitch, streamDone) =
+    val drainingControl: DrainingControl[Done] =
       atLeastOnce()
-        .viaMat(KillSwitches.single)(Keep.right)
-        .toMat(Sink.ignore)(Keep.both)
+        .toMat(Committer.sink(consumerConfig.committerSettings))(Keep.both)
+        .mapMaterializedValue(DrainingControl.apply)
         .run()
 
-    shutdown = Some(killSwitch)
+    val streamDone = drainingControl.drainAndShutdown()
     streamDone.pipeTo(self)
     context.become(running)
-  }
-
-  override def postStop(): Unit = {
-    shutdown.foreach(_.shutdown())
   }
 
   private def running: Receive = {
@@ -72,38 +66,34 @@ private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
 
   override def receive = PartialFunction.empty
 
-  private def atLeastOnce(): Source[Done, _] = {
-    // Creating a Source of pair where the first element is a Alpakka Kafka committable offset,
-    // and the second it's the actual message. Then, the source of pair is splitted into
+  private def atLeastOnce(): Source[CommittableOffset, Consumer.Control] = {
+    // Creating a Source of pair where the first element is an Alpakka Kafka committable offset,
+    // and the second it's the actual message. Then, the source of the pair is split into
     // two streams, so that the `flow` passed in argument can be applied to the underlying message.
     // After having applied the `flow`, the two streams are combined back and the processed message's
     // offset is committed to Kafka.
-    val pairedCommittableSource = ReactiveConsumer
-      .committableSource(consumerSettings, subscription)
-      .map(committableMessage => (committableMessage.committableOffset, transform(committableMessage.record)))
+    val pairedCommittableSource = Consumer
+      .committableSource(consumerSettings.withStopTimeout(Duration.Zero), subscription)
+      .map(msg => (msg.committableOffset, transform(msg.record)))
 
-    val committOffsetFlow = Flow.fromGraph(GraphDSL.create(flow) { implicit builder => flow =>
+    val committableOffsetFlow = Flow.fromGraph(GraphDSL.create(flow) { implicit builder => flow =>
       import GraphDSL.Implicits._
-      val unzip = builder.add(Unzip[CommittableOffset, SubscriberPayload])
-      val zip   = builder.add(Zip[CommittableOffset, Done])
-      val committer = {
-        val commitFlow = Flow[(CommittableOffset, Done)]
-          .map(_._1)
-          .via(Committer.flow(consumerConfig.committerSettings))
-        builder.add(commitFlow)
-      }
+      val unzip  = builder.add(Unzip[CommittableOffset, SubscriberPayload])
+      val zip    = builder.add(Zip[CommittableOffset, Done])
+      val offset = builder.add(Flow[(CommittableOffset, Done)].map(_._1))
+
       // To allow the user flow to do its own batching, the offset side of the flow needs to effectively buffer
       // infinitely to give full control of backpressure to the user side of the flow.
       val offsetBuffer = Flow[CommittableOffset].buffer(consumerConfig.offsetBuffer, OverflowStrategy.backpressure)
 
       unzip.out0 ~> offsetBuffer ~> zip.in0
       unzip.out1 ~> flow ~> zip.in1
-      zip.out ~> committer.in
+      zip.out ~> offset.in
 
-      FlowShape(unzip.in, committer.out)
+      FlowShape(unzip.in, offset.out)
     })
 
-    pairedCommittableSource.via(committOffsetFlow)
+    pairedCommittableSource.via(committableOffsetFlow)
   }
 }
 

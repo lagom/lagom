@@ -125,8 +125,10 @@ private[lagom] class TopicProducerActor[Message](
                   }
 
               val eventPublisherFlow: Flow[(Message, AkkaOffset), Future[AkkaOffset], Any] =
-                eventsPublisherFlow(offset) // Return a Source[Future[Offset],_] where each produced element is a completed Offset.
-              eventStreamSource             // read from DB + userFlow
+                eventsPublisherFlow(offset)
+
+              // Return a Source[Future[Offset],_] where each produced element is a completed Offset.
+              eventStreamSource // read from DB + userFlow
                 .map {
                   case (message, offset) =>
                     (
