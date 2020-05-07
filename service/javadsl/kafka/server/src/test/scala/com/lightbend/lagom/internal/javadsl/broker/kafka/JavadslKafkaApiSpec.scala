@@ -6,7 +6,6 @@ package com.lightbend.lagom.internal.javadsl.broker.kafka
 
 import java.io.Closeable
 import java.io.File
-import java.util.Optional
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -442,7 +441,7 @@ object JavadslKafkaApiSpec {
       TopicProducer.singleStreamWithOffset[String]({ fromOffset: JOffset =>
         eventJournal
           .eventStream(dslOffsetToOffset(fromOffset))
-          .map(element => new JPair(Optional.of(messageTransformer(element._1)), offsetToDslOffset(element._2)))
+          .map(element => new JPair(messageTransformer(element._1), offsetToDslOffset(element._2)))
           .asJava
       }.asJava)
   }

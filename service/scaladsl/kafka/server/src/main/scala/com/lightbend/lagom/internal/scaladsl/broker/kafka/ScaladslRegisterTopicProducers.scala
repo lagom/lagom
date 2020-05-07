@@ -56,7 +56,7 @@ class ScaladslRegisterTopicProducers(
               case tagged: TaggedOffsetTopicProducer[Any, _] =>
                 val tags = tagged.tags
 
-                val eventStreamFactory: (String, Offset) => Source[(Option[Any], Offset), _] = { (tag, offset) =>
+                val eventStreamFactory: (String, Offset) => Source[(Any, Offset), _] = { (tag, offset) =>
                   tags.find(_.tag == tag) match {
                     case Some(aggregateTag) => tagged.readSideStream(aggregateTag, offset)
                     case None               => throw new RuntimeException("Unknown tag: " + tag)

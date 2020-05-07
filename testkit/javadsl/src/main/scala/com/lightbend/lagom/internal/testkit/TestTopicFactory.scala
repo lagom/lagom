@@ -25,7 +25,6 @@ import com.lightbend.lagom.javadsl.persistence.AggregateEvent
 import com.lightbend.lagom.javadsl.persistence.Offset
 
 import scala.collection.JavaConverters._
-import scala.compat.java8.OptionConverters._
 
 /**
  * Topic factory that connects consumers directly to the implementing producers.
@@ -78,12 +77,8 @@ class TestTopicFactory @Inject() (resolvedServices: ResolvedServices, materializ
           .from(topicProducer.tags)
           .asScala
           .flatMapMerge(topicProducer.tags.size(), { tag =>
-            topicProducer.readSideStream.apply(tag, Offset.NONE).asScala.map(_.first.asScala)
+            topicProducer.readSideStream.apply(tag, Offset.NONE).asScala.map(_.first)
           })
-          .flatMapConcat {
-            case Some(payload) => Source.single(payload)
-            case None          => Source.empty[Payload]
-          }
           .map { message =>
             serializer.serialize(message)
           }

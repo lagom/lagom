@@ -11,7 +11,6 @@ import com.lightbend.lagom.javadsl.broker.TopicProducer;
 
 import javax.inject.Inject;
 import java.util.Arrays;
-import java.util.Optional;
 
 /** */
 public class PublishServiceImpl implements PublishService {
@@ -23,7 +22,6 @@ public class PublishServiceImpl implements PublishService {
   public Topic<PublishEvent> messageTopic() {
     return TopicProducer.singleStreamWithOffset(
         offset ->
-            Source.from(Arrays.asList(new PublishEvent(23)))
-                .map(msg -> Pair.create(Optional.of(msg), offset)));
+            Source.from(Arrays.asList(new PublishEvent(23))).map(msg -> Pair.create(msg, offset)));
   }
 }

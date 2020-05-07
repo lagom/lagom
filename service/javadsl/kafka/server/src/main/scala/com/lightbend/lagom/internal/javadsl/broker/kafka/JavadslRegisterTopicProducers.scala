@@ -9,7 +9,6 @@ import java.net.URI
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import scala.compat.java8.OptionConverters._
 import org.slf4j.LoggerFactory
 import com.lightbend.lagom.javadsl.api.ServiceInfo
 import com.lightbend.lagom.javadsl.api.ServiceLocator
@@ -63,7 +62,7 @@ class JavadslRegisterTopicProducers @Inject() (
               case tagged: TaggedOffsetTopicProducer[AnyRef, _] =>
                 val tags = tagged.tags.asScala.toIndexedSeq
 
-                val eventStreamFactory: (String, Offset) => Source[(Option[AnyRef], Offset), _] = { (tag, offset) =>
+                val eventStreamFactory: (String, Offset) => Source[(AnyRef, Offset), _] = { (tag, offset) =>
                   tags.find(_.tag == tag) match {
                     case Some(aggregateTag) =>
                       tagged
@@ -73,7 +72,7 @@ class JavadslRegisterTopicProducers @Inject() (
                         )
                         .asScala
                         .map { pair =>
-                          pair.first.asScala -> OffsetAdapter.dslOffsetToOffset(pair.second)
+                          pair.first -> OffsetAdapter.dslOffsetToOffset(pair.second)
                         }
                     case None => throw new RuntimeException("Unknown tag: " + tag)
                   }

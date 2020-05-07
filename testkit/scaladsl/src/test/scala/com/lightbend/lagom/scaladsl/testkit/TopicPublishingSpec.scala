@@ -34,13 +34,8 @@ abstract class AlphaApplication(context: LagomApplicationContext)
 class AlphaServiceImpl extends AlphaService {
   override def messages: Topic[AlphaEvent] =
     TopicProducer.singleStreamWithOffset { offset =>
-      Source(1 to 10).map(i => {
-        if (i % 2 == 0) {
-          (Some(AlphaEvent.apply(i)), Offset.sequence(i))
-        } else {
-          (None, Offset.sequence(i))
-        }
-      })
+      val events = (1 to 10).filter(_ % 2 == 0).map(AlphaEvent.apply)
+      Source(events).map(event => (event, Offset.sequence(event.message / 2)))
     }
 }
 
@@ -57,8 +52,8 @@ class TopicPublishingSpec extends AsyncWordSpec with Matchers {
 
       source
         .runWith(TestSink.probe[AlphaEvent])
-        .request(5)
-        .expectNextN(5) should ===(Seq(AlphaEvent(2), AlphaEvent(4), AlphaEvent(6), AlphaEvent(8), AlphaEvent(10)))
+        .request(1)
+        .expectNext should ===(AlphaEvent(2))
     }
   }
 }

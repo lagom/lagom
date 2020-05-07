@@ -4,7 +4,6 @@
 
 package com.lightbend.lagom.internal.broker
 
-import java.util.Optional
 import java.util.function.BiFunction
 
 import akka.japi.Pair
@@ -17,5 +16,5 @@ import org.pcollections.PSequence
 
 final class TaggedOffsetTopicProducer[Message, Event <: AggregateEvent[Event]](
     val tags: PSequence[AggregateEventTag[Event]],
-    val readSideStream: BiFunction[AggregateEventTag[Event], Offset, JSource[Pair[Optional[Message], Offset], _]]
+    val readSideStream: BiFunction[AggregateEventTag[Event], Offset, JSource[Pair[Message, Offset], _]]
 ) extends InternalTopic[Message]
