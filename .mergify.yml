@@ -11,6 +11,17 @@ pull_request_rules:
       merge:
         method: merge
 
+  - name: backport patches to 1.6.x branch
+    conditions:
+      - merged
+      - label=status:needs-backport
+    actions:
+      backport:
+        branches:
+          - 1.6.x
+      label:
+        remove: [status:needs-backport]
+
   - name: backport patches to 1.5.x branch
     conditions:
       - merged
@@ -32,16 +43,6 @@ pull_request_rules:
           - 1.4.x
       label:
         remove: [status:needs-backport-1.4]
-
-  - name: Merge ScalaSteward's PRs that are ready
-    conditions:
-      - author=scala-steward
-      - status-success=Travis CI - Pull Request
-      - "#changes-requested-reviews-by=0"
-      - label!=status:block-merge
-    actions:
-      merge:
-        method: merge
 
   - name: Delete the PR branch after merge
     conditions:

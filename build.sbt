@@ -193,20 +193,6 @@ val defaultMultiJvmOptions: List[String] = {
   "-Xmx256m" :: properties
 }
 
-def databasePortSetting: List[String] = {
-  def gimmePort = {
-    val serverSocket = ServerSocketChannel.open().socket()
-    try {
-      serverSocket.bind(new InetSocketAddress("127.0.0.1", 0))
-      serverSocket.getLocalPort
-    } finally serverSocket.close()
-  }
-  List(
-    s"-Djavadsl.database.port=$gimmePort",
-    s"-Dscaladsl.database.port=$gimmePort",
-  )
-}
-
 def multiJvm(project: Project): Project = {
   project
     .enablePlugins(MultiJvmPlugin)
@@ -234,7 +220,7 @@ def multiJvm(project: Project): Project = {
           // -o D(report the duration of the tests) F(show full stack traces)
           // -u select the JUnit XML reporter
           scalatestOptions in MultiJvm := Seq("-oDF", "-u", (target.value / "test-reports").getAbsolutePath),
-          MultiJvmKeys.jvmOptions in MultiJvm := databasePortSetting ::: defaultMultiJvmOptions,
+          MultiJvmKeys.jvmOptions in MultiJvm := defaultMultiJvmOptions,
           // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
           executeTests in MultiJvm := (executeTests in MultiJvm).tag(Tags.Test).value,
           // change multi-jvm lib folder to reflect the scala version used during crossbuild
@@ -255,7 +241,7 @@ def macroCompileSettings: Seq[Setting[_]] = Seq(
   }
 )
 
-val previousVersions = Seq("1.6.0")
+val previousVersions = Seq("1.6.1")
 
 val noMima = mimaPreviousArtifacts := Set.empty
 val mimaSettings: Seq[Setting[_]] = {
@@ -289,27 +275,8 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomImportCompat"),
       ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.run.RunSupport$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.run.RunSupportCompat"),
-      // Remove CassandraReadSide legacy implementation
-      ProblemFilters
-        .exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor"),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide.register"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor$EventHandlersBuilder"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor$EventHandlers"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProcessor$EventHandlers$"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.internal.javadsl.persistence.cassandra.CassandraReadSideImpl.register"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "com.lightbend.lagom.internal.javadsl.persistence.cassandra.LegacyCassandraReadSideHandler"
-      ),
+      // Add mima filters here.
+      ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal.*"),
     )
   )
 }
@@ -409,6 +376,7 @@ def SonatypeOnly      = Sonatype && PluginsAccessor.exclude(BintrayPlugin)
 def RuntimeLibPlugins = SonatypeOnly && HeaderPlugin && Unidoc
 
 lazy val api = (project in file("service/core/api"))
+  .configure(withLagomVersion)
   .settings(runtimeLibCommon, mimaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
@@ -699,6 +667,7 @@ lazy val `akka-management-scaladsl` = (project in file("akka-management/scaladsl
   )
 
 lazy val `cluster-core` = (project in file("cluster/core"))
+  .configure(withLagomVersion)
   .dependsOn(`akka-management-core`)
   .settings(runtimeLibCommon, mimaSettings, Protobuf.settings)
   .enablePlugins(RuntimeLibPlugins)
@@ -1089,20 +1058,25 @@ lazy val `server-containers` = (project in file("dev") / "server-containers")
     crossScalaVersions := (Dependencies.Versions.Scala ++ Dependencies.Versions.SbtScala).distinct,
   )
 
+def withLagomVersion(p: Project): Project =
+  p.settings(
+    sourceGenerators in Compile += Def.task {
+      Generators.version(
+        version.value,
+        Dependencies.Versions.Akka,
+        Dependencies.Versions.AkkaHttp,
+        Dependencies.Versions.Play,
+        (sourceManaged in Compile).value
+      )
+    }.taskValue,
+  )
+
 def sharedBuildToolSupportSetup(p: Project): Project =
-  p.enablePlugins(HeaderPlugin, SonatypeOnly)
+  withLagomVersion(p)
+    .enablePlugins(HeaderPlugin, SonatypeOnly)
     .settings(sonatypeSettings, common, mimaSettings)
     .settings(
       name := s"lagom-${thisProject.value.id}",
-      sourceGenerators in Compile += Def.task {
-        Generators.version(
-          version.value,
-          Dependencies.Versions.Akka,
-          Dependencies.Versions.AkkaHttp,
-          Dependencies.Versions.Play,
-          (sourceManaged in Compile).value
-        )
-      }.taskValue,
       Dependencies.`build-tool-support`,
     )
     .dependsOn(`server-containers`)

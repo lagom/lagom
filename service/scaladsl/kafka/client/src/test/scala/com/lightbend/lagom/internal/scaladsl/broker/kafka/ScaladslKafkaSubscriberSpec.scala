@@ -4,13 +4,13 @@
 
 package com.lightbend.lagom.internal.scaladsl.broker.kafka
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
  *
  */
-class ScaladslKafkaSubscriberSpec extends FlatSpec with Matchers {
+class ScaladslKafkaSubscriberSpec extends AnyFlatSpec with Matchers {
   behavior.of("ScaladslKafkaSubscriber")
 
   it should "create a new subscriber with updated groupId" in {

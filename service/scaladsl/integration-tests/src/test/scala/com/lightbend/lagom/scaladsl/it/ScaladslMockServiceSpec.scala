@@ -23,8 +23,6 @@ import com.lightbend.lagom.scaladsl.server.LagomServer
 import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
 import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 import com.typesafe.config.ConfigFactory
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 import play.api.Configuration
 import play.api.libs.streams.AkkaStreams
 import play.api.libs.ws.ahc.AhcWSComponents
@@ -35,8 +33,10 @@ import scala.concurrent.duration._
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ScaladslMockServiceSpec extends WordSpec with Matchers {
+class ScaladslMockServiceSpec extends AnyWordSpec with Matchers {
   List(AkkaHttp, Netty).foreach { implicit backend =>
     s"A mock service ($backend)" should {
       "be possible to invoke" in withServer { implicit mat => client =>

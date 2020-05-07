@@ -15,11 +15,16 @@ import com.lightbend.lagom.javadsl.persistence.multinode.AbstractClusteredPersis
 import com.lightbend.lagom.javadsl.persistence.multinode.AbstractClusteredPersistentEntitySpec
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.javadsl.persistence.TestEntityReadSide
+import com.lightbend.lagom.javadsl.persistence.multinode.AbstractClusteredPersistentEntityConfig.Ports
+import com.lightbend.lagom.javadsl.persistence.multinode.AbstractClusteredPersistentEntityConfig.Ports.SpecPorts
 import com.typesafe.config.Config
 
 object CassandraClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
-  override def additionalCommonConfig(databasePort: Int): Config = {
-    cassandraConfigOnly("ClusteredPersistentEntitySpec", databasePort)
+
+  override def specPorts: SpecPorts = Ports.cassandraSpecPorts
+
+  override def additionalCommonConfig: Config = {
+    cassandraConfigOnly("ClusteredPersistentEntitySpec", specPorts.database)
       .withFallback(CassandraReadSideSpec.readSideConfig)
   }
 }
@@ -41,7 +46,7 @@ class CassandraClusteredPersistentEntitySpec
         cassandraDirectory,
         "lagom-test-embedded-cassandra.yaml",
         clean = true,
-        port = databasePort
+        port = specPorts.database
       )
       awaitPersistenceInit(system)
     }

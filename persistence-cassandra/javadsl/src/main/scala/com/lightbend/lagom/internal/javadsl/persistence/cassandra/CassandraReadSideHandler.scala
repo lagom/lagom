@@ -21,7 +21,7 @@ import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
-import com.lightbend.lagom.javadsl.persistence.Offset
+import com.lightbend.lagom.javadsl.persistence.{ Offset => LagomOffset }
 import org.pcollections.TreePVector
 import org.slf4j.LoggerFactory
 
@@ -40,9 +40,9 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
     extends ReadSideHandler[Event] {
   private val log = LoggerFactory.getLogger(this.getClass)
 
-  protected def invoke(handler: Handler, event: Event, offset: Offset): CompletionStage[JList[BoundStatement]]
+  protected def invoke(handler: Handler, event: Event, offset: LagomOffset): CompletionStage[JList[BoundStatement]]
 
-  override def handle(): Flow[Pair[Event, Offset], Done, _] = {
+  override def handle(): Flow[Pair[Event, LagomOffset], Done, _] = {
     def executeStatements(statements: JList[BoundStatement]): Future[Done] = {
       if (statements.isEmpty) {
         Future.successful(Done.getInstance())
@@ -54,7 +54,7 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
     }
 
     akka.stream.scaladsl
-      .Flow[Pair[Event, Offset]]
+      .Flow[Pair[Event, LagomOffset]]
       .mapAsync(parallelism = 1) { pair =>
         val Pair(event, offset) = pair
         val eventClass          = event.getClass
@@ -81,10 +81,10 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
  * Internal API
  */
 private[cassandra] object CassandraAutoReadSideHandler {
-  type Handler[Event] = (_ <: Event, Offset) => CompletionStage[JList[BoundStatement]]
+  type Handler[Event] = (_ <: Event, LagomOffset) => CompletionStage[JList[BoundStatement]]
 
   def emptyHandler[Event, E <: Event]: Handler[Event] =
-    (_: E, _: Offset) => Future.successful(util.Collections.emptyList[BoundStatement]()).toJava
+    (_: E, _: LagomOffset) => Future.successful(util.Collections.emptyList[BoundStatement]()).toJava
 }
 
 /**
@@ -112,12 +112,12 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
   protected override def invoke(
       handler: Handler[Event],
       event: Event,
-      offset: Offset
+      offset: LagomOffset
   ): CompletionStage[JList[BoundStatement]] = {
     val boundStatements = {
       for {
         statements <- handler
-          .asInstanceOf[(Event, Offset) => CompletionStage[JList[BoundStatement]]]
+          .asInstanceOf[(Event, LagomOffset) => CompletionStage[JList[BoundStatement]]]
           .apply(event, offset)
           .toScala
       } yield {
@@ -136,7 +136,7 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
     globalPrepareCallback.apply()
   }
 
-  override def prepare(tag: AggregateEventTag[Event]): CompletionStage[Offset] = {
+  override def prepare(tag: AggregateEventTag[Event]): CompletionStage[LagomOffset] = {
     (for {
       _   <- prepareCallback.apply(tag).toScala
       dao <- offsetStore.prepare(readProcessorId, tag.tag)

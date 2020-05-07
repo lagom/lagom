@@ -24,15 +24,15 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.Seconds
 import org.scalatest.time.Span
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 import play.api.libs.ws.ahc.AhcWSClientConfigFactory
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 import play.inject.guice.GuiceApplicationBuilder
 
 import scala.compat.java8.FunctionConverters._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class TestOverTlsSpec extends WordSpec with Matchers with ScalaFutures {
+class TestOverTlsSpec extends AnyWordSpec with Matchers with ScalaFutures {
   val timeout      = PatienceConfiguration.Timeout(Span(5, Seconds))
   val defaultSetup = ServiceTest.defaultSetup.withCluster(false)
 

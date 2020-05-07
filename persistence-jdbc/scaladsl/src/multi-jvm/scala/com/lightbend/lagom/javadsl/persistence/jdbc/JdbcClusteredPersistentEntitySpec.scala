@@ -13,6 +13,7 @@ import com.lightbend.lagom.scaladsl.persistence.multinode.AbstractClusteredPersi
 import com.lightbend.lagom.scaladsl.persistence.multinode.AbstractClusteredPersistentEntitySpec
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.TestEntitySerializerRegistry
+import com.lightbend.lagom.scaladsl.persistence.multinode.AbstractClusteredPersistentEntitySpec.Ports
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
@@ -28,10 +29,13 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 object JdbcClusteredPersistentEntityConfig extends AbstractClusteredPersistentEntityConfig {
-  override def additionalCommonConfig(databasePort: Int): Config = ConfigFactory.parseString(
+
+  override def specPorts: Ports.SpecPorts = Ports.jdbcSpecPorts
+
+  override def additionalCommonConfig: Config = ConfigFactory.parseString(
     s"""
       db.default.driver=org.h2.Driver
-      db.default.url="jdbc:h2:tcp://localhost:$databasePort/mem:JdbcClusteredPersistentEntitySpec"
+      db.default.url="jdbc:h2:tcp://localhost:${specPorts.database}/mem:JdbcClusteredPersistentEntitySpec"
     """
   )
 }
@@ -48,7 +52,7 @@ class JdbcClusteredPersistentEntitySpec
 
   protected override def atStartup(): Unit = {
     runOn(node1) {
-      h2 = Server.createTcpServer("-tcpPort", databasePort.toString).start()
+      h2 = Server.createTcpServer("-tcpPort", specPorts.database.toString, "-ifNotExists").start()
     }
 
     enterBarrier("h2-started")

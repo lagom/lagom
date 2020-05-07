@@ -11,13 +11,13 @@ import com.lightbend.lagom.scaladsl.api.Descriptor
 import com.lightbend.lagom.scaladsl.api.Service
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import org.scalatest.Inside
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 
 import scala.collection.immutable
 import scala.concurrent.Future
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ServiceClientSpec extends WordSpec with Matchers with Inside {
+class ServiceClientSpec extends AnyWordSpec with Matchers with Inside {
   "The service client macro" should {
     "allow implementing a service client" in {
       val mockServiceClient = TestServiceClient.implement[MockService]

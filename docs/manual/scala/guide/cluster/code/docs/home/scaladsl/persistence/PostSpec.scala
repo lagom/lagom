@@ -15,10 +15,10 @@ import com.lightbend.lagom.scaladsl.testkit.PersistentEntityTestDriver
 import com.typesafe.config.ConfigFactory
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class PostSpec extends WordSpecLike with Matchers with BeforeAndAfterAll with TypeCheckedTripleEquals {
+class PostSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterAll with TypeCheckedTripleEquals {
   val system = ActorSystem("PostSpec", JsonSerializerRegistry.actorSystemSetupFor(BlogPostSerializerRegistry))
 
   override def afterAll(): Unit = {

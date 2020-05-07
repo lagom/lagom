@@ -2,7 +2,7 @@
  * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.lightbend.lagom.internal.cluster.projections
+package com.lightbend.lagom.internal.projection
 
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.ProjectionName
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
@@ -12,13 +12,13 @@ import com.lightbend.lagom.projection.State
 import com.lightbend.lagom.projection.Status
 import com.lightbend.lagom.projection.Stopped
 import com.lightbend.lagom.projection.Worker
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 /**
  *
  */
-class ProjectionStateSpec extends WordSpec with Matchers {
+class ProjectionStateSpec extends AnyWordSpec with Matchers {
   private val prj001   = "prj001"
   private val prj002   = "prj002"
   val p1w1             = prj001 + "-workers-1"

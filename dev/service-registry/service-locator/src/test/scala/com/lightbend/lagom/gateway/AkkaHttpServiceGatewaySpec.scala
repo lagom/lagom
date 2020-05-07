@@ -26,15 +26,15 @@ import com.lightbend.lagom.javadsl.api.transport.Method
 import com.lightbend.lagom.registry.impl.ServiceRegistryActor
 import com.lightbend.lagom.registry.impl.UnmanagedServices
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 import play.core.server.Server.ServerStoppedReason
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class AkkaHttpServiceGatewaySpec extends WordSpec with Matchers with BeforeAndAfterAll {
+class AkkaHttpServiceGatewaySpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
   implicit val actorSystem = ActorSystem()
   import actorSystem.dispatcher
   val coordinatedShutdown = CoordinatedShutdown(actorSystem)

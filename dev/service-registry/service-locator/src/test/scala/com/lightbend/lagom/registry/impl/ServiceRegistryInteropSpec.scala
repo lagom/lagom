@@ -23,12 +23,12 @@ import com.lightbend.lagom.javadsl.api.transport.Method
 import com.lightbend.lagom.javadsl.jackson.JacksonSerializerFactory
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.Futures
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
 import play.api.libs.json.Format
 import play.api.libs.json.Json
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class ServiceRegistryInteropSpec extends FlatSpec with Matchers with Futures with BeforeAndAfterAll {
+class ServiceRegistryInteropSpec extends AnyFlatSpec with Matchers with Futures with BeforeAndAfterAll {
   val system                   = ActorSystem()
   val jacksonSerializerFactory = new JacksonSerializerFactory(system)
 

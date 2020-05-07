@@ -12,8 +12,8 @@ import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
 import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 import com.lightbend.lagom.scaladsl.testkit.TestTopicComponents
 import play.api.libs.ws.ahc.AhcWSComponents
-import org.scalatest.AsyncWordSpec
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
 import akka.NotUsed
 import akka.Done
 import akka.stream.scaladsl.Source

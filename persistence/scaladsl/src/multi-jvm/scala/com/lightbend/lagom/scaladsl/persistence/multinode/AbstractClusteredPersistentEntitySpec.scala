@@ -27,17 +27,19 @@ import scala.concurrent.duration._
 import scala.concurrent.Await
 import scala.concurrent.Future
 import com.lightbend.lagom.internal.cluster.STMultiNodeSpec
+import com.lightbend.lagom.scaladsl.persistence.multinode.AbstractClusteredPersistentEntitySpec.Ports.SpecPorts
 
 abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
   val node1 = role("node1")
   val node2 = role("node2")
   val node3 = role("node3")
 
-  val databasePort = System.getProperty("scaladsl.database.port").toInt
-  val environment  = Environment.simple()
+  def specPorts: SpecPorts
+
+  val environment = Environment.simple()
 
   commonConfig(
-    additionalCommonConfig(databasePort).withFallback(
+    additionalCommonConfig.withFallback(
       ConfigFactory
         .parseString(
           """
@@ -81,24 +83,29 @@ abstract class AbstractClusteredPersistentEntityConfig extends MultiNodeConfig {
     )
   )
 
-  def additionalCommonConfig(databasePort: Int): Config
+  def additionalCommonConfig: Config
 
   nodeConfig(node1) {
-    ConfigFactory.parseString("""akka.cluster.roles = ["backend", "read-side"]""")
+    ConfigFactory.parseString(s"""
+      akka.cluster.roles = ["backend", "read-side"]
+      akka.remote.artery.canonical.port = ${specPorts.node1}
+      """)
   }
 
   nodeConfig(node2) {
-    ConfigFactory.parseString("""
+    ConfigFactory.parseString(s"""
       akka.cluster.roles = ["backend"]
       cassandra-journal.keyspace-autocreate = false
-      """.stripMargin)
+      akka.remote.artery.canonical.port = ${specPorts.node2}
+      """)
   }
 
   nodeConfig(node3) {
-    ConfigFactory.parseString("""
+    ConfigFactory.parseString(s"""
       akka.cluster.roles = ["read-side"]
       cassandra-journal.keyspace-autocreate = false
-      """.stripMargin)
+      akka.remote.artery.canonical.port = ${specPorts.node3}
+      """)
   }
 }
 
@@ -119,6 +126,19 @@ object AbstractClusteredPersistentEntitySpec {
       JsonSerializerRegistry.serializationSetupFor(jsonSerializerRegistry)
     )
     ActorSystem(getCallerName(classOf[MultiNodeSpec]), setup)
+  }
+
+  object Ports {
+    class SpecPorts(base: Int) {
+      val database = base
+      val node1    = base + 1
+      val node2    = base + 2
+      val node3    = base + 3
+    }
+
+    val cassandraSpecPorts = new SpecPorts(20000)
+    val jdbcSpecPorts      = new SpecPorts(20010)
+    val slickSpecPorts     = new SpecPorts(20020)
   }
 }
 
