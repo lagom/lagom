@@ -82,10 +82,8 @@ class JavadslRegisterTopicProducers @Inject() (
                 }
 
                 val transform: Message[AnyRef] => ProducerRecord[String, AnyRef] = message => {
-                  val key = Option(topicCall.properties.getValueOf(KafkaProperties.partitionKeyStrategy())) match {
-                    case Some(javaPKS) => javaPKS.computePartitionKey(message.getPayload)
-                    case None          => null
-                  }
+                  val javaPKS = topicCall.properties.getValueOf(KafkaProperties.partitionKeyStrategy())
+                  val key     = if (javaPKS != null) javaPKS.computePartitionKey(message.getPayload) else null
                   val headers = message.get(KafkaMetadataKeys.HEADERS).orElseGet(() => null)
                   new ProducerRecord(topicId.value(), null, null, key, message.getPayload, headers)
                 }

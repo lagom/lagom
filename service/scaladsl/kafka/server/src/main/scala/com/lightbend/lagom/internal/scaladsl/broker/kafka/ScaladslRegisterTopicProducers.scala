@@ -67,10 +67,10 @@ class ScaladslRegisterTopicProducers(
                 }
 
                 val transform: Message[Any] => ProducerRecord[String, Any] = message => {
-                  val key: String = topicCall.properties.get(KafkaProperties.partitionKeyStrategy) match {
-                    case Some(strategy) => strategy.computePartitionKey(message.payload)
-                    case None           => null
-                  }
+                  val key: String = topicCall.properties
+                    .get(KafkaProperties.partitionKeyStrategy)
+                    .map(_.computePartitionKey(message.payload))
+                    .orNull
                   val headers = message.get(KafkaMetadataKeys.Headers).orNull
                   new ProducerRecord(topicId.name, null, null, key, message.payload, headers)
                 }
