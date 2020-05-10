@@ -1,6 +1,6 @@
 val lombok = "org.projectlombok" % "lombok" % "1.18.8"
 val macwire = "com.softwaremill.macwire" %% "macros" % "2.3.3" % "provided"
-val scalaTest = "org.scalatest" %% "scalatest" % "3.1.1" % Test
+val scalaTest = "org.scalatest" %% "scalatest" % "3.1.2" % Test
 
 lagomCassandraEnabled in ThisBuild := true
 // no need for Kafka on this test
