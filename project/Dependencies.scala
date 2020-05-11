@@ -26,7 +26,7 @@ object Dependencies {
     val PlayFileWatch    = "1.1.12"
 
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.5") // sync with docs/build.sbt
-    val AkkaHttp     = "10.1.11"
+    val AkkaHttp     = "10.1.12"
 
     val AkkaPersistenceCassandra = "0.103"
     // this is the version used in AkkaPersistenceCassandra, we stick with it
