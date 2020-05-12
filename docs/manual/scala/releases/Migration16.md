@@ -75,6 +75,14 @@ This is a summary of changes in Lagom 1.6 that would require a full cluster shut
 
 Finally, if you [[migrate your Persistent Entities as Akka Persistence Typed|MigratingToAkkaPersistenceTyped]] `Behavior`'s you will also need a cluster shutdown for the upgrade.
 
+### A note on Rolling Updates and Versions
+
+Sometimes patch versions of Akka Cluster introduce changes that make certain pairs of versions incompatible. As a consequence, sometimes it is necessary to upgrade in multiple steps if downtime is not possible. See, for example, the following note in the Akka Docs on [Rolling Updates and Versions](https://doc.akka.io/docs/akka/current/project/rolling-update.html#2-6-0-several-changes-in-minor-release):
+
+> This means that a rolling update will have to go through at least one of 2.6.2, 2.6.3 or 2.6.4 when upgrading to 2.6.5 or higher or else cluster nodes will not be able to communicate during the rolling update.
+
+What that means for Lagom users upgrading from Lagom `1.5.5` is that instead of updating to the latest version of Lagom 1.6 you should first migrate from `1.5.5` to `1.6.2` and, once that is complete and deployed, you can migrate to Lagom `1.6.3`.
+
 ## Minor changes
 
 ### JSON Compression threshold
