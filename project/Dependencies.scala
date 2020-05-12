@@ -29,17 +29,17 @@ object Dependencies {
     val PlayFileWatch    = "1.1.12"
 
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.5") // sync with docs/build.sbt
-    val AkkaHttp     = "10.1.11"
+    val AkkaHttp     = "10.1.12"
 
     val AkkaPersistenceCassandra = "0.103"
     val AkkaPersistenceJdbc      = "3.5.3"
-    val AkkaManagement           = "1.0.6"
+    val AkkaManagement           = "1.0.7"
 
     val Disruptor = "3.4.2"
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
     val ScalaTest            = "3.1.1"
-    val Jackson              = "2.10.3"
+    val Jackson              = "2.10.4"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
     val JacksonDatabind      = Jackson
@@ -55,8 +55,8 @@ object Dependencies {
     val Kafka = "2.4.1"
 
     val Curator       = "2.12.0"
-    val Immutables    = "2.8.7"
-    val HibernateCore = "5.4.14.Final"
+    val Immutables    = "2.8.8"
+    val HibernateCore = "5.4.15.Final"
     val PCollections  = "3.1.3"
 
     val ScalaJava8Compat = "0.9.1"
@@ -72,7 +72,7 @@ object Dependencies {
     val jetty = "9.4.20.v20190813"
 
     val Selenium  = "3.141.59"
-    val ByteBuddy = "1.10.8"
+    val ByteBuddy = "1.10.10"
   }
 
   // Some setup before we start creating ModuleID vals
@@ -102,7 +102,7 @@ object Dependencies {
   private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.2"
   private val h2                     = "com.h2database" % "h2" % "1.4.200"
   private val cassandraDriverCore =
-    ("com.datastax.cassandra" % "cassandra-driver-core" % "3.8.0").excludeAll(excludeSlf4j: _*)
+    ("com.datastax.cassandra" % "cassandra-driver-core" % "3.9.0").excludeAll(excludeSlf4j: _*)
 
   private val akkaActor            = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
   private val akkaRemote           = "com.typesafe.akka" %% "akka-remote" % Versions.Akka

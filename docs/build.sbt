@@ -12,7 +12,7 @@ val PlayVersion           = "2.8.1" // sync with project/Dependencies.scala
 val Log4jVersion          = "2.13.2"
 val MacWireVersion        = "2.3.3"
 val LombokVersion         = "1.18.8"
-val HibernateVersion      = "5.4.14.Final"
+val HibernateVersion      = "5.4.15.Final"
 val ValidationApiVersion  = "2.0.1.Final"
 
 val branch = {
