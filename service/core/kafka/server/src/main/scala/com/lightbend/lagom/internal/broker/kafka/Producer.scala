@@ -29,7 +29,7 @@ private[lagom] object Producer {
       kafkaConfig: KafkaConfig,
       locateService: String => Future[Seq[URI]],
       topicId: String,
-      eventStreamFactory: (String, AkkaOffset) => Source[(Message, AkkaOffset), _],
+      eventStreamFactory: (String, AkkaOffset) => Source[InternalTopicProducerCommand[Message], _],
       partitionKeyStrategy: Option[Message => String],
       serializer: Serializer[Message],
       offsetStore: OffsetStore,

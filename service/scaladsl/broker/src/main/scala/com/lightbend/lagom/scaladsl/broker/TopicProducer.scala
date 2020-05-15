@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.scaladsl.broker
 
+import akka.annotation.ApiMayChange
 import akka.persistence.query.Offset
 import akka.stream.scaladsl.Source
 import com.lightbend.internal.broker.TaggedOffsetTopicProducer
@@ -53,8 +54,7 @@ object TopicProducer {
    */
   def taggedStreamWithOffset[Message, Event <: AggregateEvent[Event]](tags: immutable.Seq[AggregateEventTag[Event]])(
       eventStream: (AggregateEventTag[Event], Offset) => Source[(Message, Offset), Any]
-  ): Topic[Message] =
-    new TaggedOffsetTopicProducer[Message, Event](tags, eventStream)
+  ): Topic[Message] = TaggedOffsetTopicProducer.fromEventAndOffsetPairStream(tags, eventStream)
 
   /**
    * Publish all tags of a stream that is sharded across many tags.
@@ -71,6 +71,11 @@ object TopicProducer {
    */
   def taggedStreamWithOffset[Message, Event <: AggregateEvent[Event]](shards: AggregateEventShards[Event])(
       eventStream: (AggregateEventTag[Event], Offset) => Source[(Message, Offset), Any]
-  ): Topic[Message] =
-    new TaggedOffsetTopicProducer[Message, Event](shards.allTags.toList, eventStream)
+  ): Topic[Message] = TaggedOffsetTopicProducer.fromEventAndOffsetPairStream(shards.allTags.toList, eventStream)
+
+  // TODO(bossqone): fix name
+  @ApiMayChange
+  def taggedStreamWithOffset2[Message, Event <: AggregateEvent[Event]](shards: AggregateEventShards[Event])(
+      eventStream: (AggregateEventTag[Event], Offset) => Source[TopicProducerCommand[Message], Any]
+  ): Topic[Message] = TaggedOffsetTopicProducer.fromTopicProducerCommandStream(shards.allTags.toList, eventStream)
 }
