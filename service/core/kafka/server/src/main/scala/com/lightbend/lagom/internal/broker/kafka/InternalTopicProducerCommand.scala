@@ -8,7 +8,7 @@ import akka.persistence.query.Offset
 
 sealed trait InternalTopicProducerCommand[Message] {
   def offset: Offset
-  def withOffset(offset: Offset): this.type
+  def withOffset(offset: Offset): InternalTopicProducerCommand[Message]
 }
 
 object InternalTopicProducerCommand {

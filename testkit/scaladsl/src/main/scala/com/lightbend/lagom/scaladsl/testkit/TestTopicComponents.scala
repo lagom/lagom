@@ -20,6 +20,7 @@ import com.lightbend.lagom.scaladsl.api.broker.Topic.TopicId
 import com.lightbend.lagom.scaladsl.api.broker.Message
 import com.lightbend.lagom.scaladsl.api.broker.Subscriber
 import com.lightbend.lagom.scaladsl.api.broker.Topic
+import com.lightbend.lagom.scaladsl.broker.TopicProducerCommand
 import com.lightbend.lagom.scaladsl.persistence.AggregateEvent
 import com.lightbend.lagom.scaladsl.server.LagomServer
 
@@ -92,8 +93,11 @@ private[lagom] class TestTopic[Payload, Event <: AggregateEvent[Event]](
       val serializer = topicCall.messageSerializer
       Source(topicProducer.tags)
         .flatMapMerge(topicProducer.tags.size, { tag =>
-          topicProducer.readSideStream.apply(tag, Offset.noOffset).map(_._1)
+          topicProducer.readSideStream.apply(tag, Offset.noOffset)
         })
+        .collect {
+          case TopicProducerCommand.EmitAndCommit(message, _) => message
+        }
         .map { evt =>
           serializer.serializerForRequest.serialize(evt)
         }
