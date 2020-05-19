@@ -28,6 +28,11 @@ import java.util.function.Function;
  */
 public final class TopicProducer {
 
+  private interface SingletonEvent extends AggregateEvent<SingletonEvent> {}
+
+  private static final PSequence<AggregateEventTag<SingletonEvent>> SINGLETON_TAG =
+      TreePVector.singleton(AggregateEventTag.of(SingletonEvent.class, "singleton"));
+
   /**
    * Publish a single stream.
    *
@@ -43,11 +48,6 @@ public final class TopicProducer {
       Function<Offset, Source<Pair<Message, Offset>, ?>> eventStream) {
     return taggedStreamWithOffset(SINGLETON_TAG, (tag, offset) -> eventStream.apply(offset));
   }
-
-  private interface SingletonEvent extends AggregateEvent<SingletonEvent> {}
-
-  private static final PSequence<AggregateEventTag<SingletonEvent>> SINGLETON_TAG =
-      TreePVector.singleton(AggregateEventTag.of(SingletonEvent.class, "singleton"));
 
   /**
    * Publish a stream that is sharded across many tags.
@@ -93,6 +93,23 @@ public final class TopicProducer {
           BiFunction<AggregateEventTag<Event>, Offset, Source<Pair<Message, Offset>, ?>>
               eventStream) {
     return TaggedOffsetTopicProducer.fromEventAndOffsetPairStream(shards.allTags(), eventStream);
+  }
+
+  // TODO(bossqone): fix name
+  @ApiMayChange
+  public static <Message> Topic<Message> singleStreamWithOffset2(
+      Function<Offset, Source<TopicProducerCommand<Message>, ?>> eventStream) {
+    return taggedStreamWithOffset2(SINGLETON_TAG, (tag, offset) -> eventStream.apply(offset));
+  }
+
+  // TODO(bossqone): fix name
+  @ApiMayChange
+  public static <Message, Event extends AggregateEvent<Event>>
+      Topic<Message> taggedStreamWithOffset2(
+          PSequence<AggregateEventTag<Event>> tags,
+          BiFunction<AggregateEventTag<Event>, Offset, Source<TopicProducerCommand<Message>, ?>>
+              eventStream) {
+    return TaggedOffsetTopicProducer.fromTopicProducerCommandStream(tags, eventStream);
   }
 
   // TODO(bossqone): fix name

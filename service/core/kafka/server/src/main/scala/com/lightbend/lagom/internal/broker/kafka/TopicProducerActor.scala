@@ -6,29 +6,27 @@ package com.lightbend.lagom.internal.broker.kafka
 
 import java.net.URI
 
-import akka.Done
-import akka.NotUsed
 import akka.actor.Actor
 import akka.actor.ActorLogging
 import akka.actor.Props
 import akka.actor.Status
+import akka.kafka.scaladsl.{ Producer => ReactiveProducer }
 import akka.kafka.ProducerMessage
 import akka.kafka.ProducerSettings
-import akka.kafka.scaladsl.{ Producer => ReactiveProducer }
 import akka.pattern.pipe
 import akka.persistence.query.{ Offset => AkkaOffset }
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.GraphDSL
+import akka.stream.scaladsl.Keep
+import akka.stream.scaladsl.RestartSource
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
 import akka.stream.FlowShape
 import akka.stream.KillSwitch
 import akka.stream.KillSwitches
 import akka.stream.Materializer
-import akka.stream.scaladsl.Flow
-import akka.stream.scaladsl.GraphDSL
-import akka.stream.scaladsl.Keep
-import akka.stream.scaladsl.Merge
-import akka.stream.scaladsl.Partition
-import akka.stream.scaladsl.RestartSource
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
+import akka.Done
+import akka.NotUsed
 import com.lightbend.lagom.internal.api.UriUtils
 import com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.Start
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
@@ -230,26 +228,20 @@ private[lagom] class TopicProducerActor[Message](
     Flow.fromGraph(GraphDSL.create(kafkaFlowPublisher(endpoints)) { implicit builder => publishFlow =>
       import GraphDSL.Implicits._
 
-      val partition = builder.add(Partition[InternalTopicProducerCommand[Message]](2, {
-        case _: InternalTopicProducerCommand.EmitAndCommit[Message] => 0
-        case _: InternalTopicProducerCommand.Commit[Message]        => 1
-      }))
-      val merge = builder.add(Merge[InternalTopicProducerCommand[Message]](2))
-
-      val offsetCommitter = builder.add(Flow.fromFunction { command: InternalTopicProducerCommand[Message] =>
-        offsetDao.saveOffset(command.offset).map(_ => command.offset)
+      val offsetCommitter = builder.add(Flow.fromFunction {
+        results: ProducerMessage.Results[String, Message, AkkaOffset] =>
+          val offset = results.passThrough
+          offsetDao.saveOffset(offset).map(_ => offset)
       })
 
-      partition.out(0) ~> publishFlow ~> merge.in(0)
-      partition.out(1) ~> merge.in(1)
-      merge.out ~> offsetCommitter.in
+      publishFlow.out ~> offsetCommitter.in
 
-      FlowShape(partition.in, offsetCommitter.out)
+      FlowShape(publishFlow.in, offsetCommitter.out)
     })
 
   private def kafkaFlowPublisher(
       endpoints: String
-  ): Flow[InternalTopicProducerCommand[Message], InternalTopicProducerCommand[Message], _] = {
+  ): Flow[InternalTopicProducerCommand[Message], ProducerMessage.Results[String, Message, AkkaOffset], _] = {
     def keyOf(message: Message): String = {
       partitionKeyStrategy match {
         case Some(strategy) => strategy(message)
@@ -258,16 +250,14 @@ private[lagom] class TopicProducerActor[Message](
     }
 
     Flow[InternalTopicProducerCommand[Message]]
-      .flatMapConcat {
-        case command @ InternalTopicProducerCommand.EmitAndCommit(message, _) =>
-          val producerMessage = ProducerMessage
-            .Message(new ProducerRecord[String, Message](topicId, keyOf(message), message), NotUsed)
+      .map[ProducerMessage.Envelope[String, Message, AkkaOffset]] {
+        case InternalTopicProducerCommand.EmitAndCommit(message, offset) =>
+          ProducerMessage.Message(new ProducerRecord[String, Message](topicId, keyOf(message), message), offset)
 
-          Source
-            .single(producerMessage)
-            .via(ReactiveProducer.flexiFlow(producerSettings(endpoints)))
-            .map(_ => command)
+        case InternalTopicProducerCommand.Commit(offset) =>
+          ProducerMessage.PassThroughMessage(offset)
       }
+      .via(ReactiveProducer.flexiFlow(producerSettings(endpoints)))
   }
 
   private def producerSettings(endpoints: String): ProducerSettings[String, Message] = {

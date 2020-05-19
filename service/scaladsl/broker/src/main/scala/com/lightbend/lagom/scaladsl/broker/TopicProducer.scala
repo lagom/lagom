@@ -23,6 +23,10 @@ import scala.collection.immutable
  */
 object TopicProducer {
 
+  private trait SingletonEvent extends AggregateEvent[TopicProducer.SingletonEvent] {}
+
+  private val SINGLETON_TAG = List(AggregateEventTag[TopicProducer.SingletonEvent]("singleton"))
+
   /**
    * Publish a single stream.
    *
@@ -34,10 +38,6 @@ object TopicProducer {
    */
   def singleStreamWithOffset[Message](eventStream: Offset => Source[(Message, Offset), Any]): Topic[Message] =
     taggedStreamWithOffset(SINGLETON_TAG)((tag, offset) => eventStream(offset))
-
-  private trait SingletonEvent extends AggregateEvent[TopicProducer.SingletonEvent] {}
-
-  private val SINGLETON_TAG = List(AggregateEventTag[TopicProducer.SingletonEvent]("singleton"))
 
   /**
    * Publish a stream that is sharded across many tags.
@@ -72,6 +72,18 @@ object TopicProducer {
   def taggedStreamWithOffset[Message, Event <: AggregateEvent[Event]](shards: AggregateEventShards[Event])(
       eventStream: (AggregateEventTag[Event], Offset) => Source[(Message, Offset), Any]
   ): Topic[Message] = TaggedOffsetTopicProducer.fromEventAndOffsetPairStream(shards.allTags.toList, eventStream)
+
+  // TODO(bossqone): fix name
+  @ApiMayChange
+  def singleStreamWithOffset2[Message](
+      eventStream: Offset => Source[TopicProducerCommand[Message], Any]
+  ): Topic[Message] = taggedStreamWithOffset2(SINGLETON_TAG)((_, offset) => eventStream(offset))
+
+  // TODO(bossqone): fix name
+  @ApiMayChange
+  def taggedStreamWithOffset2[Message, Event <: AggregateEvent[Event]](tags: immutable.Seq[AggregateEventTag[Event]])(
+      eventStream: (AggregateEventTag[Event], Offset) => Source[TopicProducerCommand[Message], Any]
+  ): Topic[Message] = TaggedOffsetTopicProducer.fromTopicProducerCommandStream(tags, eventStream)
 
   // TODO(bossqone): fix name
   @ApiMayChange
