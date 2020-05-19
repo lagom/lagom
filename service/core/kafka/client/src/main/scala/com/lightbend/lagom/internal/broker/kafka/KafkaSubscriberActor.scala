@@ -48,7 +48,7 @@ private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
         .mapMaterializedValue(DrainingControl.apply)
         .run()
 
-    val streamDone = drainingControl.drainAndShutdown()
+    val streamDone = drainingControl.streamCompletion
     streamDone.pipeTo(self)
     context.become(running)
   }
