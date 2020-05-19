@@ -29,11 +29,11 @@ object Dependencies {
     val PlayFileWatch    = "1.1.12"
 
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.4") // sync with docs/build.sbt
-    val AkkaHttp     = "10.1.11"
+    val AkkaHttp     = "10.1.12"
 
     val AkkaPersistenceCassandra = "0.103"
     val AkkaPersistenceJdbc      = "3.5.3"
-    val AkkaManagement           = "1.0.6"
+    val AkkaManagement           = "1.0.7"
 
     val Disruptor = "3.4.2"
 
@@ -55,8 +55,8 @@ object Dependencies {
     val Kafka = "2.4.1"
 
     val Curator       = "2.12.0"
-    val Immutables    = "2.8.7"
-    val HibernateCore = "5.4.15.Final"
+    val Immutables    = "2.8.8"
+    val HibernateCore = "5.4.16.Final"
     val PCollections  = "3.1.3"
 
     val ScalaJava8Compat = "0.9.1"
