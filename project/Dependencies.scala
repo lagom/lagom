@@ -179,7 +179,7 @@ object Dependencies {
   private val junit                 = "junit" % "junit" % Versions.JUnit
   private val commonsLang           = "org.apache.commons" % "commons-lang3" % "3.10"
   private val javaxAnnotationApi    = "javax.annotation" % "javax.annotation-api" % "1.3.2"
-  private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "3.2.6").excludeAll(excludeSlf4j: _*)
+  private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "4.1.9").excludeAll(excludeSlf4j: _*)
 
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
   private val okio    = "com.squareup.okio"    % "okio"   % "2.6.0"
