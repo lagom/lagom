@@ -29,8 +29,10 @@ object Dependencies {
     val AkkaHttp     = "10.1.11"
 
     val AkkaPersistenceCassandra = "0.103"
-    val AkkaPersistenceJdbc      = "3.5.3"
-    val AkkaManagement           = "1.0.5"
+    // this is the version used in AkkaPersistenceCassandra, we stick with it
+    val CassandraDriver     = "3.7.2"
+    val AkkaPersistenceJdbc = "3.5.3"
+    val AkkaManagement      = "1.0.5"
 
     val Disruptor = "3.4.2"
 
@@ -97,7 +99,7 @@ object Dependencies {
   private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.1"
   private val h2                     = "com.h2database" % "h2" % "1.4.192"
   private val cassandraDriverCore =
-    ("com.datastax.cassandra" % "cassandra-driver-core" % "3.8.0").excludeAll(excludeSlf4j: _*)
+    ("com.datastax.cassandra" % "cassandra-driver-core" % Versions.CassandraDriver).excludeAll(excludeSlf4j: _*)
 
   private val akkaActor            = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
   private val akkaRemote           = "com.typesafe.akka" %% "akka-remote" % Versions.Akka
@@ -918,7 +920,6 @@ object Dependencies {
     // Upgrades needed to match whitelist versions
     sslConfig,
     dropwizardMetricsCore,
-    cassandraDriverCore,
     scalaXml,
     jnrConstants,
     jnrPosix,
@@ -927,15 +928,11 @@ object Dependencies {
 
   val `persistence-cassandra-javadsl` = libraryDependencies ++= Seq(
     junit % Test,
-    jsr250,
-    // Upgrades needed to match whitelist versions
-    cassandraDriverCore
+    jsr250
   )
 
   val `persistence-cassandra-scaladsl` = libraryDependencies ++= Seq(
-    // Upgrades needed to match whitelist versions
-    cassandraDriverCore
-  )
+    )
 
   val `persistence-jdbc-core` = libraryDependencies ++= Seq(
     slf4jApi,
