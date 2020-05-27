@@ -289,10 +289,8 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomImportCompat"),
       ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.run.RunSupport$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.run.RunSupportCompat"),
-
       // all internals can be ignored
       ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal.*"),
-
       // lagom dev-mode components renaming
       ProblemFilters.exclude[MissingClassProblem]("play.core.server.LagomReloadableDevServerStart"),
       ProblemFilters.exclude[MissingClassProblem]("play.core.server.LagomReloadableDevServerStart$"),
@@ -313,7 +311,8 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.ServiceBindingInfo"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$ProjectName$"),
-      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$ProjectName$OrderingProjectName$"),
+      ProblemFilters
+        .exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$ProjectName$OrderingProjectName$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$CompileFailure$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.StaticServiceLocations$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$Source$"),
@@ -345,7 +344,8 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.ServiceBindingInfo"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$ProjectName$"),
-      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$ProjectName$OrderingProjectName$"),
+      ProblemFilters
+        .exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$ProjectName$OrderingProjectName$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$CompileFailure$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.StaticServiceLocations$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$Source$"),
@@ -360,7 +360,8 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$PortRange$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.StaticServiceLocations"),
-      ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.sbt.LagomPlugin#autoImport#PortRange.apply"),
+      ProblemFilters
+        .exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.sbt.LagomPlugin#autoImport#PortRange.apply"),
       ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.SbtLoggerProxy"),
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.sbt.run.RunSupport.compileFailure"),
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.sbt.run.RunSupport.compile"),
@@ -368,7 +369,9 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.sbt.run.RunSupport.compileFailure"),
       ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.maven.MavenLoggerProxy"),
       ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.maven.RunAllMojo.consoleHelper"),
-      ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.devmode.LagomDevModeServiceLocatorComponents.serviceRegistry"),
+      ProblemFilters.exclude[IncompatibleResultTypeProblem](
+        "com.lightbend.lagom.scaladsl.devmode.LagomDevModeServiceLocatorComponents.serviceRegistry"
+      ),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers$KafkaServer$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.LagomProcess$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers$ServerContainer"),
@@ -380,9 +383,7 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.LagomProcess"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.MiniLogger"),
-
       // Add mima new filters just above this comment to avoid merge conflicts (avoiding interleaving)
-
     )
   )
 }
