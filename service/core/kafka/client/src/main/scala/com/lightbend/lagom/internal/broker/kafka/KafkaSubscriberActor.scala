@@ -7,6 +7,8 @@ package com.lightbend.lagom.internal.broker.kafka
 import akka.Done
 import akka.actor.Actor
 import akka.actor.ActorLogging
+import akka.actor.CoordinatedShutdown
+import akka.actor.CoordinatedShutdown.PhaseServiceUnbind
 import akka.actor.Props
 import akka.actor.Status
 import akka.kafka.AutoSubscription
@@ -20,12 +22,14 @@ import akka.stream._
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.GraphDSL
 import akka.stream.scaladsl.Keep
+import akka.stream.scaladsl.RunnableGraph
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.Unzip
 import akka.stream.scaladsl.Zip
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
 import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.concurrent.duration.Duration
 
@@ -45,8 +49,12 @@ private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
     val drainingControl: DrainingControl[Done] =
       atLeastOnce()
         .toMat(Committer.sink(consumerConfig.committerSettings))(Keep.both)
-        .mapMaterializedValue(DrainingControl.apply)
+        .mapMaterializedValue(DrainingControl.apply[Done])
         .run()
+
+    CoordinatedShutdown(context.system).addTask(PhaseServiceUnbind, s"stop-$topicId-subscriber") { () =>
+      drainingControl.drainAndShutdown()
+    }
 
     val streamDone = drainingControl.streamCompletion
     streamDone.pipeTo(self)
