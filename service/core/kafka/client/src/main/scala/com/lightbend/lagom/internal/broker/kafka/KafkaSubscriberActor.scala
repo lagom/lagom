@@ -48,8 +48,7 @@ private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
   override def preStart(): Unit = {
     val drainingControl: DrainingControl[Done] =
       atLeastOnce()
-        .toMat(Committer.sink(consumerConfig.committerSettings))(Keep.both)
-        .mapMaterializedValue(DrainingControl.apply[Done])
+        .toMat(Committer.sink(consumerConfig.committerSettings))(DrainingControl.apply[Done])
         .run()
 
     CoordinatedShutdown(context.system).addTask(PhaseServiceUnbind, s"stop-$topicId-subscriber") { () =>
