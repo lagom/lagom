@@ -34,7 +34,7 @@ object Dependencies {
     val AkkaPersistenceCassandra = "0.103"
     // this is the version used in AkkaPersistenceCassandra, we stick with it
     val CassandraDriver     = "3.7.2"
-    val AkkaPersistenceJdbc = "3.5.3"
+    val AkkaPersistenceJdbc = "4.0.0"
     val AkkaManagement      = "1.0.8"
 
     val Disruptor = "3.4.2"
@@ -138,7 +138,7 @@ object Dependencies {
   private val akkaDiscovery = "com.typesafe.akka" %% "akka-discovery" % Versions.Akka
 
   private val akkaPersistenceJdbc =
-    ("com.github.dnvriend" %% "akka-persistence-jdbc" % Versions.AkkaPersistenceJdbc).excludeAll(excludeSlf4j: _*)
+    ("com.lightbend.akka" %% "akka-persistence-jdbc" % Versions.AkkaPersistenceJdbc).excludeAll(excludeSlf4j: _*)
 
   // latest version of APC depend on a Cassandra driver core that's not compatible with Lagom (newer netty/guava/etc... under the covers)
   private val akkaPersistenceCassandra         = "com.typesafe.akka" %% "akka-persistence-cassandra"          % Versions.AkkaPersistenceCassandra
