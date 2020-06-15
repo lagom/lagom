@@ -139,20 +139,6 @@ The reason for the special first seed node is to avoid forming separated islands
 
 You can read more about cluster joining in the [Akka documentation](https://doc.akka.io/docs/akka/2.6/cluster-usage.html?language=scala#joining-to-seed-nodes).
 
-## Rolling Updates and Versions
-
-Some patch versions of Akka Cluster introduce improvements that introduce incompatibilities. These changes are introduced carefully but they mean not all patch versions are compatible with each other. See, for example, the following note in the Akka Docs on [Rolling Updates and Versions](https://doc.akka.io/docs/akka/current/project/rolling-update.html#2-6-0-several-changes-in-minor-release):
-
-> This means that a rolling update will have to go through at least one of 2.6.2, 2.6.3 or 2.6.4 when upgrading to 2.6.5 or higher or else cluster nodes will not be able to communicate during the rolling update.
-
-What this means for Lagom is that directly upgrading from `1.6.0` to `1.6.3`, for example, is not possible. Instead, you should first migrate to `1.6.2` deploy the upgraded version and then upgrade to `1.6.3`. Following is a table of safe migrations (versions that can coexist safely during a rolling upgrade):
-
-| from  |  to   |
-| :---: | :---: |
-| 1.6.0 | 1.6.2 |
-| 1.6.1 | 1.6.3 |
-| 1.6.2 | 1.6.3 |
-
 ## Downing
 
 When operating a Lagom service cluster you must consider how to handle network partitions (a.k.a. split brain scenarios) and machine crashes (including JVM and hardware failures). This is crucial for correct behavior when using [[Persistent Entities|PersistentEntity]]. Persistent entities must be single-writers, i.e. there must only be one active entity with a given entity identity. If the cluster is split in two halves and the wrong downing strategy is used there will be active entities with the same identifiers in both clusters, writing to the same database. That will result in corrupt data.
