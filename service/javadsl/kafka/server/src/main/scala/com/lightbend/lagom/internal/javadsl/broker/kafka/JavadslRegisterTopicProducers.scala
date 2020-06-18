@@ -4,16 +4,21 @@
 
 package com.lightbend.lagom.internal.javadsl.broker.kafka
 
+import java.net.URI
+
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import org.slf4j.LoggerFactory
 import com.lightbend.lagom.javadsl.api.ServiceInfo
+import com.lightbend.lagom.javadsl.api.ServiceLocator
 import akka.stream.Materializer
 import javax.inject.Inject
 import akka.actor.ActorSystem
 import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.scaladsl.Source
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer
+import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
 import com.lightbend.lagom.internal.broker.kafka.Producer
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.javadsl.api.MethodTopicHolder
@@ -24,15 +29,20 @@ import com.lightbend.lagom.javadsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.javadsl.api.broker.kafka.KafkaProperties
 import com.lightbend.lagom.spi.persistence.OffsetStore
 
+import scala.collection.immutable
+import scala.compat.java8.FutureConverters._
+
 class JavadslRegisterTopicProducers @Inject() (
     resolvedServices: ResolvedServices,
     topicFactory: TopicFactory,
     info: ServiceInfo,
     actorSystem: ActorSystem,
     offsetStore: OffsetStore,
+    serviceLocator: ServiceLocator,
     projectionRegistryImpl: ProjectionRegistry
 )(implicit ec: ExecutionContext, mat: Materializer) {
-  private val log = LoggerFactory.getLogger(classOf[JavadslRegisterTopicProducers])
+  private val log         = LoggerFactory.getLogger(classOf[JavadslRegisterTopicProducers])
+  private val kafkaConfig = KafkaConfig(actorSystem.settings.config)
 
   // Goes through the services' descriptors and publishes the streams registered in
   // each of the service's topic method implementation.
@@ -78,6 +88,8 @@ class JavadslRegisterTopicProducers @Inject() (
                 Producer.startTaggedOffsetProducer(
                   actorSystem,
                   tags.map(_.tag),
+                  kafkaConfig,
+                  locateService,
                   topicId.value(),
                   eventStreamFactory,
                   partitionKeyStrategy,
@@ -112,4 +124,6 @@ class JavadslRegisterTopicProducers @Inject() (
     }
   }
 
+  private def locateService(name: String): Future[Seq[URI]] =
+    serviceLocator.locateAll(name).toScala.map(_.asScala.toIndexedSeq)
 }

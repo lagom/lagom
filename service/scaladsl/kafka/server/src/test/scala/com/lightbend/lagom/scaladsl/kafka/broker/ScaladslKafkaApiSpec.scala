@@ -79,20 +79,17 @@ class ScaladslKafkaApiSpec
       override lazy val lagomServer            = serverFor[TestService](new TestServiceImpl)
 
       override def additionalConfiguration = {
-        super.additionalConfiguration ++ ConfigFactory.parseString(
-          s"""
-            akka.remote.artery.canonical.port = 0,
-            akka.remote.artery.canonical.hostname = 127.0.0.1
-            akka.persistence.journal.plugin = akka.persistence.journal.inmem
-            akka.persistence.snapshot-store.plugin = akka.persistence.snapshot-store.local
-            lagom.cluster.exit-jvm-when-system-terminated = off
-            lagom.cluster.bootstrap.enabled = off
-            akka.discovery.method = config
-            akka.discovery.config.services.kafka_native.endpoints = [ {
-              host = localhost
-              port = $kafkaPort
-            } ]
-          """
+        import scala.collection.JavaConverters._
+        super.additionalConfiguration ++ ConfigFactory.parseMap(
+          Map(
+            "akka.remote.artery.canonical.port"             -> "0",
+            "akka.remote.artery.canonical.hostname"         -> "127.0.0.1",
+            "akka.persistence.journal.plugin"               -> "akka.persistence.journal.inmem",
+            "akka.persistence.snapshot-store.plugin"        -> "akka.persistence.snapshot-store.local",
+            "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
+            "lagom.cluster.bootstrap.enabled"               -> "off",
+            "lagom.services.kafka_native"                   -> s"tcp://localhost:$kafkaPort"
+          ).asJava
         )
       }
 

@@ -9,11 +9,13 @@ import akka.persistence.query.Offset
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import com.lightbend.internal.broker.TaggedOffsetTopicProducer
+import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
 import com.lightbend.lagom.internal.broker.kafka.Producer
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactory
 import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.scaladsl.api.ServiceInfo
+import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodTopic
 import com.lightbend.lagom.scaladsl.api.broker.kafka.KafkaProperties
 import com.lightbend.lagom.scaladsl.server.LagomServer
@@ -29,9 +31,11 @@ class ScaladslRegisterTopicProducers(
     info: ServiceInfo,
     actorSystem: ActorSystem,
     offsetStore: OffsetStore,
+    serviceLocator: ServiceLocator,
     projectionRegistryImpl: ProjectionRegistry
 )(implicit ec: ExecutionContext, mat: Materializer) {
-  private val log = LoggerFactory.getLogger(classOf[ScaladslRegisterTopicProducers])
+  private val log         = LoggerFactory.getLogger(classOf[ScaladslRegisterTopicProducers])
+  private val kafkaConfig = KafkaConfig(actorSystem.settings.config)
 
   // Goes through the services' descriptors and publishes the streams registered in
   // each of the service's topic method implementation.
@@ -68,6 +72,8 @@ class ScaladslRegisterTopicProducers(
                 Producer.startTaggedOffsetProducer(
                   actorSystem,
                   tags.map(_.tag),
+                  kafkaConfig,
+                  serviceLocator.locateAll,
                   topicId.name,
                   eventStreamFactory,
                   partitionKeyStrategy,

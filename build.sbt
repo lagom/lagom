@@ -277,10 +277,6 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.run.RunSupportCompat"),
       // Add mima filters here.
       ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal.*"),
-      // Upgrade to Alpakka Kafka 2.0 https://github.com/lagom/lagom/issues/2508
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "com.lightbend.lagom.javadsl.broker.kafka.KafkaTopicFactory.this"
-      )
     )
   )
 }

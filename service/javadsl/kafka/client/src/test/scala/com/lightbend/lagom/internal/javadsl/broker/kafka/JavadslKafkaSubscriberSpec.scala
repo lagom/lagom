@@ -15,7 +15,7 @@ class JavadslKafkaSubscriberSpec extends AnyFlatSpec with Matchers {
 
   it should "create a new subscriber with updated groupId" in {
     val subscriber =
-      new JavadslKafkaSubscriber(null, JavadslKafkaSubscriber.GroupId("old"), null, null, null)(null, null)
+      new JavadslKafkaSubscriber(null, null, JavadslKafkaSubscriber.GroupId("old"), null, null, null, null)(null, null)
     subscriber.withGroupId("newGID") should not be subscriber
   }
 }

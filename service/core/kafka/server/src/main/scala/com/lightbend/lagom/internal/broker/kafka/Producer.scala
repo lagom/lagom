@@ -4,6 +4,8 @@
 
 package com.lightbend.lagom.internal.broker.kafka
 
+import java.net.URI
+
 import akka.actor.ActorSystem
 import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.Materializer
@@ -15,6 +17,7 @@ import org.apache.kafka.common.serialization.Serializer
 
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 /**
  * A Producer for publishing messages in Kafka using the Alpakka Kafka API.
@@ -23,6 +26,8 @@ private[lagom] object Producer {
   def startTaggedOffsetProducer[Message](
       system: ActorSystem,
       tags: immutable.Seq[String],
+      kafkaConfig: KafkaConfig,
+      locateService: String => Future[Seq[URI]],
       topicId: String,
       eventStreamFactory: (String, AkkaOffset) => Source[(Message, AkkaOffset), _],
       partitionKeyStrategy: Option[Message => String],
@@ -36,7 +41,9 @@ private[lagom] object Producer {
     val topicProducerProps = (coordinates: WorkerCoordinates) =>
       TopicProducerActor.props(
         coordinates,
+        kafkaConfig,
         producerConfig,
+        locateService,
         topicId,
         eventStreamFactory,
         partitionKeyStrategy,
