@@ -23,8 +23,7 @@ env:
 before_install:
   # See https://github.com/travis-ci/travis-ci/issues/4629#issuecomment-239493916
   - rm ~/.m2/settings.xml
-  - wget -O /tmp/install.sh https://raw.githubusercontent.com/shyiko/jabba/0.11.2/install.sh
-  - bash /tmp/install.sh
+  - if [ ! -f ~/.jabba/jabba.sh ]; then curl -L -v --retry 5 -o jabba-install.sh https://raw.githubusercontent.com/shyiko/jabba/0.11.2/install.sh && bash jabba-install.sh; fi
   - . ~/.jabba/jabba.sh
 install: jabba install $(jabba ls-remote "adopt@~1.$TRAVIS_JDK.0-0" --latest=patch) && jabba use "$_" && java -Xmx32m -version
 
@@ -82,7 +81,7 @@ cache:
   directories:
     - $HOME/.cache/coursier
     - $HOME/.ivy2/cache
-    - $HOME/.jabba/jdk
+    - $HOME/.jabba
     - $HOME/.sbt
     - $HOME/.m2/repository
 
