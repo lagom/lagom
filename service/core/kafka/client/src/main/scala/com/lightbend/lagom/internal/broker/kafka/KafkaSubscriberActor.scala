@@ -99,7 +99,6 @@ private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
   private def run(uri: Option[String]) = {
     val (killSwitch, streamDone) =
       atLeastOnce(uri)
-        .viaMat(KillSwitches.single)(Keep.right)
         .toMat(Sink.ignore)(Keep.both)
         .run()
 
@@ -108,7 +107,7 @@ private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
     context.become(running)
   }
 
-  private def atLeastOnce(serviceLocatorUris: Option[String]): Source[Done, _] = {
+  private def atLeastOnce(serviceLocatorUris: Option[String]): Source[Any, KillSwitch] = {
     // Creating a Source of pair where the first element is a Alpakka Kafka committable offset,
     // and the second it's the actual message. Then, the source of pair is splitted into
     // two streams, so that the `flow` passed in argument can be applied to the underlying message.
@@ -118,9 +117,6 @@ private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
       case Some(uris) => consumerSettings.withBootstrapServers(uris)
       case None       => consumerSettings
     }
-    val pairedCommittableSource = ReactiveConsumer
-      .committableSource(consumerSettingsWithUri, subscription)
-      .map(committableMessage => (committableMessage.committableOffset, transform(committableMessage.record)))
 
     val committOffsetFlow = Flow.fromGraph(GraphDSL.create(flow) { implicit builder => flow =>
       import GraphDSL.Implicits._
@@ -143,7 +139,14 @@ private[lagom] class KafkaSubscriberActor[Payload, SubscriberPayload](
       FlowShape(unzip.in, committer.out)
     })
 
-    pairedCommittableSource.via(committOffsetFlow)
+      ReactiveConsumer
+        .committablePartitionedSource(consumerSettingsWithUri, subscription)
+          .flatMapMerge(1000 /* what to put in here? */, { case (_, source) =>
+            source
+              .map(committableMessage => (committableMessage.committableOffset, transform(committableMessage.record)))
+              .via(committOffsetFlow)
+          })
+          .viaMat(KillSwitches.single)(Keep.right)
   }
 }
 
