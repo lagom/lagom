@@ -19,7 +19,7 @@ import com.lightbend.lagom.internal.javadsl.api.broker.NoTopicFactoryProvider
 import com.lightbend.lagom.internal.javadsl.client.JavadslServiceClientImplementor
 import com.lightbend.lagom.internal.javadsl.client.JavadslWebSocketClient
 import com.lightbend.lagom.internal.javadsl.client.ServiceClientLoader
-import com.lightbend.lagom.devmode.internal.registry.DevModeServiceDiscovery
+import com.lightbend.lagom.devmode.internal.registry.LagomDevModeServiceDiscovery
 import com.lightbend.lagom.devmode.internal.registry.ServiceRegistryClient
 import com.lightbend.lagom.javadsl.api.Descriptor.Call
 import com.lightbend.lagom.javadsl.api.ServiceInfo
@@ -144,9 +144,9 @@ abstract class BaseServiceLocator extends ServiceLocator {
 private final class DevModeSimpleServiceDiscoveryProvider @Inject() (
     actorSystem: ActorSystem,
     serviceRegistryClient: ServiceRegistryClient
-) extends Provider[DevModeServiceDiscovery] {
-  override def get(): DevModeServiceDiscovery = {
-    val discovery = DevModeServiceDiscovery(actorSystem)
+) extends Provider[LagomDevModeServiceDiscovery] {
+  override def get(): LagomDevModeServiceDiscovery = {
+    val discovery = LagomDevModeServiceDiscovery(actorSystem)
     discovery.setServiceRegistryClient(serviceRegistryClient)
     discovery
   }

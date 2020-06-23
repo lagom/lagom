@@ -6,7 +6,7 @@ package com.lightbend.lagom.devmode.internal.scaladsl.registry
 
 import akka.Done
 import akka.actor.CoordinatedShutdown
-import com.lightbend.lagom.devmode.internal.registry.registry.serviceDnsRecords
+import com.lightbend.lagom.devmode.internal.registry.serviceDnsRecords
 import com.lightbend.lagom.scaladsl.api.ServiceInfo
 import com.typesafe.config.Config
 import play.api.Logger

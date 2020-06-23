@@ -20,8 +20,8 @@ import scala.concurrent.duration._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
-class DevModeServiceDiscoverySpec
-    extends TestKit(ActorSystem("DevModeSimpleServiceDiscoverySpec"))
+class LagomDevModeServiceDiscoverySpec
+    extends TestKit(ActorSystem("LagomDevModeSimpleServiceDiscoverySpec"))
     with AnyWordSpecLike
     with Matchers
     with BeforeAndAfterAll {
@@ -36,7 +36,7 @@ class DevModeServiceDiscoverySpec
     shutdown(verifySystemShutdown = true)
   }
 
-  private val discovery = DevModeServiceDiscovery(system)
+  private val discovery = LagomDevModeServiceDiscovery(system)
   discovery.setServiceRegistryClient(client)
 
   "DevModeSimpleServiceDiscoverySpec" should {

@@ -18,7 +18,7 @@ import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.concurrent.duration.FiniteDuration
 
-private[lagom] class DevModeServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
+private[lagom] class LagomDevModeServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
   private val clientPromise = Promise[ServiceRegistryClient]
 
   private implicit val ec: ExecutionContext = system.dispatcher
@@ -43,9 +43,9 @@ private[lagom] class DevModeServiceDiscovery(system: ActorSystem) extends Servic
   private def optionalPort(port: Int): Option[Int] = if (port < 0) None else Some(port)
 }
 
-private[lagom] object DevModeServiceDiscovery {
-  def apply(system: ActorSystem): DevModeServiceDiscovery =
+private[lagom] object LagomDevModeServiceDiscovery {
+  def apply(system: ActorSystem): LagomDevModeServiceDiscovery =
     Discovery(system)
       .loadServiceDiscovery("lagom-dev-mode")
-      .asInstanceOf[DevModeServiceDiscovery]
+      .asInstanceOf[LagomDevModeServiceDiscovery]
 }

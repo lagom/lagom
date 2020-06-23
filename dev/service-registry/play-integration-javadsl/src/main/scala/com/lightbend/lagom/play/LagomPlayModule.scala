@@ -10,7 +10,7 @@ import javax.inject.Inject
 
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistry
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryService
-import com.lightbend.lagom.devmode.internal.registry.registry.serviceDnsRecords
+import com.lightbend.lagom.devmode.internal.registry.serviceDnsRecords
 import com.lightbend.lagom.javadsl.api.ServiceAcl
 import com.lightbend.lagom.javadsl.api.ServiceInfo
 import com.lightbend.lagom.javadsl.api.transport.Method
