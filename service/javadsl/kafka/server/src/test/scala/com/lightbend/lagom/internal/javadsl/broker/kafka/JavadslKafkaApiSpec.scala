@@ -23,8 +23,8 @@ import akka.stream.scaladsl.SourceQueue
 import akka.Done
 import akka.NotUsed
 import com.google.inject.AbstractModule
-import com.lightbend.lagom.dev.MiniLogger
-import com.lightbend.lagom.dev.Servers.KafkaServer
+import com.lightbend.lagom.devmode.MiniLogger
+import com.lightbend.lagom.devmode.Servers.KafkaServer
 import com.lightbend.lagom.internal.javadsl.broker.kafka.JavadslKafkaApiSpec._
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter.dslOffsetToOffset
 import com.lightbend.lagom.internal.javadsl.persistence.OffsetAdapter.offsetToDslOffset

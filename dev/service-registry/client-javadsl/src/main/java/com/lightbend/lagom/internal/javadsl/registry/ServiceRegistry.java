@@ -13,7 +13,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
-import com.lightbend.lagom.internal.registry.ServiceRegistryClient$;
+import com.lightbend.lagom.devmode.internal.registry.ServiceRegistryClient$;
 import org.pcollections.PSequence;
 
 import akka.NotUsed;

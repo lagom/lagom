@@ -20,7 +20,7 @@ import com.lightbend.lagom.internal.javadsl.client.ServiceClientLoader;
 import com.lightbend.lagom.internal.javadsl.registry.JavaServiceRegistryClient;
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistry;
 import com.lightbend.lagom.internal.javadsl.registry.ServiceRegistryServiceLocator;
-import com.lightbend.lagom.internal.registry.ServiceRegistryClient;
+import com.lightbend.lagom.devmode.internal.registry.ServiceRegistryClient;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.ServiceInfo;
 import com.lightbend.lagom.javadsl.api.ServiceLocator;
