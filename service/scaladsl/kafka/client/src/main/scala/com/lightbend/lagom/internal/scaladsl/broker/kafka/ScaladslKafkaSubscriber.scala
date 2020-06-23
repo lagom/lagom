@@ -106,7 +106,8 @@ private[lagom] class ScaladslKafkaSubscriber[Payload, SubscriberPayload](
       new ScaladslKafkaDeserializer(deserializer)
     }
 
-    ConsumerSettings(system, keyDeserializer, valueDeserializer)
+    val config = system.settings.config.getConfig(ConsumerSettings.configPath)
+    ConsumerSettings(config, keyDeserializer, valueDeserializer)
       .withBootstrapServers(kafkaConfig.brokers)
       .withGroupId(groupId.groupId)
       // Consumer must have a unique clientId otherwise a javax.management.InstanceAlreadyExistsException is thrown
