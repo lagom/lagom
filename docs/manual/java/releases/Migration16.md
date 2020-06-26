@@ -121,7 +121,7 @@ Sometimes patch versions of Akka Cluster introduce changes that make certain pai
 
 > This means that a rolling update will have to go through at least one of 2.6.2, 2.6.3 or 2.6.4 when upgrading to 2.6.5 or higher or else cluster nodes will not be able to communicate during the rolling update.
 
-What this means for Lagom is that directly upgrading from `1.6.0` to `1.6.3`, for example, is not possible. Instead, you should first migrate to `1.6.2` deploy the upgraded version and then upgrade to `1.6.3`. Following is a table of safe migrations (versions that can coexist safely during a rolling upgrade):
+What this means for Lagom is that directly upgrading from `1.6.0` to `1.6.3`, for example, is not possible in a rolling upgrade. Instead, you should first migrate to `1.6.2` deploy the upgraded version and then upgrade to `1.6.3`. Following is a table of safe migrations (versions that can coexist safely during a rolling upgrade):
 
 | from  |  to   |
 | :---: | :---: |
