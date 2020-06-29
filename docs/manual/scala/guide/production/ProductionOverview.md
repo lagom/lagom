@@ -17,7 +17,7 @@ The deployment platform determines the type of archive you will need to use for 
 
 If you want to use dynamic service location for your services but need to statically locate Cassandra, modify the `application.conf` for your service. You will need to disable Lagom's `ConfigSessionProvider` and fall back to the one provided in `akka-persistence-cassandra`, which uses the list of endpoints listed in `contact-points`. The `application.conf` settings will be applied in all environments (development and production) unless overridden. See developer mode settings on [[overriding Cassandra setup in Dev Mode|CassandraServer#Connecting-to-a-locally-running-Cassandra-instance]] for more information on settings up Cassandra in dev mode. 
 
-To set up static Cassandra `contact-points` and disable `ConfigSessionProvider`, modify the following sections of the `application-conf` file:
+To set up static Cassandra `contact-points` and disable `ConfigSessionProvider`, modify the following sections of the `application.conf` file:
 
 ```
 cassandra.default {
