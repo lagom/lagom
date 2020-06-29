@@ -4,14 +4,10 @@
 
 package com.lightbend.lagom.scaladsl.api
 
-import java.util
-import java.util.Optional
-
 import akka.util.ByteString
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
 import com.lightbend.lagom.scaladsl.api.deser.ExceptionSerializer
 import com.lightbend.lagom.scaladsl.api.deser.RawExceptionMessage
-import com.lightbend.lagom.scaladsl.api.transport.ExceptionMessage
 import com.lightbend.lagom.scaladsl.api.transport._
 import play.api.Environment
 import play.api.Mode
