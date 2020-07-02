@@ -116,7 +116,7 @@ class CustomExceptionSerializer(environment: Environment) extends ExceptionSeria
     val throwable = delegate.deserialize(rawMessage)
     val (b1, b2)  = rawMessage.message.span(_ != METADATA_MARK.head)
     (b1, b2) match {
-      case (_, bs) if bs.isEmpty => throwable
+      case (_, ByteString.empty) => throwable
       case (head, _) =>
         head.span(_ != MARK.head) match {
           case (name, msg) if name == ByteString(classOf[CustomException].getName) =>
