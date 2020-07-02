@@ -4,14 +4,10 @@
 
 package com.lightbend.lagom.scaladsl.api
 
-import java.util
-import java.util.Optional
-
 import akka.util.ByteString
 import com.lightbend.lagom.scaladsl.api.deser.DefaultExceptionSerializer
 import com.lightbend.lagom.scaladsl.api.deser.ExceptionSerializer
 import com.lightbend.lagom.scaladsl.api.deser.RawExceptionMessage
-import com.lightbend.lagom.scaladsl.api.transport.ExceptionMessage
 import com.lightbend.lagom.scaladsl.api.transport._
 import play.api.Environment
 import play.api.Mode
@@ -120,7 +116,7 @@ class CustomExceptionSerializer(environment: Environment) extends ExceptionSeria
     val throwable = delegate.deserialize(rawMessage)
     val (b1, b2)  = rawMessage.message.span(_ != METADATA_MARK.head)
     (b1, b2) match {
-      case (_, ByteString.empty) => throwable
+      case (_, bs) if bs.isEmpty => throwable
       case (head, _) =>
         head.span(_ != MARK.head) match {
           case (name, msg) if name == ByteString(classOf[CustomException].getName) =>
