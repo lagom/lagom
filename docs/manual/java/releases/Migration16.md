@@ -115,6 +115,20 @@ This is a summary of changes in Lagom 1.6 that would require a full cluster shut
 * The change in default [[Shard Coordination|Migration16#Shard-Coordination]] strategy.
 * The change in [[Cassandra plugin version|Migration16#Akka-Persistence-Cassandra-Update]]. Only impact Lagom applications using Cassandra.
 
+### A note on Rolling Updates and Versions
+
+Sometimes patch versions of Akka Cluster introduce changes that make certain pairs of versions incompatible. As a consequence, sometimes it is necessary to upgrade in multiple steps if downtime is not possible. See, for example, the following note in the Akka Docs on [Rolling Updates and Versions](https://doc.akka.io/docs/akka/current/project/rolling-update.html#2-6-0-several-changes-in-minor-release):
+
+> This means that a rolling update will have to go through at least one of 2.6.2, 2.6.3 or 2.6.4 when upgrading to 2.6.5 or higher or else cluster nodes will not be able to communicate during the rolling update.
+
+What this means for Lagom is that directly upgrading from `1.6.0` to `1.6.3`, for example, is not possible in a rolling upgrade. Instead, you should first migrate to `1.6.2` deploy the upgraded version and then upgrade to `1.6.3`. Following is a table of safe migrations (versions that can coexist safely during a rolling upgrade):
+
+| from  |  to   |
+| :---: | :---: |
+| 1.6.0 | 1.6.2 |
+| 1.6.1 | 1.6.3 |
+| 1.6.2 | 1.6.3 |
+
 ### Multi-step upgrade: serialization
 
 Changes in default serializers require rolling upgrades to happen in two steps.
