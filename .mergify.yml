@@ -18,3 +18,5 @@ pull_request_rules:
       - merged
     actions:
       delete_head_branch: {}
+      label:
+        remove: ["status:merge-when-green"]
