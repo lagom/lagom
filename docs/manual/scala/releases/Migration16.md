@@ -89,6 +89,8 @@ What this means for Lagom is that directly upgrading from `1.6.0` to `1.6.3`, fo
 | 1.6.1 | 1.6.3 |
 | 1.6.2 | 1.6.3 |
 
+**Note:** Lagom doesn't use `jackson-cbor` serializer internally, but if you have `jackson-cbor` in your `serialization-bindings` you need to know about [JacksonCborSerializer issue](https://doc.akka.io/docs/akka/current/project/rolling-update.html#2-6-5-jacksoncborserializer) in Akka, and a rolling upgrade will have to go through `1.6.3` when upgrading to `1.6.3` or higher.
+
 ## Minor changes
 
 ### JSON Compression threshold
