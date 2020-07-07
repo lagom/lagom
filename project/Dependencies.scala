@@ -182,7 +182,7 @@ object Dependencies {
   private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "3.2.6").excludeAll(excludeSlf4j: _*)
 
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
-  private val okio    = "com.squareup.okio"    % "okio"   % "2.6.0"
+  private val okio    = "com.squareup.okio"    % "okio"   % "2.7.0"
   private val kotlinDeps = Seq(
     "org.jetbrains.kotlin" % "kotlin-stdlib"        % "1.3.50",
     "org.jetbrains.kotlin" % "kotlin-stdlib-common" % "1.3.50",
