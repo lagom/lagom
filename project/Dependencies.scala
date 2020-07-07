@@ -22,7 +22,7 @@ object Dependencies {
     val TargetSbt1 = "1.2.8"
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.8.1" // sync with docs/build.sbt
+    val Play             = "2.8.2" // sync with docs/build.sbt
     val PlayJson         = "2.9.0"
     val PlayStandaloneWs = "2.1.2"
     val Twirl            = "1.5.0" // sync with docs/project/plugins.sbt
