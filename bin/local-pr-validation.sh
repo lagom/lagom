@@ -9,6 +9,7 @@ printMessage "VALIDATE FRAMEWORK CODE"
 sbt +headerCheckAll \
   scalafmtCheckAll scalafmtSbtCheck \
   javafmtCheckAll \
+  checkAkkaModuleVersions \
   +mimaReportBinaryIssues
 
 printMessage "VALIDATE DOCS CODE"
