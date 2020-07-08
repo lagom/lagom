@@ -552,7 +552,7 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
     `persistence-core`               % "compile;test->test",
     `persistence-scaladsl`           % "compile;test->test",
     `persistence-cassandra-scaladsl` % "compile->test;test->test",
-    `persistence-jdbc-scaladsl`      % Test
+    `persistence-jdbc-scaladsl`      % "compile;test->test"
   )
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
