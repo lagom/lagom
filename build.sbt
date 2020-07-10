@@ -1489,7 +1489,8 @@ lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-librar
   .settings(
     name := "lagom-sbt-scripted-library",
     PgpKeys.publishSigned := {},
-    publish / skip := true
+    // `publishLocal` must work (can't use publish/skip)
+    publish := {}
   )
   .dependsOn(`server-javadsl`)
 
