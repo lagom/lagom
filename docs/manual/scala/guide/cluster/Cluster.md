@@ -145,10 +145,6 @@ When operating a Lagom service cluster you must consider how to handle network p
 
 The naïve approach is to remove an unreachable node from the cluster membership after a timeout. This works great for crashes and short transient network partitions, but not for long network partitions. Both sides of the network partition will see the other side as unreachable and after a while remove it from its cluster membership. Since this happens on both sides the result is that two separate disconnected clusters have been created. This approach is provided by the opt-in (off by default) auto-down feature in the OSS version of Akka Cluster. Because of this auto-down should not be used in production systems.
 
-**We strongly recommend against using the auto-down feature of Akka Cluster.**
+Since Lagom 1.6.4, Lagom ships with an Akka version that supports the Open Source version of the Akka Split Brain Resolver. The `keep-majority` strategy is configured to be enabled by default if you use Lagom with the Split Brain Resolver. To enable the Split Brain Resolver, follow the instructions in the [Akka documentation](https://doc.akka.io/docs/akka/current/split-brain-resolver.html#split-brain-resolver) to add the necessary dependency and setup the `downing-provider-class`.
 
-A pre-packaged solution for the downing problem is provided by [Split Brain Resolver](https://doc.akka.io/docs/akka-enhancements/1.1/split-brain-resolver.html), which is part of the [Lightbend Platform](https://www.lightbend.com/lightbend-platform). The `keep-majority` strategy is configured to be enabled by default if you use Lagom with the Split Brain Resolver.
-
-See [[Using Lightbend Platform with Lagom|LightbendPlatform]] and the [Split Brain Resolver documentation](https://doc.akka.io/docs/akka-enhancements/1.1/split-brain-resolver.html) for instructions on how to enable it in the build of your project.
-
-Even if you don't use the commercial Lightbend Platform, you should still read & understand the concepts behind [Split Brain Resolver](https://doc.akka.io/docs/akka-enhancements/1.1/split-brain-resolver.html) to ensure that your solution handles the concerns described there.
+Make sure you read & understand the concepts behind [Split Brain Resolver](https://doc.akka.io/docs/akka-enhancements/1.1/split-brain-resolver.html) to ensure that your solution handles the concerns described there.
