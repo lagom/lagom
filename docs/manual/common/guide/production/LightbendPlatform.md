@@ -10,7 +10,6 @@ Lagom is based on Akka, a set of open-source libraries for designing scalable, r
 
 ### Akka Resilience Enhancements
 
-* [Kubernetes Lease](https://doc.akka.io/docs/akka-enhancements/current/kubernetes-lease.html) - Kubernetes enhanced failure-recovery for Lagom and Akka Cluster apps.
 * [Thread Starvation Detector](https://doc.akka.io/docs/akka-enhancements/current/starvation-detector.html) - Flag performance bottlenecks.
 * [Configuration Checker](https://doc.akka.io/docs/akka-enhancements/current/config-checker.html) - Validate configuration against known issues.
 * [Diagnostics Recorder](https://doc.akka.io/docs/akka-enhancements/current/diagnostics-recorder.html) - Facilitates enhanced support from Lightbend.
