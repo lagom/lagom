@@ -21,8 +21,8 @@ import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.SourceQueue
 import akka.Done
 import akka.NotUsed
-import com.lightbend.lagom.dev.MiniLogger
-import com.lightbend.lagom.dev.Servers.KafkaServer
+import com.lightbend.lagom.devmode.MiniLogger
+import com.lightbend.lagom.devmode.Servers.KafkaServer
 import com.lightbend.lagom.scaladsl.api.broker.Message
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.broker.kafka.KafkaProperties

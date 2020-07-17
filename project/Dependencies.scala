@@ -22,18 +22,20 @@ object Dependencies {
     val TargetSbt1 = "1.2.8"
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.8.1" // sync with docs/build.sbt
-    val PlayJson         = "2.8.1"
+    val Play             = "2.8.2" // sync with docs/build.sbt
+    val PlayJson         = "2.9.0"
     val PlayStandaloneWs = "2.1.2"
     val Twirl            = "1.5.0" // sync with docs/project/plugins.sbt
     val PlayFileWatch    = "1.1.12"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.4") // sync with docs/build.sbt
-    val AkkaHttp     = "10.1.11"
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.5") // sync with docs/build.sbt
+    val AkkaHttp     = "10.1.12"
 
     val AkkaPersistenceCassandra = "0.103"
-    val AkkaPersistenceJdbc      = "3.5.3"
-    val AkkaManagement           = "1.0.6"
+    // this is the version used in AkkaPersistenceCassandra, we stick with it
+    val CassandraDriver     = "3.7.2"
+    val AkkaPersistenceJdbc = "3.5.3"
+    val AkkaManagement      = "1.0.8"
 
     val Disruptor = "3.4.2"
 
@@ -50,13 +52,13 @@ object Dependencies {
     val Netty                = "4.1.49.Final"
     val NettyReactiveStreams = "2.0.4"
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
-    val AlpakkaKafka = "2.0.2"
+    val AlpakkaKafka = "2.0.3"
     // Keep this version consistent with Alpakka Kafka Connector
     val Kafka = "2.4.1"
 
     val Curator       = "2.12.0"
-    val Immutables    = "2.8.7"
-    val HibernateCore = "5.4.15.Final"
+    val Immutables    = "2.8.8"
+    val HibernateCore = "5.4.18.Final"
     val PCollections  = "3.1.3"
 
     val ScalaJava8Compat = "0.9.1"
@@ -67,12 +69,12 @@ object Dependencies {
 
     val Slf4j   = "1.7.30"
     val Logback = "1.2.3"
-    val Log4j   = "2.13.2"
+    val Log4j   = "2.13.3"
 
     val jetty = "9.4.20.v20190813"
 
     val Selenium  = "3.141.59"
-    val ByteBuddy = "1.10.10"
+    val ByteBuddy = "1.10.13"
   }
 
   // Some setup before we start creating ModuleID vals
@@ -102,7 +104,7 @@ object Dependencies {
   private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.2"
   private val h2                     = "com.h2database" % "h2" % "1.4.200"
   private val cassandraDriverCore =
-    ("com.datastax.cassandra" % "cassandra-driver-core" % "3.9.0").excludeAll(excludeSlf4j: _*)
+    ("com.datastax.cassandra" % "cassandra-driver-core" % Versions.CassandraDriver).excludeAll(excludeSlf4j: _*)
 
   private val akkaActor            = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
   private val akkaRemote           = "com.typesafe.akka" %% "akka-remote" % Versions.Akka
@@ -180,7 +182,7 @@ object Dependencies {
   private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "3.2.6").excludeAll(excludeSlf4j: _*)
 
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
-  private val okio    = "com.squareup.okio"    % "okio"   % "2.6.0"
+  private val okio    = "com.squareup.okio"    % "okio"   % "2.7.0"
   private val kotlinDeps = Seq(
     "org.jetbrains.kotlin" % "kotlin-stdlib"        % "1.3.50",
     "org.jetbrains.kotlin" % "kotlin-stdlib-common" % "1.3.50",
@@ -197,7 +199,7 @@ object Dependencies {
 
   private val jffi         = "com.github.jnr" % "jffi"          % "1.2.23"
   private val jnrConstants = "com.github.jnr" % "jnr-constants" % "0.9.15"
-  private val jnrFfi       = "com.github.jnr" % "jnr-ffi"       % "2.1.12"
+  private val jnrFfi       = "com.github.jnr" % "jnr-ffi"       % "2.1.15"
   private val jnrPosix     = "com.github.jnr" % "jnr-posix"     % "3.0.55"
   private val jnra64asm    = "com.github.jnr" % "jnr-a64asm"    % "1.0.0"
   private val jnrx86asm    = "com.github.jnr" % "jnr-x86asm"    % "1.0.2"
@@ -928,7 +930,6 @@ object Dependencies {
     // Upgrades needed to match allowed versions
     sslConfig,
     dropwizardMetricsCore,
-    cassandraDriverCore,
     scalaXml,
     jnrConstants,
     jnrPosix,
@@ -938,14 +939,10 @@ object Dependencies {
   val `persistence-cassandra-javadsl` = libraryDependencies ++= Seq(
     junit % Test,
     jsr250,
-    // Upgrades needed to match allowed versions
-    cassandraDriverCore
   )
 
   val `persistence-cassandra-scaladsl` = libraryDependencies ++= Seq(
-    // Upgrades needed to match allowed versions
-    cassandraDriverCore
-  )
+    )
 
   val `persistence-jdbc-core` = libraryDependencies ++= Seq(
     slf4jApi,

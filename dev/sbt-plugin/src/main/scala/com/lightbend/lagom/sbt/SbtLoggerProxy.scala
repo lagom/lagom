@@ -4,7 +4,7 @@
 
 package com.lightbend.lagom.sbt
 
-import com.lightbend.lagom.dev.MiniLogger
+import com.lightbend.lagom.devmode.MiniLogger
 import play.dev.filewatch.LoggerProxy
 import sbt.Logger
 

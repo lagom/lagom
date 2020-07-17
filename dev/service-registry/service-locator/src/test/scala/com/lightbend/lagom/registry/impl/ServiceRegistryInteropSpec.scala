@@ -11,10 +11,12 @@ import java.util.Optional
 import akka.actor.ActorSystem
 import akka.testkit.TestKit
 import akka.util.ByteString
+import com.lightbend.lagom.devmode.internal.scaladsl.registry.RegisteredService
+import com.lightbend.lagom.devmode.internal.scaladsl.registry.ServiceRegistryService
 import com.lightbend.lagom.internal.javadsl.registry.{ RegisteredService => jRegisteredService }
 import com.lightbend.lagom.internal.javadsl.registry.{ ServiceRegistryService => jServiceRegistryService }
-import com.lightbend.lagom.internal.scaladsl.registry.{ RegisteredService => sRegisteredService }
-import com.lightbend.lagom.internal.scaladsl.registry.{ ServiceRegistryService => sServiceRegistryService }
+import com.lightbend.lagom.devmode.internal.scaladsl.registry.{ RegisteredService => sRegisteredService }
+import com.lightbend.lagom.devmode.internal.scaladsl.registry.{ ServiceRegistryService => sServiceRegistryService }
 import com.lightbend.lagom.javadsl.api.ServiceAcl
 import com.lightbend.lagom.javadsl.api.deser.MessageSerializer
 import com.lightbend.lagom.javadsl.api.deser.StrictMessageSerializer
@@ -65,7 +67,7 @@ class ServiceRegistryInteropSpec extends AnyFlatSpec with Matchers with Futures 
     roundTrip(
       input,
       jacksonSerializerFactory.messageSerializerFor[jServiceRegistryService](classOf[jServiceRegistryService]),
-      com.lightbend.lagom.scaladsl.playjson.JsonSerializer[sServiceRegistryService].format
+      com.lightbend.lagom.scaladsl.playjson.JsonSerializer[ServiceRegistryService].format
     )(sServiceRegistryService.format)
   }
 
@@ -73,7 +75,7 @@ class ServiceRegistryInteropSpec extends AnyFlatSpec with Matchers with Futures 
     roundTrip(
       input,
       jacksonSerializerFactory.messageSerializerFor[jRegisteredService](classOf[jRegisteredService]),
-      com.lightbend.lagom.scaladsl.playjson.JsonSerializer[sRegisteredService].format
+      com.lightbend.lagom.scaladsl.playjson.JsonSerializer[RegisteredService].format
     )(sRegisteredService.format)
   }
 

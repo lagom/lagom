@@ -43,7 +43,7 @@ private[lagom] object TestkitSslSetup {
       clientSslContext: SSLContext
   ): TestkitSslSetup = {
     val sslSettings: Map[String, AnyRef] = Map(
-      // See also play/core/server/LagomReloadableDevServerStart.scala
+      // See also play/core/server/devmode/LagomDevModeReloadableServer.scala
       // These configure the server
       "play.server.https.keyStore.path"     -> keyStoreMetadata.storeFile.getAbsolutePath,
       "play.server.https.keyStore.type"     -> keyStoreMetadata.storeType,

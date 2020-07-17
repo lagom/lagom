@@ -7,7 +7,7 @@ package com.lightbend.lagom.maven
 import javax.inject.Inject
 import javax.inject.Singleton
 
-import com.lightbend.lagom.dev.MiniLogger
+import com.lightbend.lagom.devmode.MiniLogger
 import org.codehaus.plexus.logging.Logger
 import play.dev.filewatch.LoggerProxy
 

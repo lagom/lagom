@@ -78,7 +78,7 @@ def bintraySettings: Seq[Setting[_]] = Seq(
 )
 
 // Customise sbt-dynver's behaviour to make it work with Lagom's tags (which aren't v-prefixed)
-dynverVTagPrefix in ThisBuild := false
+dynverTagPrefix in ThisBuild := ""
 
 // Sanity-check: assert that version comes from a tag (e.g. not a too-shallow clone)
 // https://github.com/dwijnand/sbt-dynver/#sanity-checking-the-version
@@ -275,8 +275,101 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.LagomImportCompat"),
       ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.run.RunSupport$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.sbt.run.RunSupportCompat"),
-      // Add mima filters here.
+      // all internals can be ignored
       ProblemFilters.exclude[Problem]("com.lightbend.lagom.internal.*"),
+      // lagom dev-mode components renaming
+      ProblemFilters.exclude[MissingClassProblem]("play.core.server.LagomReloadableDevServerStart"),
+      ProblemFilters.exclude[MissingClassProblem]("play.core.server.LagomReloadableDevServerStart$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.DelegatedResourcesClassLoader"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.LagomConfig$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.ServiceBindingInfo$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$CompileSuccess$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$ProjectName"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.LagomConfig"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$CompileFailure"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.ConsoleHelper"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$CompileResult"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$DevServerBinding"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$Port$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Colors"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$Source"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.ServiceBindingInfo"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$ProjectName$"),
+      ProblemFilters
+        .exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$ProjectName$OrderingProjectName$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$CompileFailure$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.StaticServiceLocations$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$Source$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$DevServer"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$Port"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$DevServerBinding$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.NamedURLClassLoader"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.DelegatingClassLoader"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$CompileSuccess"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$PortRange"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$PortRange$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.StaticServiceLocations"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.DelegatedResourcesClassLoader"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.LagomConfig$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.ServiceBindingInfo$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$CompileSuccess$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$ProjectName"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.LagomConfig"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$CompileFailure"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.ConsoleHelper"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$CompileResult"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$DevServerBinding"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$Port$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Colors"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$Source"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.ServiceBindingInfo"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$ProjectName$"),
+      ProblemFilters
+        .exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$ProjectName$OrderingProjectName$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$CompileFailure$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.StaticServiceLocations$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$Source$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$DevServer"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$Port"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$DevServerBinding$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.NamedURLClassLoader"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.DelegatingClassLoader"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$CompileSuccess"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$PortRange"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.PortAssigner$PortRange$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Reloader$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.StaticServiceLocations"),
+      ProblemFilters
+        .exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.sbt.LagomPlugin#autoImport#PortRange.apply"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.sbt.SbtLoggerProxy"),
+      ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.sbt.run.RunSupport.compileFailure"),
+      ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.sbt.run.RunSupport.compile"),
+      ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.sbt.run.RunSupport.compile"),
+      ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.sbt.run.RunSupport.compileFailure"),
+      ProblemFilters.exclude[MissingTypesProblem]("com.lightbend.lagom.maven.MavenLoggerProxy"),
+      ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.maven.RunAllMojo.consoleHelper"),
+      ProblemFilters.exclude[IncompatibleResultTypeProblem](
+        "com.lightbend.lagom.scaladsl.devmode.LagomDevModeServiceLocatorComponents.serviceRegistry"
+      ),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers$KafkaServer$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.LagomProcess$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers$ServerContainer"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers$ServiceLocator$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers$ServerContainer$ServerProcess"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers$CassandraServer$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers$KafkaServer$KafkaProcess"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.LagomProcess"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.MiniLogger"),
+      // Add mima new filters just above this comment to avoid merge conflicts (avoiding interleaving)
     )
   )
 }
@@ -560,7 +653,7 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
     `persistence-core`               % "compile;test->test",
     `persistence-scaladsl`           % "compile;test->test",
     `persistence-cassandra-scaladsl` % "compile->test;test->test",
-    `persistence-jdbc-scaladsl`      % Test
+    `persistence-jdbc-scaladsl`      % "compile;test->test"
   )
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
@@ -570,7 +663,7 @@ lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integra
     name := "lagom-javadsl-integration-tests",
     Dependencies.`integration-tests-javadsl`,
     PgpKeys.publishSigned := {},
-    publish := {}
+    publish / skip := true
   )
   .dependsOn(
     `server-javadsl`,
@@ -588,7 +681,7 @@ lazy val `integration-tests-scaladsl` = (project in file("service/scaladsl/integ
     name := "lagom-scaladsl-integration-tests",
     Dependencies.`integration-tests-scaladsl`,
     PgpKeys.publishSigned := {},
-    publish := {}
+    publish / skip := true
   )
   .dependsOn(`server-scaladsl`, logback, `testkit-scaladsl`)
 
@@ -1030,7 +1123,7 @@ lazy val `dev-environment` = (project in file("dev"))
     PgpKeys.publishSigned := {},
     publishLocal := {},
     publishArtifact in Compile := false,
-    publish := {}
+    publish / skip := true
   )
 
 lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
@@ -1396,6 +1489,7 @@ lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-librar
   .settings(
     name := "lagom-sbt-scripted-library",
     PgpKeys.publishSigned := {},
+    // `publishLocal` must work (can't use publish/skip)
     publish := {}
   )
   .dependsOn(`server-javadsl`)
@@ -1524,5 +1618,5 @@ lazy val `macro-testkit` = (project in file("macro-testkit"))
       "org.scala-lang" % "scala-reflect" % scalaVersion.value
     ),
     PgpKeys.publishSigned := {},
-    publish := {}
+    publish / skip := true
   )

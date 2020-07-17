@@ -4,7 +4,11 @@
 
 package com.lightbend.lagom.sbt.run
 
-import com.lightbend.lagom.dev.Reloader
+import com.lightbend.lagom.devmode.Reloader
+import com.lightbend.lagom.devmode.Reloader.CompileFailure
+import com.lightbend.lagom.devmode.Reloader.CompileResult
+import com.lightbend.lagom.devmode.Reloader.CompileSuccess
+import com.lightbend.lagom.devmode.Reloader.Source
 import com.lightbend.lagom.sbt.Internal
 import com.lightbend.lagom.sbt.LagomPlugin.autoImport._
 import com.lightbend.lagom.sbt.LagomReloadableService.autoImport._
@@ -20,10 +24,6 @@ import java.util.Optional
 import play.api.PlayException
 import play.sbt.PlayExceptions.CompilationException
 import play.sbt.PlayExceptions.UnexpectedException
-import com.lightbend.lagom.dev.Reloader.CompileFailure
-import com.lightbend.lagom.dev.Reloader.CompileResult
-import com.lightbend.lagom.dev.Reloader.CompileSuccess
-import com.lightbend.lagom.dev.Reloader.Source
 
 private[sbt] object RunSupport {
   def reloadRunTask(

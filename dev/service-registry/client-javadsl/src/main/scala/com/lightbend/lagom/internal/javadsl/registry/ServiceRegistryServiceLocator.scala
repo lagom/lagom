@@ -8,10 +8,10 @@ import java.net.URI
 import java.util.concurrent.CompletionStage
 import java.util.Optional
 import java.util.{ List => JList }
+
 import javax.inject.Inject
 import javax.inject.Singleton
-
-import com.lightbend.lagom.internal.registry.ServiceRegistryClient
+import com.lightbend.lagom.devmode.internal.registry.ServiceRegistryClient
 import com.lightbend.lagom.javadsl.api.Descriptor.Call
 import com.lightbend.lagom.javadsl.client.CircuitBreakersPanel
 import com.lightbend.lagom.javadsl.client.CircuitBreakingServiceLocator
