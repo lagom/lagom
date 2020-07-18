@@ -44,6 +44,7 @@ private[lagom] trait SlickProviderComponents extends DBComponents {
     )(executionContext)
     new SlickProvider(actorSystem, coordinatedShutdown)(executionContext)
   }
+
 }
 
 /**
