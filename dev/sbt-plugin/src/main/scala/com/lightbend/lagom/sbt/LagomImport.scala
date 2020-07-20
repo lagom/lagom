@@ -52,7 +52,7 @@ object LagomImport extends LagomImportCompat {
   val lagomScaladslTestKit              = component("lagom-scaladsl-testkit") % Test
 
   val lagomJUnitDeps = Seq(
-    "junit"        % "junit"           % "4.12" % Test,
+    "junit"        % "junit"           % "4.13" % Test,
     "com.novocode" % "junit-interface" % "0.11" % Test
   )
 
