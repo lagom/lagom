@@ -33,7 +33,7 @@ object VersionSyncCheckPlugin extends AutoPlugin {
   )
 
   def versionSyncCheckImpl = Def.task[Unit] {
-    val log = state.value.log
+    val log = streams.value.log
 
     log.info("Running version sync check")
 

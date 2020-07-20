@@ -49,7 +49,7 @@ object Dependencies {
     val Maven                = "3.6.3"
     val MavenWagon           = "3.3.3"
     val MavenResolver        = "1.4.1"
-    val Netty                = "4.1.49.Final"
+    val Netty                = "4.1.50.Final"
     val NettyReactiveStreams = "2.0.4"
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
     val AlpakkaKafka = "2.0.3"
@@ -64,8 +64,11 @@ object Dependencies {
     val ScalaJava8Compat = "0.9.1"
     val ScalaXml         = "1.3.0"
     val Slick            = "3.3.2"
-    val JUnit            = "4.12"
-    val JUnitInterface   = "0.11"
+    // JUnit[Interface] should be sync with:
+    //   lagomJUnitDeps in dev/sbt-plugin/src/main/scala/com/lightbend/lagom/sbt/LagomImport.scala
+    //   JUnitVersion in docs/build.sbt
+    val JUnit          = "4.13"
+    val JUnitInterface = "0.11"
 
     val Slf4j   = "1.7.30"
     val Logback = "1.2.3"
@@ -249,15 +252,15 @@ object Dependencies {
       jnra64asm,
       jnrx86asm,
       "com.google.code.findbugs" % "jsr305"                  % "3.0.2",
-      "com.google.errorprone"    % "error_prone_annotations" % "2.3.2",
+      "com.google.errorprone"    % "error_prone_annotations" % "2.3.4",
       guava,
       "com.google.j2objc"            % "j2objc-annotations"   % "1.3",
-      "com.google.inject"            % "guice"                % "4.2.2",
-      "com.google.inject.extensions" % "guice-assistedinject" % "4.2.2",
+      "com.google.inject"            % "guice"                % "4.2.3",
+      "com.google.inject.extensions" % "guice-assistedinject" % "4.2.3",
       "com.googlecode.usc"           % "jdbcdslog"            % "1.0.6.2",
-      "org.checkerframework"         % "checker-qual"         % "2.8.1",
+      "org.checkerframework"         % "checker-qual"         % "2.10.0",
       "javax.xml.bind"               % "jaxb-api"             % "2.3.1",
-      "jakarta.xml.bind"             % "jakarta.xml.bind-api" % "2.3.2",
+      "jakarta.xml.bind"             % "jakarta.xml.bind-api" % "2.3.3",
       h2,
       "com.jolbox"   % "bonecp"          % "0.8.0.RELEASE",
       "com.lmax"     % "disruptor"       % Versions.Disruptor,
@@ -333,7 +336,7 @@ object Dependencies {
       "com.typesafe.play"  %% "twirl-api"      % Versions.Twirl,
       "com.typesafe.slick" %% "slick"          % Versions.Slick,
       "com.typesafe.slick" %% "slick-hikaricp" % Versions.Slick,
-      "com.zaxxer"         % "HikariCP"        % "3.4.1",
+      "com.zaxxer"         % "HikariCP"        % "3.4.5",
       "commons-codec"      % "commons-codec"   % "1.11",
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.9.1",
@@ -348,7 +351,7 @@ object Dependencies {
       "net.jodah"           % "typetools"               % "0.5.0",
       "org.lz4"             % "lz4-java"                % "1.5.0",
       "com.github.luben"    % "zstd-jni"                % "1.3.7-1",
-      "org.agrona"          % "agrona"                  % "1.3.0",
+      "org.agrona"          % "agrona"                  % "1.4.1",
       commonsLang,
       kafkaClients,
       "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.18",
@@ -377,7 +380,7 @@ object Dependencies {
       "com.google.protobuf"        % "protobuf-java"          % "3.10.0",
       "javax.activation"           % "activation"             % "1.1",
       "javax.activation"           % "javax.activation-api"   % "1.2.0",
-      "jakarta.activation"         % "jakarta.activation-api" % "1.2.1",
+      "jakarta.activation"         % "jakarta.activation-api" % "1.2.2",
       "com.thoughtworks.paranamer" % "paranamer"              % "2.8",
       mockitoCore,
       "org.objenesis" % "objenesis"        % "2.6",
