@@ -370,6 +370,21 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.MiniLogger"),
       // Add mima new filters just above this comment to avoid merge conflicts (avoiding interleaving)
+      // Remove TestUtil from production code.
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.testkit.AwaitPersistenceInit"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.testkit.AbstractTestUtil"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.cassandra.testkit.TestUtil$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.jdbc.testkit.TestUtil"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.javadsl.persistence.jdbc.testkit.TestUtil$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.testkit.AbstractTestUtil$AwaitPersistenceInit"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.testkit.AbstractTestUtil"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.testkit.AbstractTestUtil$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil$AwaitPersistenceInit"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.cassandra.testkit.TestUtil$"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.jdbc.testkit.TestUtil"),
+      ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.scaladsl.persistence.jdbc.testkit.TestUtil$"),
     )
   )
 }

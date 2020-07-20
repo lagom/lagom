@@ -913,15 +913,11 @@ object Dependencies {
   )
 
   val `persistence-javadsl` = libraryDependencies ++= Seq(
-    slf4jApi,
-    // this mean we have production code depending on testkit
-    akkaTestkit
+    slf4jApi
   )
 
   val `persistence-scaladsl` = libraryDependencies ++= Seq(
-    slf4jApi,
-    // this mean we have production code depending on testkit
-    akkaTestkit
+    slf4jApi
   )
   val `persistence-cassandra-core` = libraryDependencies ++= Seq(
     slf4jApi,
