@@ -73,21 +73,21 @@ object TopicProducer {
       eventStream: (AggregateEventTag[Event], Offset) => Source[(Message, Offset), Any]
   ): Topic[Message] = TaggedOffsetTopicProducer.fromEventAndOffsetPairStream(shards.allTags.toList, eventStream)
 
-  // TODO(bossqone): fix name
+  // TODO(bossqone): add docs
   @ApiMayChange
-  def singleStreamWithOffset2[Message](
+  def singleCommandStreamWithOffset[Message](
       eventStream: Offset => Source[TopicProducerCommand[Message], Any]
-  ): Topic[Message] = taggedStreamWithOffset2(SINGLETON_TAG)((_, offset) => eventStream(offset))
+  ): Topic[Message] = taggedCommandStreamWithOffset(SINGLETON_TAG)((_, offset) => eventStream(offset))
 
-  // TODO(bossqone): fix name
+  // TODO(bossqone): add docs
   @ApiMayChange
-  def taggedStreamWithOffset2[Message, Event <: AggregateEvent[Event]](tags: immutable.Seq[AggregateEventTag[Event]])(
+  def taggedCommandStreamWithOffset[Message, Event <: AggregateEvent[Event]](tags: immutable.Seq[AggregateEventTag[Event]])(
       eventStream: (AggregateEventTag[Event], Offset) => Source[TopicProducerCommand[Message], Any]
   ): Topic[Message] = TaggedOffsetTopicProducer.fromTopicProducerCommandStream(tags, eventStream)
 
-  // TODO(bossqone): fix name
+  // TODO(bossqone): add docs
   @ApiMayChange
-  def taggedStreamWithOffset2[Message, Event <: AggregateEvent[Event]](shards: AggregateEventShards[Event])(
+  def taggedCommandStreamWithOffset[Message, Event <: AggregateEvent[Event]](shards: AggregateEventShards[Event])(
       eventStream: (AggregateEventTag[Event], Offset) => Source[TopicProducerCommand[Message], Any]
   ): Topic[Message] = TaggedOffsetTopicProducer.fromTopicProducerCommandStream(shards.allTags.toList, eventStream)
 }

@@ -416,7 +416,7 @@ object ScaladslKafkaApiSpec {
     }
 
     private def createTopicProducerWithCommand(eventJournal: EventJournal[(String, Boolean)]): Topic[String] = {
-      TopicProducer.singleStreamWithOffset2 { fromOffset =>
+      TopicProducer.singleCommandStreamWithOffset { fromOffset =>
         eventJournal
           .eventStream(fromOffset)
           .map {
