@@ -453,7 +453,7 @@ object JavadslKafkaApiSpec {
       }.asJava)
 
     private def createTopicProducerWithCommand(eventJournal: EventJournal[(String, Boolean)]): Topic[String] =
-      TopicProducer.singleStreamWithOffset2[String]({ fromOffset: JOffset =>
+      TopicProducer.singleCommandStreamWithOffset[String]({ fromOffset: JOffset =>
         eventJournal
           .eventStream(dslOffsetToOffset(fromOffset))
           .map[TopicProducerCommand[String]] {

@@ -95,27 +95,27 @@ public final class TopicProducer {
     return TaggedOffsetTopicProducer.fromEventAndOffsetPairStream(shards.allTags(), eventStream);
   }
 
-  // TODO(bossqone): fix name
+  // TODO(bossqone): add docs
   @ApiMayChange
-  public static <Message> Topic<Message> singleStreamWithOffset2(
+  public static <Message> Topic<Message> singleCommandStreamWithOffset(
       Function<Offset, Source<TopicProducerCommand<Message>, ?>> eventStream) {
-    return taggedStreamWithOffset2(SINGLETON_TAG, (tag, offset) -> eventStream.apply(offset));
+    return taggedCommandStreamWithOffset(SINGLETON_TAG, (tag, offset) -> eventStream.apply(offset));
   }
 
-  // TODO(bossqone): fix name
+  // TODO(bossqone): add docs
   @ApiMayChange
   public static <Message, Event extends AggregateEvent<Event>>
-      Topic<Message> taggedStreamWithOffset2(
+      Topic<Message> taggedCommandStreamWithOffset(
           PSequence<AggregateEventTag<Event>> tags,
           BiFunction<AggregateEventTag<Event>, Offset, Source<TopicProducerCommand<Message>, ?>>
               eventStream) {
     return TaggedOffsetTopicProducer.fromTopicProducerCommandStream(tags, eventStream);
   }
 
-  // TODO(bossqone): fix name
+  // TODO(bossqone): add docs
   @ApiMayChange
   public static <Message, Event extends AggregateEvent<Event>>
-      Topic<Message> taggedStreamWithOffset2(
+      Topic<Message> taggedCommandStreamWithOffset(
           AggregateEventShards<Event> shards,
           BiFunction<AggregateEventTag<Event>, Offset, Source<TopicProducerCommand<Message>, ?>>
               eventStream) {
