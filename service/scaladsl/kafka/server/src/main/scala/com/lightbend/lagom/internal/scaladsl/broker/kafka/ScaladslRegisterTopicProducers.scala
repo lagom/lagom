@@ -118,6 +118,8 @@ class ScaladslRegisterTopicProducers(
       command: TopicProducerCommand[Message]
   ): InternalTopicProducerCommand[Message] =
     command match {
+      case TopicProducerCommand.EmitMultipleAndCommit(messages, offset) =>
+        InternalTopicProducerCommand.EmitMultipleAndCommit(messages, offset)
       case TopicProducerCommand.EmitAndCommit(message, offset) =>
         InternalTopicProducerCommand.EmitAndCommit(message, offset)
       case TopicProducerCommand.Commit(offset) => InternalTopicProducerCommand.Commit(offset)
