@@ -73,9 +73,6 @@ jobs:
     - script: bin/test-maven
       name: "PublishM2 and test Maven using Java 8"
       env: TRAVIS_JDK=8
-    - script: SCALA_VERSION=2.12.10 bin/test-sbt-13x
-      name: "Scripted tests for sbt 1.3"
-      if: type = cron
 
 cache:
   directories:
