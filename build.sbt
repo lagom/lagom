@@ -562,7 +562,7 @@ lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integra
     name := "lagom-javadsl-integration-tests",
     Dependencies.`integration-tests-javadsl`,
     PgpKeys.publishSigned := {},
-    publish := {}
+    publish / skip := true
   )
   .dependsOn(
     `server-javadsl`,
@@ -580,7 +580,7 @@ lazy val `integration-tests-scaladsl` = (project in file("service/scaladsl/integ
     name := "lagom-scaladsl-integration-tests",
     Dependencies.`integration-tests-scaladsl`,
     PgpKeys.publishSigned := {},
-    publish := {}
+    publish / skip := true
   )
   .dependsOn(`server-scaladsl`, logback, `testkit-scaladsl`)
 
@@ -1022,7 +1022,7 @@ lazy val `dev-environment` = (project in file("dev"))
     PgpKeys.publishSigned := {},
     publishLocal := {},
     publishArtifact in Compile := false,
-    publish := {}
+    publish / skip := true
   )
 
 lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
@@ -1388,6 +1388,7 @@ lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-librar
   .settings(
     name := "lagom-sbt-scripted-library",
     PgpKeys.publishSigned := {},
+    // `publishLocal` must work (can't use publish/skip)
     publish := {}
   )
   .dependsOn(`server-javadsl`)
@@ -1516,5 +1517,5 @@ lazy val `macro-testkit` = (project in file("macro-testkit"))
       "org.scala-lang" % "scala-reflect" % scalaVersion.value
     ),
     PgpKeys.publishSigned := {},
-    publish := {}
+    publish / skip := true
   )
