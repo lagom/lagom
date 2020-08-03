@@ -54,7 +54,7 @@ object Dependencies {
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
     val AlpakkaKafka = "2.0.4"
     // Keep this version consistent with Alpakka Kafka Connector
-    val Kafka = "2.4.1"
+    val Kafka = "2.6.0"
 
     val Curator       = "2.12.0"
     val Immutables    = "2.8.8"
