@@ -1,0 +1,6 @@
+# issue #1309, change of internals
+ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.persistence.PersistentEntity#PersistAll.afterPersist")
+ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.persistence.PersistentEntity#PersistAll.copy")
+ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.lightbend.lagom.scaladsl.persistence.PersistentEntity#PersistAll.copy$default$2")
+ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.persistence.PersistentEntity#PersistAll.this")
+ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.lightbend.lagom.scaladsl.persistence.PersistentEntity#PersistAll.apply")

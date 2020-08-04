@@ -181,7 +181,7 @@ private[lagom] class PersistentEntityActor(
               try {
                 eventCount += 1
                 if (afterPersist != null)
-                  afterPersist(event)
+                  afterPersist(state)
                 if (snapshotAfter > 0 && eventCount % snapshotAfter == 0)
                   saveSnapshot(state)
               } catch {
@@ -202,7 +202,7 @@ private[lagom] class PersistentEntityActor(
                 eventCount += 1
                 count -= 1
                 if (afterPersist != null && count == 0)
-                  afterPersist.apply()
+                  afterPersist(state)
                 if (snapshotAfter > 0 && eventCount % snapshotAfter == 0)
                   snap = true
                 if (count == 0 && snap)
