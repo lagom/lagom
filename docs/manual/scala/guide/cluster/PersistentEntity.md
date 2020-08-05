@@ -57,6 +57,8 @@ A command handler returns a [Persist](api/index.html#com/lightbend/lagom/scalads
 
 External side effects can be performed after successful persist in the `afterPersist` function. In the above example a reply is sent with the `ctx.reply` method.
 
+`thenPersist` or `thenPersistAllAndRun` is an alternative for side effects that need access to the updated state.
+
 The command can be validated before persisting state changes. Note that current state is passed as parameter to the command handler partial function. Use `ctx.invalidCommand` or `ctx.commandFailed` to reject an invalid command.
 
 @[validate-command](code/docs/home/scaladsl/persistence/Post2.scala)
