@@ -11,8 +11,9 @@ import akka.cluster.sharding.ShardRegion
 import akka.testkit.TestProbe
 import com.lightbend.lagom.internal.scaladsl.persistence.PersistentEntityActor
 import com.lightbend.lagom.persistence.ActorSystemSpec
-
 import scala.concurrent.duration._
+
+import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.UnhandledCommandException
 
 object AbstractPersistentEntityActorSpec {
   class TestPassivationParent extends Actor {
@@ -186,6 +187,14 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
       val entity = lastSender
       watch(entity)
       expectTerminated(entity)
+    }
+
+    "handle undefined command" in {
+      val p = system.actorOf(
+        PersistentEntityActor.props("test", Some("7"), () => new TestEntity(system), None, 10.seconds, "", "")
+      )
+      p ! TestEntity.UndefinedCmd
+      expectMsgType[UnhandledCommandException].message should startWith("custom exc")
     }
   }
 }

@@ -137,7 +137,8 @@ class PersistentEntityTestDriver[C, E, S](
   }
 
   private def unhandledCommand: PartialFunction[(C, entity.CommandContext[Any], S), entity.Persist] = {
-    case (cmd, _, _) =>
+    case (cmd, ctx, state) =>
+      entity.onUnhandledCommand(cmd, ctx.asInstanceOf[entity.ReadOnlyCommandContext[Nothing]], state)
       issues :+= UnhandledCommand(cmd)
       entity.PersistNone
   }

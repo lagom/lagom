@@ -144,6 +144,13 @@ abstract class PersistentEntity {
    */
   def recoveryCompleted(state: State): State = state
 
+  def onUnhandledCommand(command: Command, context: ReadOnlyCommandContext[Nothing], state: State): Unit =
+    context.commandFailed(
+      PersistentEntity.UnhandledCommandException(
+        s"Unhandled command [${command.getClass.getName}] in [${this.getClass.getName}] with id [${entityId}]"
+      )
+    )
+
   object Actions {
     val empty            = new Actions(PartialFunction.empty, Map.empty)
     def apply(): Actions = empty
