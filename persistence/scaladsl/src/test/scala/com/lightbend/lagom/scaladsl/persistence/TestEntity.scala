@@ -12,8 +12,9 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.persistence.testkit.SimulatedNullpointerException
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializer
-
 import scala.collection.immutable
+
+import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.UnhandledCommandException
 
 object TestEntity {
   object SharedFormats {
@@ -155,6 +156,14 @@ class TestEntity(system: ActorSystem) extends PersistentEntity {
   override def behavior: Behavior = {
     case State(Mode.Append, _)  => appending
     case State(Mode.Prepend, _) => prepending
+  }
+
+  override def onUnhandledCommand(
+      command: Cmd,
+      context: ReadOnlyCommandContext[Nothing],
+      state: TestEntity.State
+  ): Unit = {
+    context.commandFailed(UnhandledCommandException("custom exc with additional context"))
   }
 
   private val changeMode: Actions = {
