@@ -147,4 +147,4 @@ The naïve approach is to remove an unreachable node from the cluster membership
 
 Since Lagom 1.6.4, Lagom ships with an Akka version that supports the Open Source version of the Akka Split Brain Resolver. The `keep-majority` strategy is configured to be enabled by default if you use Lagom with the Split Brain Resolver. To enable the Split Brain Resolver, follow the instructions in the [Akka documentation](https://doc.akka.io/docs/akka/current/split-brain-resolver.html#split-brain-resolver) to add the necessary dependency and setup the `downing-provider-class`.
 
-Make sure you read & understand the concepts behind [Split Brain Resolver](https://doc.akka.io/docs/akka-enhancements/1.1/split-brain-resolver.html) to ensure that your solution handles the concerns described there.
+Make sure you read & understand the concepts behind [Split Brain Resolver](https://doc.akka.io/docs/akka/current/split-brain-resolver.html#the-problem) to ensure that your solution handles the concerns described there.
