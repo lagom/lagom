@@ -39,6 +39,7 @@ object TestEntity {
 
     val serializers = Vector(
       JsonSerializer(Json.format[Add]),
+      JsonSerializer(Json.format[AddWithState]),
       JsonSerializer(Json.format[ChangeMode]),
       JsonSerializer(emptySingletonFormat(Get)),
       JsonSerializer(emptySingletonFormat(UndefinedCmd)),
@@ -52,7 +53,8 @@ object TestEntity {
 
   case object Get extends Cmd with ReplyType[State]
 
-  final case class Add(element: String, times: Int = 1) extends Cmd with ReplyType[Evt]
+  final case class Add(element: String, times: Int = 1)          extends Cmd with ReplyType[Evt]
+  final case class AddWithState(element: String, times: Int = 1) extends Cmd with ReplyType[State]
 
   sealed trait Mode
   object Mode {
@@ -209,6 +211,21 @@ class TestEntity(system: ActorSystem) extends PersistentEntity {
           else
             ctx.thenPersistAll(List.fill(times)(appended): _*)(() => ctx.reply(appended))
       }
+      .onCommand[AddWithState, State] {
+        case (AddWithState(elem, times), ctx, state) =>
+          // note that null should trigger NPE, for testing exception
+          if (elem == null)
+            throw new SimulatedNullpointerException
+          if (elem.length == 0) {
+            ctx.invalidCommand("element must not be empty");
+            ctx.done
+          }
+          val appended = Appended(elem.toUpperCase)
+          if (times == 1)
+            ctx.thenPersistAndRun(appended)(ctx.reply)
+          else
+            ctx.thenPersistAllAndRun(List.fill(times)(appended): _*)(ctx.reply)
+      }
 
   private val prepending: Actions =
     baseActions
@@ -227,6 +244,18 @@ class TestEntity(system: ActorSystem) extends PersistentEntity {
             ctx.thenPersist(prepended)(ctx.reply)
           else
             ctx.thenPersistAll(List.fill(times)(prepended): _*)(() => ctx.reply(prepended))
+      }
+      .onCommand[AddWithState, State] {
+        case (Add(elem, times), ctx, state) =>
+          if (elem == null || elem.length == 0) {
+            ctx.invalidCommand("element must not be empty");
+            ctx.done
+          }
+          val prepended = Prepended(elem.toLowerCase)
+          if (times == 1)
+            ctx.thenPersistAndRun(prepended)(ctx.reply)
+          else
+            ctx.thenPersistAllAndRun(List.fill(times)(prepended): _*)(ctx.reply)
       }
 
   override def recoveryCompleted(state: State): State = {
