@@ -246,7 +246,7 @@ class TestEntity(system: ActorSystem) extends PersistentEntity {
             ctx.thenPersistAll(List.fill(times)(prepended): _*)(() => ctx.reply(prepended))
       }
       .onCommand[AddWithState, State] {
-        case (Add(elem, times), ctx, state) =>
+        case (AddWithState(elem, times), ctx, state) =>
           if (elem == null || elem.length == 0) {
             ctx.invalidCommand("element must not be empty");
             ctx.done
