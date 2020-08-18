@@ -144,6 +144,14 @@ abstract class PersistentEntity {
    */
   def recoveryCompleted(state: State): State = state
 
+  /**
+   * This method is called if a command is not handled. It can be overridden for custom handling.
+   * By default it sends back an [[PersistentEntity.UnhandledCommandException]] via `context.commandFailed`.
+   *
+   * @param command the command that was not handled
+   * @param context the context, for access to for example `commandFailed`
+   * @param state current state
+   */
   def onUnhandledCommand(command: Command, context: ReadOnlyCommandContext[Nothing], state: State): Unit =
     context.commandFailed(
       PersistentEntity.UnhandledCommandException(
