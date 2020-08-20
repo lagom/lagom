@@ -219,6 +219,7 @@ class PersistentEntityTestDriver[C, E, S](system: ActorSystem, entity: Persisten
           }
 
         case None =>
+          entity.onUnhandledCommand(cmd, ctx.asInstanceOf[entity.ReadOnlyCommandContext[Void]])
           issues :+= UnhandledCommand(cmd)
       }
     }

@@ -15,6 +15,7 @@ import akka.actor.Props
 import akka.actor.UnhandledMessage
 import akka.cluster.sharding.ShardRegion
 import com.lightbend.lagom.internal.javadsl.persistence.PersistentEntityActor
+import com.lightbend.lagom.javadsl.persistence.PersistentEntity.UnhandledCommandException
 import com.lightbend.lagom.persistence.ActorSystemSpec
 
 object AbstractPersistentEntityActorSpec {
@@ -184,6 +185,15 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
       val entity = lastSender
       watch(entity)
       expectTerminated(entity)
+    }
+
+    "handle undefined command" in {
+      val p = system.actorOf(
+        PersistentEntityActor
+          .props("test", Optional.of("7"), () => new TestEntity(system), Optional.empty(), 10.seconds, "", "")
+      )
+      p ! new TestEntity.UndefinedCmd
+      expectMsgType[UnhandledCommandException].message should startWith("custom exc")
     }
   }
 }

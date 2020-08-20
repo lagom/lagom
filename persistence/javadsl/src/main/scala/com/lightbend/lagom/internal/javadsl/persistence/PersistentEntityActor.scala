@@ -146,9 +146,9 @@ private[lagom] class PersistentEntityActor[C, E, S](
 
   def receiveCommand: Receive = {
     case cmd: PersistentEntity.ReplyType[_] =>
+      val ctx = newCtx()
       commandHandlers.get(cmd.getClass.asInstanceOf[Class[C]]) match {
         case Some(handler) =>
-          val ctx = newCtx()
           try handler.apply(cmd.asInstanceOf[C], ctx) match {
             case _: entity.PersistNone[_]               => // done
             case entity.PersistOne(event, afterPersist) =>
@@ -198,10 +198,7 @@ private[lagom] class PersistentEntityActor[C, E, S](
           }
 
         case None =>
-          // not using akka.actor.Status.Failure because it is using Java serialization
-          sender() ! PersistentEntity.UnhandledCommandException(
-            s"Unhandled command [${cmd.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]"
-          )
+          entity.onUnhandledCommand(cmd.asInstanceOf[C], ctx.asInstanceOf[entity.ReadOnlyCommandContext[Void]])
           unhandled(cmd)
       }
 
