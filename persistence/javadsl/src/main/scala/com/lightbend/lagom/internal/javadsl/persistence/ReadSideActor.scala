@@ -137,11 +137,12 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
                   .asJava
 
               if (config.withMetrics) {
-                val wrappedFlow: Flow[japi.Pair[Event, LagomOffset], Done, NotUsed] = Flow[japi.Pair[Event, LagomOffset]]
-                  .map { pair =>
-                    (pair, OffsetAdapter.dslOffsetToOffset(pair.second))
-                  }
-                  .via(userFlowWrapper(workerCoordinates, userFlow.asScala))
+                val wrappedFlow: Flow[japi.Pair[Event, LagomOffset], Done, NotUsed] =
+                  Flow[japi.Pair[Event, LagomOffset]]
+                    .map { pair =>
+                      (pair, OffsetAdapter.dslOffsetToOffset(pair.second))
+                    }
+                    .via(userFlowWrapper(workerCoordinates, userFlow.asScala))
                 eventStreamSource.via(wrappedFlow)
               } else {
                 eventStreamSource.via(userFlow)
