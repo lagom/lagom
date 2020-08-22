@@ -112,6 +112,35 @@ object TestRegistry3 extends JsonSerializerRegistry {
   )
 }
 
+object TestRegistry4 extends JsonSerializerRegistry {
+  override def serializers =
+    Seq(
+      JsonSerializer(Json.format[MigratedEvent])
+    )
+
+  def currentMigrationVersion: Int = 5
+  def supportedVersion: Int = currentMigrationVersion+1
+
+  import play.api.libs.json._
+  override def migrations = {
+    val transformations = SortedMap(
+      // only need to support the future version for the test (ignore past versions)
+      supportedVersion ->
+        __.json
+          .update((__ \ "newName").json.copyFrom((__ \ "newerName").json.pick))
+          .andThen((__ \ "newerName").json.prune)
+    )
+    Map(
+      JsonMigrations.transform[MigratedEvent](
+        transformations,
+        currentMigrationVersion, // currentVersion
+        supportedVersion // forward-one support
+      )
+    )
+  }
+}
+
+
 object TestRegistryWithCompression extends JsonSerializerRegistry {
   implicit val innerFormat = Json.format[Inner]
 
@@ -271,6 +300,36 @@ class PlayJsonSerializerSpec extends WordSpec with Matchers {
 
         deserialized should be(expectedEvent)
     }
+
+
+    "downcast a future version" in withActorSystem(TestRegistry4) {
+      system =>
+        // Looks like MigratedEvent, except `newName` is called `newerName`. That field needs downcasting.
+        val newerJsonBytes = Json
+          .stringify(
+            JsObject(
+              Seq(
+                "addedField" -> JsNumber(2),
+                "newerName"  -> JsString("some value")
+              )
+            )
+          )
+          .getBytes(StandardCharsets.UTF_8)
+
+        val expectedEvent = MigratedEvent(addedField = 2, newName = "some value")
+
+        val futureVersion  = TestRegistry4.supportedVersion
+        val futureManifest = expectedVersionedManifest(classOf[MigratedEvent], futureVersion)
+        val serializeExt = SerializationExtension(system)
+        val serializer   = serializeExt.findSerializerFor(expectedEvent).asInstanceOf[SerializerWithStringManifest]
+
+        val deserialized = serializer.fromBinary(newerJsonBytes, futureManifest)
+
+        deserialized should be(expectedEvent)
+    }
+
+
+
 
     "use compression when enabled and payload is bigger than threshold" in withActorSystem(TestRegistryWithCompression) {
       system =>

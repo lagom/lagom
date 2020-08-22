@@ -18,7 +18,15 @@ object JsonMigrations {
       transformation: (Int, JsValue) => JsValue,
       classNameTransformation: (Int, String) => String
   ): JsonMigration =
-    new JsonMigration(currentVersion) {
+    apply(currentVersion, currentVersion, transformation, classNameTransformation)
+
+  def apply(
+      currentVersion: Int,
+      supportedForwardVersion:Int,
+      transformation: (Int, JsValue) => JsValue,
+      classNameTransformation: (Int, String) => String
+  ): JsonMigration =
+    new JsonMigration(currentVersion, supportedForwardVersion) {
       override def transform(fromVersion: Int, json: JsObject): JsValue     = transformation(fromVersion, json)
       override def transformValue(fromVersion: Int, json: JsValue): JsValue = transformation(fromVersion, json)
       override def transformClassName(fromVersion: Int, className: String): String =
@@ -31,8 +39,12 @@ object JsonMigrations {
    *                        through the play-json transformation DSL)
    */
   def transform[T: ClassTag](transformations: immutable.SortedMap[Int, Reads[JsObject]]): (String, JsonMigration) = {
+    val currentVersion= transformations.keys.last + 1
+    transform(transformations, currentVersion, currentVersion)
+  }
+  def transform[T: ClassTag](transformations: immutable.SortedMap[Int, Reads[JsObject]], currentVersion:Int, supportedForwardVersion: Int): (String, JsonMigration) = {
     val className = implicitly[ClassTag[T]].runtimeClass.getName
-    className -> new JsonMigration(transformations.keys.last + 1) {
+    className -> new JsonMigration(currentVersion, supportedForwardVersion) {
       override def transform(fromVersion: Int, json: JsObject): JsObject = {
         val keyIterator = transformations.keysIteratorFrom(fromVersion)
         // apply each transformation from the stored version up to current
@@ -74,7 +86,13 @@ object JsonMigrations {
  * class name you should override [[transformClassName]] and return
  * current class name.
  */
-abstract class JsonMigration(val currentVersion: Int) {
+abstract class JsonMigration(val currentVersion: Int, val supportedForwardVersion: Int) {
+
+  def this(currentVersion: Int) = this(currentVersion, currentVersion)
+
+  require(
+    currentVersion <= supportedForwardVersion,
+    """The "currentVersion" of a JacksonMigration must be less or equal to the "supportedForwardVersion".""")
 
   /**
    * Override to provide transformation of the old JSON structure to the new
