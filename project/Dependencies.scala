@@ -207,7 +207,7 @@ object Dependencies {
   private val jnra64asm    = "com.github.jnr" % "jnr-a64asm"    % "1.0.0"
   private val jnrx86asm    = "com.github.jnr" % "jnr-x86asm"    % "1.0.2"
 
-  private val mockitoCore = "org.mockito" % "mockito-core" % "3.4.6"
+  private val mockitoCore = "org.mockito" % "mockito-core" % "3.5.5"
 
   private val jacksonFamily =
     libraryFamily("com.fasterxml.jackson.core", Versions.JacksonCore)(
