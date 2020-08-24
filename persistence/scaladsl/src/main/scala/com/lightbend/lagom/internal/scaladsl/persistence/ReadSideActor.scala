@@ -96,7 +96,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   def receive: Receive = {
     case Start =>
       val tag = new AggregateEventTag(clazz, tagName)
-      val backOffSource: Source[AkkaOffset, NotUsed] =
+      val backOffSource: Source[Done, NotUsed] =
         RestartSource.withBackoff(
           config.minBackoff,
           config.maxBackoff,
@@ -125,14 +125,16 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
                         right
                     }
                   }
-
-              val wrappedFlow = Flow[EventStreamElement[Event]]
-                .map { ese =>
-                  (ese, ese.offset)
-                }
-                .via(userFlowWrapper(workerCoordinates, userFlow))
-
-              eventStreamSource.via(wrappedFlow)
+              if (config.withMetrics) {
+                val wrappedFlow: Flow[EventStreamElement[Event], Done, NotUsed] = Flow[EventStreamElement[Event]]
+                  .map { ese =>
+                    (ese, ese.offset)
+                  }
+                  .via(userFlowWrapper(workerCoordinates, userFlow))
+                eventStreamSource.via(wrappedFlow)
+              } else {
+                eventStreamSource.via(userFlow)
+              }
             }
         }
 
@@ -157,12 +159,12 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   private def userFlowWrapper(
       workerCoordinates: WorkerCoordinates,
       userFlow: Flow[EventStreamElement[Event], Done, _]
-  ): Flow[(EventStreamElement[Event], AkkaOffset), AkkaOffset, _] =
+  ): Flow[(EventStreamElement[Event], AkkaOffset), Done, _] =
     Flow.fromGraph(GraphDSL.create(userFlow) { implicit builder => wrappedFlow =>
       import GraphDSL.Implicits._
       val unzip = builder.add(Unzip[EventStreamElement[Event], AkkaOffset])
       val zip   = builder.add(Zip[Done, AkkaOffset])
-      val metricsReporter: FlowShape[(Done, AkkaOffset), AkkaOffset] = builder.add(Flow.fromFunction {
+      val metricsReporter: FlowShape[(Done, AkkaOffset), Done] = builder.add(Flow.fromFunction {
         case (_, akkaOffset) =>
           // TODO: in ReadSide processor we can't report `afterUserFlow` and `completedProcessing` separately
           //  as we do in TopicProducerActor, unless we moved the invocation of `afterUserFlow` to each
@@ -173,7 +175,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
             workerCoordinates.tagName,
             akkaOffset
           )
-          akkaOffset
+          Done
       })
 
       unzip.out0 ~> wrappedFlow ~> zip.in0

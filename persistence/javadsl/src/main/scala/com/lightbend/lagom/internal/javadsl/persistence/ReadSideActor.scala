@@ -20,6 +20,7 @@ import akka.util.Timeout
 import akka.Done
 import akka.NotUsed
 import akka.japi
+import akka.persistence.query.Offset
 import akka.persistence.query.{ Offset => AkkaOffset }
 import akka.stream.FlowShape
 import akka.stream.javadsl
@@ -33,6 +34,7 @@ import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoo
 import com.lightbend.lagom.internal.spi.projection.ProjectionSpi
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag
+import com.lightbend.lagom.javadsl.persistence.Offset
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.javadsl.persistence.{ Offset => LagomOffset }
 
@@ -101,7 +103,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   def receive: Receive = {
     case Start =>
       val tag = new AggregateEventTag(clazz, tagName)
-      val backOffSource =
+      val backOffSource: scaladsl.Source[Done, NotUsed] =
         RestartSource.withBackoff(
           config.minBackoff,
           config.maxBackoff,
@@ -134,13 +136,17 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
                   }
                   .asJava
 
-              val wrappedFlow = Flow[japi.Pair[Event, LagomOffset]]
-                .map { pair =>
-                  (pair, OffsetAdapter.dslOffsetToOffset(pair.second))
-                }
-                .via(userFlowWrapper(workerCoordinates, userFlow.asScala))
-
-              eventStreamSource.via(wrappedFlow)
+              if (config.withMetrics) {
+                val wrappedFlow: Flow[japi.Pair[Event, LagomOffset], Done, NotUsed] =
+                  Flow[japi.Pair[Event, LagomOffset]]
+                    .map { pair =>
+                      (pair, OffsetAdapter.dslOffsetToOffset(pair.second))
+                    }
+                    .via(userFlowWrapper(workerCoordinates, userFlow.asScala))
+                eventStreamSource.via(wrappedFlow)
+              } else {
+                eventStreamSource.via(userFlow)
+              }
             }
         }
 
@@ -165,12 +171,12 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
   private def userFlowWrapper(
       workerCoordinates: WorkerCoordinates,
       userFlow: Flow[japi.Pair[Event, LagomOffset], Done, _]
-  ): Flow[(japi.Pair[Event, LagomOffset], AkkaOffset), AkkaOffset, _] =
+  ): Flow[(japi.Pair[Event, LagomOffset], AkkaOffset), Done, _] =
     Flow.fromGraph(GraphDSL.create(userFlow) { implicit builder => wrappedFlow =>
       import GraphDSL.Implicits._
       val unzip = builder.add(Unzip[japi.Pair[Event, LagomOffset], AkkaOffset])
       val zip   = builder.add(Zip[Done, AkkaOffset])
-      val metricsReporter: FlowShape[(Done, AkkaOffset), AkkaOffset] = builder.add(Flow.fromFunction {
+      val metricsReporter: FlowShape[(Done, AkkaOffset), Done] = builder.add(Flow.fromFunction {
         case (_, akkaOffset) =>
           // TODO: in ReadSide processor we can't report `afterUserFlow` and `completedProcessing` separately
           //  as we do in TopicProducerActor, unless we moved the invocation of `afterUserFlow` to each
@@ -181,7 +187,7 @@ private[lagom] class ReadSideActor[Event <: AggregateEvent[Event]](
             workerCoordinates.tagName,
             akkaOffset
           )
-          akkaOffset
+          Done
       })
 
       unzip.out0 ~> wrappedFlow ~> zip.in0
