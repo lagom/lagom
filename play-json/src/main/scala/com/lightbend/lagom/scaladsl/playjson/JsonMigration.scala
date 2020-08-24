@@ -92,7 +92,7 @@ abstract class JsonMigration(val currentVersion: Int, val supportedForwardVersio
 
   require(
     currentVersion <= supportedForwardVersion,
-    """The "currentVersion" of a JacksonMigration must be less or equal to the "supportedForwardVersion".""")
+    s"""The "currentVersion" [$currentVersion] of a JsonMigration must be less or equal to the "supportedForwardVersion" [$supportedForwardVersion].""")
 
   /**
    * Override to provide transformation of the old JSON structure to the new
