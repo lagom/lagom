@@ -70,7 +70,6 @@ object Dependencies {
     val JUnit          = "4.13"
     val JUnitInterface = "0.11"
 
-
     val Slf4j   = "1.7.30"
     val Logback = "1.2.3"
     val Log4j   = "2.13.3"
@@ -185,7 +184,7 @@ object Dependencies {
   private val javaxAnnotationApi    = "javax.annotation" % "javax.annotation-api" % "1.3.2"
   private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "3.2.6").excludeAll(excludeSlf4j: _*)
 
-  private val checkerQual = "org.checkerframework"         % "checker-qual"         % "2.11.1"
+  private val checkerQual = "org.checkerframework" % "checker-qual" % "2.11.1"
 
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
   private val okio    = "com.squareup.okio"    % "okio"   % "2.7.0"
@@ -262,8 +261,8 @@ object Dependencies {
       "com.google.inject.extensions" % "guice-assistedinject" % "4.2.3",
       "com.googlecode.usc"           % "jdbcdslog"            % "1.0.6.2",
       checkerQual,
-      "javax.xml.bind"               % "jaxb-api"             % "2.3.1",
-      "jakarta.xml.bind"             % "jakarta.xml.bind-api" % "2.3.3",
+      "javax.xml.bind"   % "jaxb-api"             % "2.3.1",
+      "jakarta.xml.bind" % "jakarta.xml.bind-api" % "2.3.3",
       h2,
       "com.jolbox"   % "bonecp"          % "0.8.0.RELEASE",
       "com.lmax"     % "disruptor"       % Versions.Disruptor,
@@ -362,10 +361,10 @@ object Dependencies {
       "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api"      % "1.0.2",
       "org.immutables"                  % "value"                      % Versions.Immutables,
       javassist,
-      "org.joda"     % "joda-convert"  % "1.9.2",
-      "org.hamcrest" % "hamcrest-core" % "1.3",
-      "org.lmdbjava" % "lmdbjava"      % "0.7.0",
-      "com.hierynomus" % "asn-one" % "0.4.0",
+      "org.joda"       % "joda-convert"  % "1.9.2",
+      "org.hamcrest"   % "hamcrest-core" % "1.3",
+      "org.lmdbjava"   % "lmdbjava"      % "0.7.0",
+      "com.hierynomus" % "asn-one"       % "0.4.0",
       pcollections,
       reactiveStreams,
       "org.scalactic" %% "scalactic" % Versions.ScalaTest,
