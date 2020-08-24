@@ -16,7 +16,8 @@ case class ReadSideConfig(
     maxBackoff: FiniteDuration = 30.seconds,
     randomBackoffFactor: Double = 0.2,
     globalPrepareTimeout: FiniteDuration = 20.seconds,
-    role: Option[String] = None
+    role: Option[String] = None,
+    withMetrics: Boolean = true
 )
 
 object ReadSideConfig {
@@ -30,7 +31,8 @@ object ReadSideConfig {
       conf.getString("run-on-role") match {
         case "" => None
         case r  => Some(r)
-      }
+      },
+      conf.getBoolean("projection-metrics")
     )
   }
 }

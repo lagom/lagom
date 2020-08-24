@@ -5,14 +5,14 @@ val ScalaVersion = "2.12.10"
 
 val AkkaVersion = sys.props.getOrElse("lagom.build.akka.version", "2.6.8") // sync with project/Dependencies.scala
 
-val JUnitVersion          = "4.12"
+val JUnitVersion          = "4.13"
 val JUnitInterfaceVersion = "0.11"
-val ScalaTestVersion      = "3.1.1"
+val ScalaTestVersion      = "3.1.3"
 val PlayVersion           = "2.8.2" // sync with project/Dependencies.scala
 val Log4jVersion          = "2.13.3"
 val MacWireVersion        = "2.3.3"
 val LombokVersion         = "1.18.8"
-val HibernateVersion      = "5.4.18.Final"
+val HibernateVersion      = "5.4.19.Final"
 val ValidationApiVersion  = "2.0.1.Final"
 
 val branch = {

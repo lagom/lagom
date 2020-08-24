@@ -653,7 +653,7 @@ lazy val `testkit-scaladsl` = (project in file("testkit/scaladsl"))
     `persistence-core`               % "compile;test->test",
     `persistence-scaladsl`           % "compile;test->test",
     `persistence-cassandra-scaladsl` % "compile->test;test->test",
-    `persistence-jdbc-scaladsl`      % "compile;test->test"
+    `persistence-jdbc-scaladsl`      % Test
   )
 
 lazy val `integration-tests-javadsl` = (project in file("service/javadsl/integration-tests"))
@@ -1489,7 +1489,8 @@ lazy val `sbt-scripted-library` = (project in file("dev") / "sbt-scripted-librar
   .settings(
     name := "lagom-sbt-scripted-library",
     PgpKeys.publishSigned := {},
-    publish / skip := true
+    // `publishLocal` must work (can't use publish/skip)
+    publish := {}
   )
   .dependsOn(`server-javadsl`)
 

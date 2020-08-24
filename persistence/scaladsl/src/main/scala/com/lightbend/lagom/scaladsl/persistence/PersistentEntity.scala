@@ -144,6 +144,21 @@ abstract class PersistentEntity {
    */
   def recoveryCompleted(state: State): State = state
 
+  /**
+   * This method is called if a command is not handled. It can be overridden for custom handling.
+   * By default it sends back an [[PersistentEntity.UnhandledCommandException]] via `context.commandFailed`.
+   *
+   * @param command the command that was not handled
+   * @param context the context, for access to for example `commandFailed`
+   * @param state current state
+   */
+  def onUnhandledCommand(command: Command, context: ReadOnlyCommandContext[Nothing], state: State): Unit =
+    context.commandFailed(
+      PersistentEntity.UnhandledCommandException(
+        s"Unhandled command [${command.getClass.getName}] in [${this.getClass.getName}] with id [${entityId}]"
+      )
+    )
+
   object Actions {
     val empty            = new Actions(PartialFunction.empty, Map.empty)
     def apply(): Actions = empty
@@ -264,20 +279,49 @@ abstract class PersistentEntity {
      * A command handler may return this `Persist` directive to define
      * that one event is to be persisted. External side effects can be
      * performed after successful persist in the `afterPersist` function.
+     *
+     * [[CommandContext.thenPersistAndRun]] is an alternative for side
+     * effects that need access to the updated state.
      */
     def thenPersist[B <: Event](event: B)(afterPersist: B => Unit = (_: B) => ()): Persist =
-      PersistOne(event, afterPersist)
+      PersistOne(event, _ => afterPersist(event))
 
     /**
      * A command handler may return this `Persist` directive to define
-     * that several events are to be persisted. External side effects can be
-     * performed after successful persist in the `afterPersist` function.
+     * that one event is to be persisted. External side effects can be
+     * performed in the `callback`, which is invoked after successful persist.
+     * The `State` that is passed to the `callback` is the updated state
+     * after applying the event.
+     */
+    def thenPersistAndRun[B <: Event](event: B)(callback: State => Unit): Persist =
+      PersistOne(event, updatedState => callback(updatedState))
+
+    /**
+     * A command handler may return this `Persist` directive to define
+     * that several events are to be persisted. Events will be persisted atomically
+     * and in the same order as they are passed here.
+     *
+     * External side effects can be performed after successful persist in the `afterPersist` function.
      * `afterPersist` is invoked once when all events have been persisted
-     * successfully. Events will be persisted atomically and in the same
-     * order as they are passed here.
+     * successfully.
+     *
+     * [[CommandContext.thenPersistAllAndRun]] is an alternative for side
+     * effects that need access to the updated state.
      */
     def thenPersistAll(events: Event*)(afterPersist: () => Unit = () => ()): Persist =
-      PersistAll(events.toIndexedSeq, afterPersist)
+      PersistAll(events.toIndexedSeq, _ => afterPersist())
+
+    /**
+     * A command handler may return this `Persist` directive to define
+     * that several events are to be persisted. Events will be persisted atomically
+     * and in the same order as they are passed here.
+     *
+     * External side effects can be performed in the `callback`, which is invoked once
+     * when all events have been persisted successfully. The `State` that is passed to
+     * the `callback` is the updated state after applying the events.
+     */
+    def thenPersistAllAndRun(events: Event*)(callback: State => Unit): Persist =
+      PersistAll(events.toIndexedSeq, callback)
 
     /**
      * A command handler may return this `Persist` directive to define
@@ -296,12 +340,12 @@ abstract class PersistentEntity {
   /**
    * INTERNAL API
    */
-  private[lagom] case class PersistOne[B <: Event](event: B, afterPersist: B => Unit) extends Persist
+  private[lagom] case class PersistOne[B <: Event](event: B, afterPersist: State => Unit) extends Persist
 
   /**
    * INTERNAL API
    */
-  private[lagom] case class PersistAll(events: immutable.Seq[Event], afterPersist: () => Unit) extends Persist
+  private[lagom] case class PersistAll(events: immutable.Seq[Event], afterPersist: State => Unit) extends Persist
 
   /**
    * INTERNAL API

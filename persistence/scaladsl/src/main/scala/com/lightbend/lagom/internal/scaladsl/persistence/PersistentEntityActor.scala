@@ -20,7 +20,6 @@ import com.lightbend.lagom.scaladsl.persistence.AggregateEventShards
 import com.lightbend.lagom.scaladsl.persistence.AggregateEventTag
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
 import play.api.Logger
-
 import scala.concurrent.duration.Duration
 import scala.util.control.Exception.Catcher
 import scala.util.control.NonFatal
@@ -142,11 +141,8 @@ private[lagom] class PersistentEntityActor(
   }
 
   private def unhandledCommand: PartialFunction[(C, entity.CommandContext[Any], S), entity.Persist] = {
-    case (cmd, _, _) =>
-      // not using akka.actor.Status.Failure because it is using Java serialization
-      sender() ! PersistentEntity.UnhandledCommandException(
-        s"Unhandled command [${cmd.getClass.getName}] in [${entity.getClass.getName}] with id [${entityId}]"
-      )
+    case (cmd, ctx, state) =>
+      entity.onUnhandledCommand(cmd, ctx.asInstanceOf[entity.ReadOnlyCommandContext[Nothing]], state)
       unhandled(cmd)
       entity.PersistNone
   }
@@ -181,7 +177,7 @@ private[lagom] class PersistentEntityActor(
               try {
                 eventCount += 1
                 if (afterPersist != null)
-                  afterPersist(event)
+                  afterPersist(state)
                 if (snapshotAfter > 0 && eventCount % snapshotAfter == 0)
                   saveSnapshot(state)
               } catch {
@@ -202,7 +198,7 @@ private[lagom] class PersistentEntityActor(
                 eventCount += 1
                 count -= 1
                 if (afterPersist != null && count == 0)
-                  afterPersist.apply()
+                  afterPersist(state)
                 if (snapshotAfter > 0 && eventCount % snapshotAfter == 0)
                   snap = true
                 if (count == 0 && snap)

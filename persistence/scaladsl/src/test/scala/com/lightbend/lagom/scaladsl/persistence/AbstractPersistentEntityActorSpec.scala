@@ -11,8 +11,9 @@ import akka.cluster.sharding.ShardRegion
 import akka.testkit.TestProbe
 import com.lightbend.lagom.internal.scaladsl.persistence.PersistentEntityActor
 import com.lightbend.lagom.persistence.ActorSystemSpec
-
 import scala.concurrent.duration._
+
+import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.UnhandledCommandException
 
 object AbstractPersistentEntityActorSpec {
   class TestPassivationParent extends Actor {
@@ -58,9 +59,25 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
       state3.elements should ===(List("A", "B", "C"))
     }
 
-    "be able to change behavior" in {
+    "persist events and side effect with state" in {
       val p = system.actorOf(
         PersistentEntityActor.props("test", Some("2"), () => new TestEntity(system), None, 10.seconds, "", "")
+      )
+      p ! TestEntity.AddWithState("a")
+      val state1 = expectMsgType[TestEntity.State]
+      state1.elements should ===(List("A"))
+      p ! TestEntity.AddWithState("b")
+      val state2 = expectMsgType[TestEntity.State]
+      state2.elements should ===(List("A", "B"))
+
+      p ! TestEntity.Get
+      val state3 = expectMsgType[TestEntity.State]
+      state3.elements should ===(List("A", "B"))
+    }
+
+    "be able to change behavior" in {
+      val p = system.actorOf(
+        PersistentEntityActor.props("test", Some("3"), () => new TestEntity(system), None, 10.seconds, "", "")
       )
       p ! TestEntity.Get
       val state = expectMsgType[TestEntity.State]
@@ -79,7 +96,7 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
 
       // start another with same persistenceId should recover state
       val p2 = system.actorOf(
-        PersistentEntityActor.props("test", Some("2"), () => new TestEntity(system), None, 10.seconds, "", "")
+        PersistentEntityActor.props("test", Some("3"), () => new TestEntity(system), None, 10.seconds, "", "")
       )
       p2 ! TestEntity.Get
       val state3 = expectMsgType[TestEntity.State]
@@ -104,14 +121,14 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
       val probe = TestProbe()
       val p = system.actorOf(
         PersistentEntityActor
-          .props("test", Some("3"), () => new TestEntity(system, Some(probe.ref)), None, 10.seconds, "", "")
+          .props("test", Some("4"), () => new TestEntity(system, Some(probe.ref)), None, 10.seconds, "", "")
       )
       probe.expectMsgType[TestEntity.AfterRecovery]
     }
 
     "save snapshots" in {
       val p = system.actorOf(
-        PersistentEntityActor.props("test", Some("4"), () => new TestEntity(system), Some(3), 10.seconds, "", "")
+        PersistentEntityActor.props("test", Some("5"), () => new TestEntity(system), Some(3), 10.seconds, "", "")
       )
 
       val unhandledProbe = TestProbe()
@@ -132,7 +149,7 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
           val probe2 = TestProbe()
           val p2 = system.actorOf(
             PersistentEntityActor
-              .props("test", Some("4"), () => new TestEntity(system, Some(probe2.ref)), Some(3), 10.seconds, "", "")
+              .props("test", Some("5"), () => new TestEntity(system, Some(probe2.ref)), Some(3), 10.seconds, "", "")
           )
           val state2 = probe2.expectMsgType[TestEntity.AfterRecovery].state
           state2.elements should ===((1 to 10).toList.map(_.toString))
@@ -142,10 +159,22 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
 
     "persist several events from one command" in {
       val p = system.actorOf(
-        PersistentEntityActor.props("test", Some("5"), () => new TestEntity(system), None, 10.seconds, "", "")
+        PersistentEntityActor.props("test", Some("6"), () => new TestEntity(system), None, 10.seconds, "", "")
       )
       p ! TestEntity.Add("a", 3)
       expectMsg(TestEntity.Appended("A"))
+      p ! TestEntity.Get
+      val state2 = expectMsgType[TestEntity.State]
+      state2.elements should ===(List("A", "A", "A"))
+    }
+
+    "persist several events from one command and side effect with state" in {
+      val p = system.actorOf(
+        PersistentEntityActor.props("test", Some("7"), () => new TestEntity(system), None, 10.seconds, "", "")
+      )
+      p ! TestEntity.AddWithState("a", 3)
+      val state1 = expectMsgType[TestEntity.State]
+      state1.elements should ===(List("A", "A", "A"))
       p ! TestEntity.Get
       val state2 = expectMsgType[TestEntity.State]
       state2.elements should ===(List("A", "A", "A"))
@@ -158,6 +187,14 @@ trait AbstractPersistentEntityActorSpec { spec: ActorSystemSpec =>
       val entity = lastSender
       watch(entity)
       expectTerminated(entity)
+    }
+
+    "handle undefined command" in {
+      val p = system.actorOf(
+        PersistentEntityActor.props("test", Some("7"), () => new TestEntity(system), None, 10.seconds, "", "")
+      )
+      p ! TestEntity.UndefinedCmd
+      expectMsgType[UnhandledCommandException].message should startWith("custom exc")
     }
   }
 }

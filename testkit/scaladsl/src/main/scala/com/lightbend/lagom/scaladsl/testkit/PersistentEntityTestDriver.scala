@@ -137,7 +137,8 @@ class PersistentEntityTestDriver[C, E, S](
   }
 
   private def unhandledCommand: PartialFunction[(C, entity.CommandContext[Any], S), entity.Persist] = {
-    case (cmd, _, _) =>
+    case (cmd, ctx, state) =>
+      entity.onUnhandledCommand(cmd, ctx.asInstanceOf[entity.ReadOnlyCommandContext[Nothing]], state)
       issues :+= UnhandledCommand(cmd)
       entity.PersistNone
   }
@@ -196,7 +197,7 @@ class PersistentEntityTestDriver[C, E, S](
               applyEvent(evt)
               issues ++= checkSerialization(state)
               if (afterPersist != null)
-                afterPersist(event)
+                afterPersist(state)
             } catch {
               case NonFatal(e) =>
                 ctx.commandFailed(e) // reply with failure
@@ -213,7 +214,7 @@ class PersistentEntityTestDriver[C, E, S](
                 issues ++= checkSerialization(state)
                 count -= 1
                 if (afterPersist != null && count == 0)
-                  afterPersist.apply()
+                  afterPersist(state)
               } catch {
                 case NonFatal(e) =>
                   ctx.commandFailed(e) // reply with failure

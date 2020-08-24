@@ -40,8 +40,8 @@ object Dependencies {
     val Disruptor = "3.4.2"
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
-    val ScalaTest            = "3.1.1"
-    val Jackson              = "2.10.4"
+    val ScalaTest            = "3.1.3"
+    val Jackson              = "2.10.5"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
     val JacksonDatabind      = Jackson
@@ -52,20 +52,24 @@ object Dependencies {
     val Netty                = "4.1.50.Final"
     val NettyReactiveStreams = "2.0.4"
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
-    val AlpakkaKafka = "2.0.3"
+    val AlpakkaKafka = "2.0.4"
     // Keep this version consistent with Alpakka Kafka Connector
     val Kafka = "2.4.1"
 
     val Curator       = "2.12.0"
     val Immutables    = "2.8.8"
-    val HibernateCore = "5.4.18.Final"
+    val HibernateCore = "5.4.19.Final"
     val PCollections  = "3.1.3"
 
     val ScalaJava8Compat = "0.9.1"
     val ScalaXml         = "1.3.0"
     val Slick            = "3.3.2"
-    val JUnit            = "4.13"
-    val JUnitInterface   = "0.11"
+    // JUnit[Interface] should be sync with:
+    //   lagomJUnitDeps in dev/sbt-plugin/src/main/scala/com/lightbend/lagom/sbt/LagomImport.scala
+    //   JUnitVersion in docs/build.sbt
+    val JUnit          = "4.13"
+    val JUnitInterface = "0.11"
+
 
     val Slf4j   = "1.7.30"
     val Logback = "1.2.3"
@@ -206,7 +210,7 @@ object Dependencies {
   private val jnra64asm    = "com.github.jnr" % "jnr-a64asm"    % "1.0.0"
   private val jnrx86asm    = "com.github.jnr" % "jnr-x86asm"    % "1.0.2"
 
-  private val mockitoCore = "org.mockito" % "mockito-core" % "3.3.3"
+  private val mockitoCore = "org.mockito" % "mockito-core" % "3.4.6"
 
   private val jacksonFamily =
     libraryFamily("com.fasterxml.jackson.core", Versions.JacksonCore)(
@@ -669,6 +673,7 @@ object Dependencies {
     akkaSlf4j,
     scalaXml,
     jffi,
+    jnrFfi,
     jnrConstants,
     jnrPosix,
     byteBuddy,
