@@ -98,13 +98,13 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
     val renameMigration = migrations.get(manifestClassName)
 
     val migratedManifest = renameMigration match {
-      case Some(migration) if  fromVersion < migration.currentVersion =>
+      case Some(migration) if fromVersion < migration.currentVersion =>
         migration.transformClassName(fromVersion, manifestClassName)
-      case Some(migration) if  fromVersion == migration.currentVersion =>
+      case Some(migration) if fromVersion == migration.currentVersion =>
         manifestClassName
-      case Some(migration) if  fromVersion <= migration.supportedForwardVersion =>
+      case Some(migration) if fromVersion <= migration.supportedForwardVersion =>
         migration.transformClassName(fromVersion, manifestClassName)
-      case Some(migration) if fromVersion > migration.supportedForwardVersion  =>
+      case Some(migration) if fromVersion > migration.supportedForwardVersion =>
         throw new IllegalStateException(
           s"Migration supported version ${migration.supportedForwardVersion} is " +
             s"behind version $fromVersion of deserialized type [$manifestClassName]"
@@ -138,7 +138,7 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
     }
 
     val migratedJson = transformMigration match {
-      case None => json
+      case None                                                       => json
       case Some(migration) if fromVersion == migration.currentVersion => json
       case Some(migration) if fromVersion <= migration.supportedForwardVersion =>
         json match {
@@ -148,7 +148,6 @@ private[lagom] final class PlayJsonSerializer(val system: ExtendedActorSystem, r
             migration.transformValue(fromVersion, js)
         }
     }
-
 
     val result = format.reads(migratedJson) match {
       case JsSuccess(obj, _) => obj
