@@ -22,7 +22,7 @@ object JsonMigrations {
 
   def apply(
       currentVersion: Int,
-      supportedForwardVersion:Int,
+      supportedForwardVersion: Int,
       transformation: (Int, JsValue) => JsValue,
       classNameTransformation: (Int, String) => String
   ): JsonMigration =
@@ -39,10 +39,14 @@ object JsonMigrations {
    *                        through the play-json transformation DSL)
    */
   def transform[T: ClassTag](transformations: immutable.SortedMap[Int, Reads[JsObject]]): (String, JsonMigration) = {
-    val currentVersion= transformations.keys.last + 1
+    val currentVersion = transformations.keys.last + 1
     transform(transformations, currentVersion, currentVersion)
   }
-  def transform[T: ClassTag](transformations: immutable.SortedMap[Int, Reads[JsObject]], currentVersion:Int, supportedForwardVersion: Int): (String, JsonMigration) = {
+  def transform[T: ClassTag](
+      transformations: immutable.SortedMap[Int, Reads[JsObject]],
+      currentVersion: Int,
+      supportedForwardVersion: Int
+  ): (String, JsonMigration) = {
     val className = implicitly[ClassTag[T]].runtimeClass.getName
     className -> new JsonMigration(currentVersion, supportedForwardVersion) {
       override def transform(fromVersion: Int, json: JsObject): JsObject = {
@@ -92,7 +96,8 @@ abstract class JsonMigration(val currentVersion: Int, val supportedForwardVersio
 
   require(
     currentVersion <= supportedForwardVersion,
-    s"""The "currentVersion" [$currentVersion] of a JsonMigration must be less or equal to the "supportedForwardVersion" [$supportedForwardVersion].""")
+    s"""The "currentVersion" [$currentVersion] of a JsonMigration must be less or equal to the "supportedForwardVersion" [$supportedForwardVersion]."""
+  )
 
   /**
    * Override to provide transformation of the old JSON structure to the new
