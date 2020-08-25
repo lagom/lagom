@@ -7,12 +7,11 @@ As a complete microservices platform, Lagom assembles a collection of technologi
 * Akka --- Lagom [[Persistence|PersistentEntity]], [[Publish-Subscribe|PubSub]], and [[Cluster|Cluster]] are implemented on top of [Akka](https://akka.io/), Lightbend's toolkit for building concurrent, distributed, and resilient message-driven applications. (This is an implementation detail that does not directly concern you when developing simple microservices. However, you can call also [[Akka APIs|Akka]] directly.)
 
   * To scale your microservices out across multiple servers, Lagom provides clustering via [Akka Cluster](https://doc.akka.io/docs/akka/2.6/cluster-usage.html).
-
   * As described in [[Implementing services|ServiceImplementation]], A Lagom service may be "simple" or "streamed".  Streaming, asynchronous Lagom services are built on top of [Akka Streams](https://doc.akka.io/docs/akka/2.6/stream/index.html).
+  * Akka [Split Brain Resolver](https://doc.akka.io/docs/akka/current/split-brain-resolver.html#split-brain-resolver) handles network failures and system crashes.
+  * Akka [Coordination Lease](https://doc.akka.io/docs/akka/current/coordination.html#lease) is a distributed lock. You can, for example, use the [Kubernetes Lease](https://doc.akka.io/docs/akka-management/current/kubernetes-lease.html) for enhanced failure-recovery for Lagom and Akka Cluster apps deployed in Kubernetes.
 
 * [Lightbend Platform](https://www.lightbend.com/lightbend-platform) subscribers can use additional components to operationalize and production-harden their systems.
-
-  * Akka [Split Brain Resolver](https://doc.akka.io/docs/akka-enhancements/current/split-brain-resolver.html) handles network failures and system crashes.
 
   * [Lightbend Telemetry](https://developer.lightbend.com/docs/telemetry/current/home.html) and [Lightbend Console](https://developer.lightbend.com/docs/console/current/) give you visibility into system health, availability and performance.
 
