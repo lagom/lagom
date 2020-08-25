@@ -25,7 +25,7 @@ object Dependencies {
     val Twirl            = "1.5.0" // sync with docs/project/plugins.sbt
     val PlayFileWatch    = "1.1.12"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.5") // sync with docs/build.sbt
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.8") // sync with docs/build.sbt
     val AkkaHttp     = "10.1.12"
 
     val AkkaPersistenceCassandra = "0.103"
@@ -179,6 +179,8 @@ object Dependencies {
   private val javaxAnnotationApi    = "javax.annotation" % "javax.annotation-api" % "1.3.2"
   private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "3.2.6").excludeAll(excludeSlf4j: _*)
 
+  private val checkerQual = "org.checkerframework" % "checker-qual" % "2.10.0"
+
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
   private val okio    = "com.squareup.okio"    % "okio"   % "2.4.1"
   private val kotlinDeps = Seq(
@@ -253,9 +255,9 @@ object Dependencies {
       "com.google.inject"            % "guice"                % "4.2.3",
       "com.google.inject.extensions" % "guice-assistedinject" % "4.2.3",
       "com.googlecode.usc"           % "jdbcdslog"            % "1.0.6.2",
-      "org.checkerframework"         % "checker-qual"         % "2.10.0",
-      "javax.xml.bind"               % "jaxb-api"             % "2.3.1",
-      "jakarta.xml.bind"             % "jakarta.xml.bind-api" % "2.3.3",
+      checkerQual,
+      "javax.xml.bind"   % "jaxb-api"             % "2.3.1",
+      "jakarta.xml.bind" % "jakarta.xml.bind-api" % "2.3.3",
       h2,
       "com.jolbox"   % "bonecp"          % "0.8.0.RELEASE",
       "com.lmax"     % "disruptor"       % Versions.Disruptor,
@@ -344,7 +346,7 @@ object Dependencies {
       "joda-time"           % "joda-time"               % "2.10.5",
       "junit"               % "junit"                   % Versions.JUnit,
       "net.jodah"           % "typetools"               % "0.5.0",
-      "org.lz4"             % "lz4-java"                % "1.5.0",
+      "org.lz4"             % "lz4-java"                % "1.7.1",
       "com.github.luben"    % "zstd-jni"                % "1.3.7-1",
       "org.agrona"          % "agrona"                  % "1.4.1",
       commonsLang,
@@ -354,9 +356,10 @@ object Dependencies {
       "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api"      % "1.0.2.Final",
       "org.immutables"                  % "value"                      % Versions.Immutables,
       javassist,
-      "org.joda"     % "joda-convert"  % "1.9.2",
-      "org.hamcrest" % "hamcrest-core" % "1.3",
-      "org.lmdbjava" % "lmdbjava"      % "0.7.0",
+      "org.joda"       % "joda-convert"  % "1.9.2",
+      "org.hamcrest"   % "hamcrest-core" % "1.3",
+      "org.lmdbjava"   % "lmdbjava"      % "0.7.0",
+      "com.hierynomus" % "asn-one"       % "0.4.0",
       pcollections,
       reactiveStreams,
       "org.scalactic" %% "scalactic" % Versions.ScalaTest,
@@ -401,6 +404,7 @@ object Dependencies {
       "akka-stream-testkit",
       "akka-testkit",
       "akka-coordination",
+      "akka-pki"
     ) ++ libraryFamily("com.typesafe.play", Versions.Play)(
       "build-link",
       "play-exceptions",
@@ -607,7 +611,9 @@ object Dependencies {
     akkaTestkit % Test,
     scalaTest   % Test,
     junit       % Test,
-    mockitoCore % Test
+    mockitoCore % Test,
+    // Upgrades needed to match allowed versions
+    byteBuddy % Test
   )
 
   val `client-scaladsl` = libraryDependencies ++= Seq(
@@ -656,8 +662,10 @@ object Dependencies {
     akkaSlf4j,
     scalaXml,
     jffi,
+    jnrFfi,
     jnrConstants,
     jnrPosix,
+    byteBuddy,
     // update to enforce using snapshots in nightly jobs
     akkaActorTyped,
     akkaJackson
@@ -754,7 +762,9 @@ object Dependencies {
     jnrConstants,
     pcollections,
     slf4jApi,
-  ) ++ jacksonFamily ++ ow2asmDeps // to match whitelist versions
+    playJson,
+    playFunctional
+  ) ++ jacksonFamily ++ ow2asmDeps // to match allowed versions
 
   val `akka-management-javadsl`  = libraryDependencies ++= Seq.empty[ModuleID]
   val `akka-management-scaladsl` = libraryDependencies ++= Seq.empty[ModuleID]
@@ -1092,7 +1102,9 @@ object Dependencies {
     jffi,
     jnra64asm,
     jnrConstants,
-  ) ++ ow2asmDeps // to match whitelist versions
+    guava,
+//    checkerQual
+  ) ++ ow2asmDeps // to match allowed versions
 
   val `server-containers` = libraryDependencies ++= Seq(
     // This is used in the code to check if the embedded cassandra server is started
@@ -1141,15 +1153,17 @@ object Dependencies {
     akkaActor,
     akkaActorTyped,
     akkaJackson,
-    slf4jApi,
     akkaStream,
     akkaProtobuf_v3,
     akkaSlf4j,
+    slf4jApi,
     pcollections,
     typesafeConfig,
     sslConfig,
     scalaXml,
     playJson,
+    guava,
+//    checkerQual
   ) ++ jacksonFamily
 
   val `service-registry-client-core` =
