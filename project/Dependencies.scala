@@ -179,13 +179,13 @@ object Dependencies {
   private val javaxAnnotationApi    = "javax.annotation" % "javax.annotation-api" % "1.3.2"
   private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "3.2.6").excludeAll(excludeSlf4j: _*)
 
-  private val checkerQual = "org.checkerframework" % "checker-qual" % "2.11.1"
+  private val checkerQual = "org.checkerframework" % "checker-qual" % "2.10.0"
 
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
   private val okio    = "com.squareup.okio"    % "okio"   % "2.4.1"
   private val kotlinDeps = Seq(
-    "org.jetbrains.kotlin" % "kotlin-stdlib"        % "1.3.70",
-    "org.jetbrains.kotlin" % "kotlin-stdlib-common" % "1.3.70",
+    "org.jetbrains.kotlin" % "kotlin-stdlib"        % "1.3.50",
+    "org.jetbrains.kotlin" % "kotlin-stdlib-common" % "1.3.50",
     "org.jetbrains"        % "annotations"          % "13.0"
   )
 
@@ -347,7 +347,7 @@ object Dependencies {
       "junit"               % "junit"                   % Versions.JUnit,
       "net.jodah"           % "typetools"               % "0.5.0",
       "org.lz4"             % "lz4-java"                % "1.7.1",
-      "com.github.luben"    % "zstd-jni"                % "1.4.3-1",
+      "com.github.luben"    % "zstd-jni"                % "1.3.7-1",
       "org.agrona"          % "agrona"                  % "1.4.1",
       commonsLang,
       kafkaClients,
@@ -369,7 +369,7 @@ object Dependencies {
       scalaXml,
       "org.scala-sbt"     % "test-interface" % "1.0",
       "org.typelevel"     %% "macro-compat"  % "1.1.1",
-      "org.xerial.snappy" % "snappy-java"    % "1.1.7.3",
+      "org.xerial.snappy" % "snappy-java"    % "1.1.7.2",
       "tyrex"             % "tyrex"          % "1.0.1",
       javaxAnnotationApi,
       scalaCollectionCompat,
@@ -453,14 +453,14 @@ object Dependencies {
   // so we maintain it separately.
   val JpaTestWhitelist = Seq(
     "antlr"                            % "antlr"                           % "2.7.7",
-    "com.fasterxml"                    % "classmate"                       % "1.5.1",
-    "org.dom4j"                        % "dom4j"                           % "2.1.3",
+    "com.fasterxml"                    % "classmate"                       % "1.3.4",
+    "org.dom4j"                        % "dom4j"                           % "2.1.1",
     "javax.el"                         % "el-api"                          % "2.2",
     "javax.enterprise"                 % "cdi-api"                         % "1.1",
     "org.apache.geronimo.specs"        % "geronimo-jta_1.1_spec"           % "1.1.1",
     "org.hibernate"                    % "hibernate-core"                  % Versions.HibernateCore,
     "org.hibernate.common"             % "hibernate-commons-annotations"   % "5.1.0.Final",
-    "org.jboss"                        % "jandex"                          % "2.1.3.Final",
+    "org.jboss"                        % "jandex"                          % "2.0.5.Final",
     "org.jboss.logging"                % "jboss-logging"                   % "3.3.2.Final",
     "org.jboss.spec.javax.interceptor" % "jboss-interceptors-api_1.1_spec" % "1.0.0.Beta1",
     "javax.persistence"                % "javax.persistence-api"           % "2.2",
@@ -1103,7 +1103,7 @@ object Dependencies {
     jnra64asm,
     jnrConstants,
     guava,
-    checkerQual
+//    checkerQual
   ) ++ ow2asmDeps // to match allowed versions
 
   val `server-containers` = libraryDependencies ++= Seq(
@@ -1163,7 +1163,7 @@ object Dependencies {
     scalaXml,
     playJson,
     guava,
-    checkerQual
+//    checkerQual
   ) ++ jacksonFamily
 
   val `service-registry-client-core` =
