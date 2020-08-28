@@ -96,4 +96,6 @@ class CassandraTestApplication(context: LagomApplicationContext)
 class JdbcTestApplication(context: LagomApplicationContext)
     extends TestApplication(context)
     with JdbcPersistenceComponents
-    with HikariCPComponents
+    with HikariCPComponents {
+  persistentEntityRegistry
+}

@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 import static com.lightbend.lagom.javadsl.testkit.ServiceTest.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class CqrsIntegrationTest {
   private static TestServer server;

@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.scaladsl.testkit
 
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -11,19 +12,18 @@ import akka.annotation.ApiMayChange
 import com.lightbend.lagom.devmode.ssl.LagomDevModeSSLHolder
 import com.lightbend.lagom.internal.persistence.testkit.AwaitPersistenceInit.awaitPersistenceInit
 import com.lightbend.lagom.internal.persistence.testkit.PersistenceTestConfig._
+import com.lightbend.lagom.internal.testkit.TestkitSslSetup.Disabled
 import com.lightbend.lagom.internal.testkit.CassandraTestServer
 import com.lightbend.lagom.internal.testkit.TestkitSslSetup
-import com.lightbend.lagom.internal.testkit.TestkitSslSetup.Disabled
-import com.lightbend.lagom.scaladsl.persistence.jdbc.SlickProviderComponents
 import com.lightbend.lagom.scaladsl.server.LagomApplication
 import com.lightbend.lagom.scaladsl.server.LagomApplicationContext
 import com.lightbend.lagom.scaladsl.server.RequiresLagomServicePort
 import javax.net.ssl.SSLContext
 import play.api.ApplicationLoader.Context
+import play.api.inject.DefaultApplicationLifecycle
 import play.api.Configuration
 import play.api.Environment
 import play.api.Play
-import play.api.inject.DefaultApplicationLifecycle
 import play.core.server.Server
 import play.core.server.ServerConfig
 import play.core.server.ServerProvider
@@ -344,8 +344,6 @@ object ServiceTest {
     }
 
     if (setup.cassandra || setup.jdbc) {
-      // We should eagerly init SlickProvider before test a JDBC persistence
-      if (setup.jdbc) Try(lagomApplication.asInstanceOf[SlickProviderComponents]).map(_.slickProvider)
       awaitPersistenceInit(lagomApplication.actorSystem)
     }
 

@@ -28,7 +28,7 @@ object Dependencies {
     val Twirl            = "1.5.0" // sync with docs/project/plugins.sbt
     val PlayFileWatch    = "1.1.12"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.5") // sync with docs/build.sbt
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.8") // sync with docs/build.sbt
     val AkkaHttp     = "10.1.12"
 
     val AkkaPersistenceCassandra = "0.103"
@@ -40,8 +40,8 @@ object Dependencies {
     val Disruptor = "3.4.2"
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
-    val ScalaTest            = "3.1.1"
-    val Jackson              = "2.10.4"
+    val ScalaTest            = "3.1.3"
+    val Jackson              = "2.10.5"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
     val JacksonDatabind      = Jackson
@@ -49,23 +49,26 @@ object Dependencies {
     val Maven                = "3.6.3"
     val MavenWagon           = "3.3.3"
     val MavenResolver        = "1.4.1"
-    val Netty                = "4.1.49.Final"
+    val Netty                = "4.1.50.Final"
     val NettyReactiveStreams = "2.0.4"
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
-    val AlpakkaKafka = "2.0.3"
+    val AlpakkaKafka = "2.0.4"
     // Keep this version consistent with Alpakka Kafka Connector
     val Kafka = "2.4.1"
 
     val Curator       = "2.12.0"
     val Immutables    = "2.8.8"
-    val HibernateCore = "5.4.18.Final"
+    val HibernateCore = "5.4.19.Final"
     val PCollections  = "3.1.3"
 
     val ScalaJava8Compat = "0.9.1"
     val ScalaXml         = "1.3.0"
     val Slick            = "3.3.2"
-    val JUnit            = "4.12"
-    val JUnitInterface   = "0.11"
+    // JUnit[Interface] should be sync with:
+    //   lagomJUnitDeps in dev/sbt-plugin/src/main/scala/com/lightbend/lagom/sbt/LagomImport.scala
+    //   JUnitVersion in docs/build.sbt
+    val JUnit          = "4.13"
+    val JUnitInterface = "0.11"
 
     val Slf4j   = "1.7.30"
     val Logback = "1.2.3"
@@ -181,11 +184,13 @@ object Dependencies {
   private val javaxAnnotationApi    = "javax.annotation" % "javax.annotation-api" % "1.3.2"
   private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "3.2.6").excludeAll(excludeSlf4j: _*)
 
+  private val checkerQual = "org.checkerframework" % "checker-qual" % "2.11.1"
+
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
   private val okio    = "com.squareup.okio"    % "okio"   % "2.7.0"
   private val kotlinDeps = Seq(
-    "org.jetbrains.kotlin" % "kotlin-stdlib"        % "1.3.50",
-    "org.jetbrains.kotlin" % "kotlin-stdlib-common" % "1.3.50",
+    "org.jetbrains.kotlin" % "kotlin-stdlib"        % "1.3.70",
+    "org.jetbrains.kotlin" % "kotlin-stdlib-common" % "1.3.70",
     "org.jetbrains"        % "annotations"          % "13.0"
   )
 
@@ -204,7 +209,7 @@ object Dependencies {
   private val jnra64asm    = "com.github.jnr" % "jnr-a64asm"    % "1.0.0"
   private val jnrx86asm    = "com.github.jnr" % "jnr-x86asm"    % "1.0.2"
 
-  private val mockitoCore = "org.mockito" % "mockito-core" % "3.3.3"
+  private val mockitoCore = "org.mockito" % "mockito-core" % "3.4.6"
 
   private val jacksonFamily =
     libraryFamily("com.fasterxml.jackson.core", Versions.JacksonCore)(
@@ -249,15 +254,15 @@ object Dependencies {
       jnra64asm,
       jnrx86asm,
       "com.google.code.findbugs" % "jsr305"                  % "3.0.2",
-      "com.google.errorprone"    % "error_prone_annotations" % "2.3.2",
+      "com.google.errorprone"    % "error_prone_annotations" % "2.3.4",
       guava,
       "com.google.j2objc"            % "j2objc-annotations"   % "1.3",
-      "com.google.inject"            % "guice"                % "4.2.2",
-      "com.google.inject.extensions" % "guice-assistedinject" % "4.2.2",
+      "com.google.inject"            % "guice"                % "4.2.3",
+      "com.google.inject.extensions" % "guice-assistedinject" % "4.2.3",
       "com.googlecode.usc"           % "jdbcdslog"            % "1.0.6.2",
-      "org.checkerframework"         % "checker-qual"         % "2.8.1",
-      "javax.xml.bind"               % "jaxb-api"             % "2.3.1",
-      "jakarta.xml.bind"             % "jakarta.xml.bind-api" % "2.3.2",
+      checkerQual,
+      "javax.xml.bind"   % "jaxb-api"             % "2.3.1",
+      "jakarta.xml.bind" % "jakarta.xml.bind-api" % "2.3.3",
       h2,
       "com.jolbox"   % "bonecp"          % "0.8.0.RELEASE",
       "com.lmax"     % "disruptor"       % Versions.Disruptor,
@@ -333,7 +338,7 @@ object Dependencies {
       "com.typesafe.play"  %% "twirl-api"      % Versions.Twirl,
       "com.typesafe.slick" %% "slick"          % Versions.Slick,
       "com.typesafe.slick" %% "slick-hikaricp" % Versions.Slick,
-      "com.zaxxer"         % "HikariCP"        % "3.4.1",
+      "com.zaxxer"         % "HikariCP"        % "3.4.5",
       "commons-codec"      % "commons-codec"   % "1.11",
       dropwizardMetricsCore,
       "io.jsonwebtoken" % "jjwt" % "0.9.1",
@@ -346,9 +351,9 @@ object Dependencies {
       "joda-time"           % "joda-time"               % "2.10.5",
       "junit"               % "junit"                   % Versions.JUnit,
       "net.jodah"           % "typetools"               % "0.5.0",
-      "org.lz4"             % "lz4-java"                % "1.5.0",
-      "com.github.luben"    % "zstd-jni"                % "1.3.7-1",
-      "org.agrona"          % "agrona"                  % "1.3.0",
+      "org.lz4"             % "lz4-java"                % "1.7.1",
+      "com.github.luben"    % "zstd-jni"                % "1.4.3-1",
+      "org.agrona"          % "agrona"                  % "1.4.1",
       commonsLang,
       kafkaClients,
       "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.18",
@@ -356,9 +361,10 @@ object Dependencies {
       "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api"      % "1.0.2",
       "org.immutables"                  % "value"                      % Versions.Immutables,
       javassist,
-      "org.joda"     % "joda-convert"  % "1.9.2",
-      "org.hamcrest" % "hamcrest-core" % "1.3",
-      "org.lmdbjava" % "lmdbjava"      % "0.7.0",
+      "org.joda"       % "joda-convert"  % "1.9.2",
+      "org.hamcrest"   % "hamcrest-core" % "1.3",
+      "org.lmdbjava"   % "lmdbjava"      % "0.7.0",
+      "com.hierynomus" % "asn-one"       % "0.4.0",
       pcollections,
       reactiveStreams,
       "org.scalactic" %% "scalactic" % Versions.ScalaTest,
@@ -368,7 +374,7 @@ object Dependencies {
       scalaXml,
       "org.scala-sbt"     % "test-interface" % "1.0",
       "org.typelevel"     %% "macro-compat"  % "1.1.1",
-      "org.xerial.snappy" % "snappy-java"    % "1.1.7.2",
+      "org.xerial.snappy" % "snappy-java"    % "1.1.7.3",
       "tyrex"             % "tyrex"          % "1.0.1",
       javaxAnnotationApi,
       scalaCollectionCompat,
@@ -377,7 +383,7 @@ object Dependencies {
       "com.google.protobuf"        % "protobuf-java"          % "3.10.0",
       "javax.activation"           % "activation"             % "1.1",
       "javax.activation"           % "javax.activation-api"   % "1.2.0",
-      "jakarta.activation"         % "jakarta.activation-api" % "1.2.1",
+      "jakarta.activation"         % "jakarta.activation-api" % "1.2.2",
       "com.thoughtworks.paranamer" % "paranamer"              % "2.8",
       mockitoCore,
       "org.objenesis" % "objenesis"        % "2.6",
@@ -403,6 +409,7 @@ object Dependencies {
       "akka-stream-testkit",
       "akka-testkit",
       "akka-coordination",
+      "akka-pki"
     ) ++ libraryFamily("com.typesafe.play", Versions.Play)(
       "build-link",
       "play-exceptions",
@@ -451,14 +458,14 @@ object Dependencies {
   // so we maintain it separately.
   val JpaTestWhitelist = Seq(
     "antlr"                            % "antlr"                           % "2.7.7",
-    "com.fasterxml"                    % "classmate"                       % "1.3.4",
-    "org.dom4j"                        % "dom4j"                           % "2.1.1",
+    "com.fasterxml"                    % "classmate"                       % "1.5.1",
+    "org.dom4j"                        % "dom4j"                           % "2.1.3",
     "javax.el"                         % "el-api"                          % "2.2",
     "javax.enterprise"                 % "cdi-api"                         % "1.1",
     "org.apache.geronimo.specs"        % "geronimo-jta_1.1_spec"           % "1.1.1",
     "org.hibernate"                    % "hibernate-core"                  % Versions.HibernateCore,
     "org.hibernate.common"             % "hibernate-commons-annotations"   % "5.1.0.Final",
-    "org.jboss"                        % "jandex"                          % "2.0.5.Final",
+    "org.jboss"                        % "jandex"                          % "2.1.3.Final",
     "org.jboss.logging"                % "jboss-logging"                   % "3.3.2.Final",
     "org.jboss.spec.javax.interceptor" % "jboss-interceptors-api_1.1_spec" % "1.0.0.Beta1",
     "javax.persistence"                % "javax.persistence-api"           % "2.2",
@@ -611,7 +618,9 @@ object Dependencies {
     akkaTestkit % Test,
     scalaTest   % Test,
     junit       % Test,
-    mockitoCore % Test
+    mockitoCore % Test,
+    // Upgrades needed to match allowed versions
+    byteBuddy % Test
   )
 
   val `client-scaladsl` = libraryDependencies ++= Seq(
@@ -663,8 +672,10 @@ object Dependencies {
     akkaSlf4j,
     scalaXml,
     jffi,
+    jnrFfi,
     jnrConstants,
     jnrPosix,
+    byteBuddy,
     // update to enforce using snapshots in nightly jobs
     akkaActorTyped,
     akkaJackson
@@ -761,6 +772,8 @@ object Dependencies {
     jnrConstants,
     pcollections,
     slf4jApi,
+    playJson,
+    playFunctional
   ) ++ jacksonFamily ++ ow2asmDeps // to match allowed versions
 
   val `akka-management-javadsl`  = libraryDependencies ++= Seq.empty[ModuleID]
@@ -1099,6 +1112,8 @@ object Dependencies {
     jffi,
     jnra64asm,
     jnrConstants,
+    guava,
+    checkerQual
   ) ++ ow2asmDeps // to match allowed versions
 
   val `server-containers` = libraryDependencies ++= Seq(
@@ -1148,15 +1163,17 @@ object Dependencies {
     akkaActor,
     akkaActorTyped,
     akkaJackson,
-    slf4jApi,
     akkaStream,
     akkaProtobuf_v3,
     akkaSlf4j,
+    slf4jApi,
     pcollections,
     typesafeConfig,
     sslConfig,
     scalaXml,
     playJson,
+    guava,
+    checkerQual
   ) ++ jacksonFamily
 
   val `service-registry-client-core` =

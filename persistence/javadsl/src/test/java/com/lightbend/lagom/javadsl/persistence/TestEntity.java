@@ -595,4 +595,9 @@ public class TestEntity extends PersistentEntity<TestEntity.Cmd, TestEntity.Evt,
     probe.ifPresent(p -> p.tell(new AfterRecovery(state()), ActorRef.noSender()));
     return behavior();
   }
+
+  @Override
+  public void onUnhandledCommand(Cmd cmd, ReadOnlyCommandContext<Void> context) {
+    context.commandFailed(new UnhandledCommandException("custom exc with additional context"));
+  }
 }

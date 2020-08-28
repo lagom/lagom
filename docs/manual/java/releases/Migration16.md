@@ -107,6 +107,32 @@ As usual, before upgrading to Lagom 1.6.0, make sure you are using the latest ve
 
 During a rolling upgrade your [[Projections]] may experience a degraded behavior. The service will self-heal when the rolling upgrade completes. Some internal messages taking care of the distribution of the worker instances of your projection have changed. As a consequence,  your old nodes won't be able to gossip with the new ones but as soon as the rolling upgrade completes, all nodes will be on the same version of your service the projection will operate normally.
 
+### Split Brain Resolver
+
+If you are subscriber of the [Lightbend Platform](https://www.lightbend.com/lightbend-platform) and use the [Akka Split Brain Resolver](https://doc.akka.io/docs/akka-enhancements/1.1/split-brain-resolver.html), when you update to Lagom `1.6.4` you can opt out of the commercial implementation and use the [Open Source Akka Split Brain Resolver](https://doc.akka.io/docs/akka/current/split-brain-resolver.html#split-brain-resolver). The migration has two steps: 
+
+1. remove the dependency:
+
+```
+// before
+"com.lightbend.akka" %% "akka-split-brain-resolver" % "1.1.14"
+// after
+// The OSS SBR implementation is part of "akka-cluster" so you don't need to add a new dependency
+```
+
+2. update your settings to use the new implementation:
+
+```
+## Before:
+akka.cluster.downing-provider-class = "com.lightbend.akka.sbr.SplitBrainResolverProvider"
+## After:
+akka.cluster.downing-provider-class = "akka.cluster.sbr.SplitBrainResolverProvider"
+```
+
+Note that a rolling upgrade where some nodes use the commercial SBR and other nodes use the OSS SBR is possible as long as all nodes use the same configuration values (`active-strategy`, `stable-after`,...)
+
+### Cluster shutdown migrating from Lagom 1.5
+
 Lagom 1.6.0 has a few new default settings that will prevent you to run a rolling upgrade. In case you prefer to run a rolling upgrade, you will need to opt-out from each of these new defaults as explained below.
 
 This is a summary of changes in Lagom 1.6 that would require a full cluster shutdown rather than a rolling upgrade:
@@ -115,7 +141,7 @@ This is a summary of changes in Lagom 1.6 that would require a full cluster shut
 * The change in default [[Shard Coordination|Migration16#Shard-Coordination]] strategy.
 * The change in [[Cassandra plugin version|Migration16#Akka-Persistence-Cassandra-Update]]. Only impact Lagom applications using Cassandra.
 
-### A note on Rolling Updates and Versions
+### A note on Rolling Updates and PATCH Versions
 
 Sometimes patch versions of Akka Cluster introduce changes that make certain pairs of versions incompatible. As a consequence, sometimes it is necessary to upgrade in multiple steps if downtime is not possible. See, for example, the following note in the Akka Docs on [Rolling Updates and Versions](https://doc.akka.io/docs/akka/current/project/rolling-update.html#2-6-0-several-changes-in-minor-release):
 
