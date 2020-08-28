@@ -132,11 +132,6 @@ class JavadslRegisterTopicProducers @Inject() (
       command: TopicProducerCommand[Message]
   ): InternalTopicProducerCommand[Message] =
     command match {
-      case cmd: TopicProducerCommand.EmitMultipleAndCommit[Message] =>
-        InternalTopicProducerCommand.EmitMultipleAndCommit(
-          cmd.messages().asScala.toList,
-          OffsetAdapter.dslOffsetToOffset(cmd.offset())
-        )
       case cmd: TopicProducerCommand.EmitAndCommit[Message] =>
         InternalTopicProducerCommand.EmitAndCommit(
           cmd.message(),

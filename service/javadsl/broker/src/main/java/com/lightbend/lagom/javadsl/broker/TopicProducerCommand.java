@@ -6,44 +6,10 @@ package com.lightbend.lagom.javadsl.broker;
 
 import com.lightbend.lagom.javadsl.persistence.Offset;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 @SuppressWarnings("unused")
 public interface TopicProducerCommand<T> {
-  final class EmitMultipleAndCommit<Message> implements TopicProducerCommand<Message> {
-    private final List<Message> messages;
-    private final Offset offset;
-
-    public EmitMultipleAndCommit(List<Message> messages, Offset offset) {
-      this.messages = messages;
-      this.offset = offset;
-    }
-
-    public List<Message> messages() {
-      return Collections.unmodifiableList(this.messages);
-    }
-
-    public Offset offset() {
-      return this.offset;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      final EmitMultipleAndCommit<?> that = (EmitMultipleAndCommit<?>) o;
-
-      return messages.equals(that.messages) && offset.equals(that.offset);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(messages, offset);
-    }
-  }
-
   final class EmitAndCommit<Message> implements TopicProducerCommand<Message> {
     private final Message message;
     private final Offset offset;

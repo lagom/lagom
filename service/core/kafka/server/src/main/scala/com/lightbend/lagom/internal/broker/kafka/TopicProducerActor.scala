@@ -249,16 +249,10 @@ private[lagom] class TopicProducerActor[Message](
       }
     }
 
-    def toRecord(message: Message): ProducerRecord[String, Message] =
-      new ProducerRecord[String, Message](topicId, keyOf(message), message)
-
     Flow[InternalTopicProducerCommand[Message]]
       .map[ProducerMessage.Envelope[String, Message, AkkaOffset]] {
-        case InternalTopicProducerCommand.EmitMultipleAndCommit(messages, offset) =>
-          ProducerMessage.MultiMessage(messages.map(toRecord), offset)
-
         case InternalTopicProducerCommand.EmitAndCommit(message, offset) =>
-          ProducerMessage.Message(toRecord(message), offset)
+          ProducerMessage.Message(new ProducerRecord[String, Message](topicId, keyOf(message), message), offset)
 
         case InternalTopicProducerCommand.Commit(offset) =>
           ProducerMessage.PassThroughMessage(offset)
