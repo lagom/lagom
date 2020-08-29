@@ -13,5 +13,6 @@ logs
 .idea
 .DS_Store
 .metals
-project/metals.sbt
+metals.sbt
 .bloop
+.vscode
