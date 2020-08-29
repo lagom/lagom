@@ -96,7 +96,7 @@ private[lagom] class TestTopic[Payload, Event <: AggregateEvent[Event]](
           topicProducer.readSideStream.apply(tag, Offset.noOffset)
         })
         .collect {
-          case TopicProducerCommand.EmitAndCommit(message, _) => message
+          case cmd: TopicProducerCommand.EmitAndCommit[Payload] => cmd.message
         }
         .map { evt =>
           serializer.serializerForRequest.serialize(evt)

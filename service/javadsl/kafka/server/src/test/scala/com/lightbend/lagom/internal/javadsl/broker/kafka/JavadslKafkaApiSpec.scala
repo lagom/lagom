@@ -247,8 +247,8 @@ class JavadslKafkaApiSpec
 
       // Put some messages in the stream
       test3EventJournal.append(("firstMessage", true))
-      test3EventJournal.append(("secondMessage", true))
-      test3EventJournal.append(("thirdMessage", false))
+      test3EventJournal.append(("secondMessage", false))
+      test3EventJournal.append(("thirdMessage", true))
 
       // Wait for a subscriber to consume them all (which ensures they've all been published)
       val allMessagesReceived = new CountDownLatch(2)

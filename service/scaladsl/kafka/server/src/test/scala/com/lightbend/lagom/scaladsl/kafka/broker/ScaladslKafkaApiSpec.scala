@@ -235,8 +235,8 @@ class ScaladslKafkaApiSpec
 
       // Put some messages in the stream
       test3EventJournal.append(("firstMessage", true))
-      test3EventJournal.append(("secondMessage", true))
-      test3EventJournal.append(("thirdMessage", false))
+      test3EventJournal.append(("secondMessage", false))
+      test3EventJournal.append(("thirdMessage", true))
 
       // Wait for a subscriber to consume them all (which ensures they've all been published)
       val allMessagesReceived = new CountDownLatch(2)
@@ -421,8 +421,8 @@ object ScaladslKafkaApiSpec {
           .eventStream(fromOffset)
           .map {
             case ((message, emit), offset) if emit =>
-              TopicProducerCommand.EmitAndCommit(messageTransformer(message), offset)
-            case (_, offset) => TopicProducerCommand.Commit(offset)
+              new TopicProducerCommand.EmitAndCommit(messageTransformer(message), offset)
+            case (_, offset) => new TopicProducerCommand.Commit(offset)
           }
       }
     }

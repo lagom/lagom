@@ -81,7 +81,9 @@ object TopicProducer {
 
   // TODO(bossqone): add docs
   @ApiMayChange
-  def taggedCommandStreamWithOffset[Message, Event <: AggregateEvent[Event]](tags: immutable.Seq[AggregateEventTag[Event]])(
+  def taggedCommandStreamWithOffset[Message, Event <: AggregateEvent[Event]](
+      tags: immutable.Seq[AggregateEventTag[Event]]
+  )(
       eventStream: (AggregateEventTag[Event], Offset) => Source[TopicProducerCommand[Message], Any]
   ): Topic[Message] = TaggedOffsetTopicProducer.fromTopicProducerCommandStream(tags, eventStream)
 

@@ -41,7 +41,7 @@ object TaggedOffsetTopicProducer {
     new TaggedOffsetTopicProducer[Message, Event](
       tags,
       (tag, offset) =>
-        readSideStream.apply(tag, offset).map(pair => TopicProducerCommand.EmitAndCommit(pair._1, pair._2))
+        readSideStream.apply(tag, offset).map(pair => new TopicProducerCommand.EmitAndCommit(pair._1, pair._2))
     )
 
 }

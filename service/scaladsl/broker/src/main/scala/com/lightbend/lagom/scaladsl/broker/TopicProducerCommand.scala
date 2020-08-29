@@ -4,11 +4,27 @@
 
 package com.lightbend.lagom.scaladsl.broker
 
+import java.util.Objects;
 import akka.persistence.query.Offset
 
 sealed trait TopicProducerCommand[Message]
 
 object TopicProducerCommand {
-  case class EmitAndCommit[Message](message: Message, offset: Offset) extends TopicProducerCommand[Message]
-  case class Commit[Message](offset: Offset)                          extends TopicProducerCommand[Message]
+  final class EmitAndCommit[Message](val message: Message, val offset: Offset) extends TopicProducerCommand[Message] {
+    override def equals(that: Any): Boolean = that match {
+      case command: EmitAndCommit[Message] => message.equals(command.message) && offset.equals(command.offset)
+      case _                               => false
+    }
+
+    override def hashCode(): Int = Objects.hash(message.asInstanceOf[AnyRef], offset)
+  }
+
+  final class Commit[Message](val offset: Offset) extends TopicProducerCommand[Message] {
+    override def equals(that: Any): Boolean = that match {
+      case command: Commit[Message] => offset.equals(command.offset)
+      case _                        => false
+    }
+
+    override def hashCode(): Int = Objects.hash(offset)
+  }
 }
