@@ -51,7 +51,7 @@ class AnotherServiceImpl(helloService: HelloService) extends AnotherService {
       .subscribe
       .withMetadata
       .atLeastOnce(
-        Flow[Message[GreetingMessage]].map { msg =>
+        Flow[Message[Option[GreetingMessage]]].map { msg =>
           val greetingMessage = msg.payload
           val messageKey      = msg.messageKeyAsString
           val kafkaHeaders    = msg.get(KafkaMetadataKeys.Headers)
