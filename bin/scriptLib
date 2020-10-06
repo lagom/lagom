@@ -14,13 +14,13 @@ export CURRENT_BRANCH=${TRAVIS_BRANCH}
 EXTRA_OPTS=("-Dakka.test.timefactor=10")
 
 # Check if it is a scheduled build
-if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then
-    AKKA_VERSION=$(curl -s https://repo.akka.io/snapshots/com/typesafe/akka/akka-actor_2.13/ | grep -oEi '2\.6\.[0-9]+\+[0-9]+-[0-9a-f]{8}' | sort -V | tail -n 1)
-
-    echo "Using Akka SNAPSHOT ${AKKA_VERSION}"
-
-    EXTRA_OPTS+=("-Dlagom.build.akka.version=${AKKA_VERSION}")
-fi
+# if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then
+#    AKKA_VERSION=$(curl -s https://repo.akka.io/snapshots/com/typesafe/akka/akka-actor_2.13/ | grep -oEi '2\.6\.[0-9]+\+[0-9]+-[0-9a-f]{8}' | sort -V | tail -n 1)
+#
+#    echo "Using Akka SNAPSHOT ${AKKA_VERSION}"
+#
+#    EXTRA_OPTS+=("-Dlagom.build.akka.version=${AKKA_VERSION}")
+#fi
 
 runSbt() {
   sbt "${EXTRA_OPTS[@]}" --warn 'set concurrentRestrictions in Global += Tags.limitAll(1)' "$@"
