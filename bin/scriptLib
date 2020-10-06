@@ -13,10 +13,18 @@ export CURRENT_BRANCH=${TRAVIS_BRANCH}
 
 EXTRA_OPTS="-Dakka.test.timefactor=10"
 
-# Check if it is a scheduled build
+#
 if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then
+<<<<<<< HEAD
     # `sort` is not necessary, but it is good to make it predictable.
     AKKA_VERSION=$(curl -s https://repo.akka.io/snapshots/com/typesafe/akka/akka-actor_2.12/ | grep -oEi '2\.5-[0-9]{8}-[0-9]{6}' | sort | tail -n 1)
+=======
+# Previously, we would run the cron jobs against the latest Akka master.
+# Since that is not reliably (https://github.com/lagom/lagom/issues/3046),
+# let's test against the latest Akka version instead:
+#    AKKA_VERSION=$(curl -s https://repo.akka.io/snapshots/com/typesafe/akka/akka-actor_2.13/ | grep -oEi '2\.6\.[0-9]+\+[0-9]+-[0-9a-f]{8}' | sort -V | tail -n 1)
+    AKKA_VERSION=$(curl -q https://repo1.maven.org/maven2/com/typesafe/akka/akka-actor_2.13/maven-metadata.xml | grep latest | sed -e "s/<\/\?latest>//g" | tr -d " ")
+>>>>>>> cfc60d8a2... Run cron builds against latest released Akka version #3046
 
     echo "Using Akka SNAPSHOT ${AKKA_VERSION}"
 
