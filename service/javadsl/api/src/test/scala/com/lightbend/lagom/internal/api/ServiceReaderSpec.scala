@@ -44,6 +44,19 @@ class ServiceReaderSpec extends WordSpec with Matchers with Inside {
       endpoint.responseSerializer should ===(MessageSerializers.STRING)
     }
 
+    "read a Java service descriptor with default method with parameters" in {
+      val descriptor = serviceDescriptor[DefaultMethodWithParamsService]
+
+      descriptor.calls().size() should ===(1)
+      val endpoint = descriptor.calls().get(0)
+
+      endpoint.callId() should ===(new RestCallId(Method.GET, "/hello/:name"))
+      inside(endpoint.requestSerializer) {
+        case simple: SimpleSerializer[_] => simple.`type` should ===(classOf[UUID])
+      }
+      endpoint.responseSerializer should ===(MessageSerializers.STRING)
+    }
+
     "fail to read a Java service descriptor from a public interface because the path parameter could not be serialized" in {
       intercept[IllegalPathParameterException] {
         val descriptor = serviceDescriptor[InvalidPathParameterService]

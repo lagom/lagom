@@ -55,9 +55,14 @@ object ServiceReader {
           // Now using unreflect special, we get the default method from the declaring class, rather than the proxy
           .unreflectSpecial(method, method.getDeclaringClass)
     } else {
-      val lookup     = MethodHandles.lookup
-      val returnType = MethodType.methodType(classOf[Descriptor])
-      method => lookup.findSpecial(method.getDeclaringClass, method.getName, returnType, method.getDeclaringClass)
+      val lookup = MethodHandles.lookup
+      method =>
+        lookup.findSpecial(
+          method.getDeclaringClass,
+          method.getName,
+          MethodType.methodType(method.getReturnType, method.getParameterTypes),
+          method.getDeclaringClass
+        )
     }
   }
 
