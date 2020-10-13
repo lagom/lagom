@@ -69,6 +69,8 @@ In sbt:
 
 The above ensures that the Service Locator knows about the `weather` service. Then, if you need a Lagom service to communicate with it, simply `@Inject` the [`ServiceLocator`](api/index.html?com/lightbend/lagom/javadsl/api/ServiceLocator.html) and use it to either locate the `weather` service's URI, or perform some arbitrary work with it.
 
+Please Note : `lagomUnmanagedServices`  this only works in dev mode , for prod mode read [`lagom in production`](https://www.lagomframework.com/documentation/1.5.x/java/ProductionOverview.html)
+
 ### Integrating with external Lagom projects
 
 Note that if the service you want to communicate with is actually a Lagom service, you may want to read the documentation for [[integrating with an external Lagom projects|MultipleBuilds]].
