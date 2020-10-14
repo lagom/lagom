@@ -5,7 +5,7 @@ val ScalaVersion = "2.12.10"
 
 val AkkaVersion = sys.props.getOrElse("lagom.build.akka.version", "2.6.8") // sync with project/Dependencies.scala
 
-val JUnitVersion          = "4.13"
+val JUnitVersion          = "4.13.1" // sync with project/Dependencies.scala and LagomImport.scala
 val JUnitInterfaceVersion = "0.11"
 val ScalaTestVersion      = "3.1.4"
 val PlayVersion           = "2.8.2" // sync with project/Dependencies.scala
