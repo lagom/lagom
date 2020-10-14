@@ -194,7 +194,7 @@ object Dependencies {
     "org.jetbrains"        % "annotations"          % "13.0"
   )
 
-  val ow2asmDeps = libraryFamily("org.ow2.asm", "8.0.1")(
+  val ow2asmDeps = libraryFamily("org.ow2.asm", "9.0")(
     "asm",
     "asm-analysis",
     "asm-commons",
