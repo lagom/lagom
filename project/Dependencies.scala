@@ -50,7 +50,7 @@ object Dependencies {
     val MavenWagon           = "3.3.3"
     val MavenResolver        = "1.4.1"
     val Netty                = "4.1.50.Final"
-    val NettyReactiveStreams = "2.0.4"
+    val NettyReactiveStreams = "2.0.5"
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
     val AlpakkaKafka = "2.0.4"
     // Keep this version consistent with Alpakka Kafka Connector
