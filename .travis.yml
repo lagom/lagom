@@ -17,6 +17,7 @@ addons:
 
 env:
   global:
+    - RUN_DROP_TRAVIS_CACHES_STAGE=false
     # the following `secure` is WHITESOURCE_PASSWORD which is the same for all branches.
     - secure: "A4xDS51pB8ERJPR/a5Lui//E//1L9pJ9Eg1kcRm/OR2izg7rx7p8Wemfp9gRhz8trn1mIrXDSMSK9iwENsfIP1bc/6AgtTWKBPm9DKjG0HW3swFFMBzzd6gxmOi4JD8rOtVc62Cf4qnURz+hsPRcI5C8aAW1fNi/5x1Q3HcAMtxE8EdPR7tU6Ve8utieOFPpqNQMktcL1aFusu+QddO14ZpQ944uAg0YdRRYFMG9SCbTkNDLt66AHTF4rKyZfkbM1tadqvvDez7Uo2eGK+KoQxTyrjct8W4Gqh+obOTyj1ngaPZEKvgbIJowFCrBzY5W+oNl6S+qa6PyAwq1MWKFqyUZt4P9fk3N9MDOYvuaS+YJCQd3VS4qCL9MEWahXNc3ZT+m8u5HT5axuPy+2qiKL/wrGzAXd74K9gNKuZJD7s+79Pwn34ZEbNMZ13AxyF6QkavU+Xcr5tQNwwZ+8P+k5OGoVsJOqZ3J7M+igGDRZh0fD693Wdp+mfORQqIvJFKED4daJYgTLufwt4tBLUxPUvlUZOWZFPn8DSQqTE7vsE9VPdpKSXTv1MyHxeMTiAX+XPabEWoazB8/4rljkC/EPxAButPD+AtUatfa6fIXpyGxHIvX8CFa2UnOQe9YbTRnxqa8TYvyMsWNQn1Q1eQMkvXCetqoefW5hA0UHTU5Zy4="
   matrix:
@@ -32,9 +33,14 @@ git:
   depth: false # Avoid sbt-dynver not seeing the tag
 
 stages:
-  - drop-travis-caches
-  - validations-and-test
-  - test-build-tools
+  - name: drop-travis-caches
+    # to drop caches trigger a custom build with
+    # env:
+    #   global:
+    #     - RUN_DROP_TRAVIS_CACHES_STAGE=true
+    if: env(RUN_DROP_TRAVIS_CACHES_STAGE) = true
+  - name: validations-and-test
+  - name: test-build-tools
 
 jobs:
   include:
