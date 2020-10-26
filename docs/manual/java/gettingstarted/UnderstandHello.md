@@ -13,13 +13,13 @@ The source file defining a service interface belongs in the service's api projec
 @[helloservice-interface](code/docs/javadsl/gettingstarted/helloservice/HelloService.java)
 
 Note that:
- 
+
 * The service interface inherits from [`Service`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html) and provides an implementation of [`Service.descriptor`](api/index.html?com/lightbend/lagom/javadsl/api/Service.html#descriptor--) method.
 
 * The implementation of `Service.descriptor` returns a [`Descriptor`](api/index.html?com/lightbend/lagom/javadsl/api/Descriptor.html). The `HelloService` descriptor defines the service name and the REST endpoints it offers. For each endpoint, declare an abstract method in the service interface, as illustrated in the `HelloService.hello` method. For more information, see [[Service Descriptors|ServiceDescriptors]].
 
 ## Service implementation
 
-The related `impl` directory contains the implementation of the service interface's abstract methods. For instance, `HelloServiceImpl.java` in the `hello-impl` directory implements the `hello` service `HelloService.hello` method. The service implementation uses a (sharded)[https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#introduction], (persistent)[https://doc.akka.io/docs/akka/2.6/typed/persistence.html#introduction], typed actor providing data persistence using [[Event Sourcing and CQRS|ES_CQRS]].
+The related `impl` directory contains the implementation of the service interface's abstract methods. For instance, `HelloServiceImpl.java` in the `hello-impl` directory implements the `hello` service `HelloService.hello` method. The service implementation uses a [sharded](https://doc.akka.io/docs/akka/2.6/typed/cluster-sharding.html#introduction), [persistent](https://doc.akka.io/docs/akka/2.6/typed/persistence.html#introduction), typed actor providing data persistence using [[Event Sourcing and CQRS|ES_CQRS]].
 
 @[helloservice-impl](code/docs/javadsl/gettingstarted/helloservice/HelloServiceImpl.java)
