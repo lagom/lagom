@@ -331,7 +331,7 @@ class ScaladslKafkaApiSpec
       messages.size shouldBe 3
       def runAssertions(msg: Message[String]): Unit = {
         msg.messageKeyAsString shouldBe "A"
-        msg.get(KafkaMetadataKeys.Topic).value shouldBe "test7"
+        msg.get(KafkaMetadataKeys.Topic).value shouldBe "test7-prod"
         msg.get(KafkaMetadataKeys.Headers) should not be None
         msg.get(KafkaMetadataKeys.Timestamp) should not be None
         msg.get(KafkaMetadataKeys.TimestampType) should not be None

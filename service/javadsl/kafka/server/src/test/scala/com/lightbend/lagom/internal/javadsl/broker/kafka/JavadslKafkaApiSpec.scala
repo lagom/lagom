@@ -95,7 +95,7 @@ class JavadslKafkaApiSpec
         "lagom.cluster.join-self"                       -> "on",
         "lagom.cluster.exit-jvm-when-system-terminated" -> "off",
         "lagom.cluster.bootstrap.enabled"               -> "off",
-        "lagom.services.kafka_native"                   -> s"tcp://localhost:$kafkaPort"
+        "lagom.services.kafka_native"                   -> s"tcp://localhost:$kafkaPort",
       )
       .build()
   }
@@ -359,7 +359,7 @@ class JavadslKafkaApiSpec
 
       def runAssertions(msg: Message[String]): Unit = {
         msg.messageKeyAsString shouldBe "A"
-        msg.get(KafkaMetadataKeys.TOPIC).asScala.value shouldBe "test7"
+        msg.get(KafkaMetadataKeys.TOPIC).asScala.value shouldBe "test7-prod"
         msg.get(KafkaMetadataKeys.HEADERS).asScala should not be None
         msg.get(KafkaMetadataKeys.TIMESTAMP).asScala should not be None
         msg.get(KafkaMetadataKeys.TIMESTAMP_TYPE).asScala should not be None

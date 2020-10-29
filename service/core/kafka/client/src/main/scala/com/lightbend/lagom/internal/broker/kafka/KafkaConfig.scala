@@ -9,7 +9,9 @@ import java.util.concurrent.TimeUnit
 import akka.actor.ActorSystem
 import akka.kafka.CommitterSettings
 import com.typesafe.config.Config
+import com.typesafe.config.ConfigValueType
 
+import scala.collection.JavaConverters._
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 import scala.util.control.NoStackTrace
@@ -21,6 +23,9 @@ sealed trait KafkaConfig {
 
   /** A comma separated list of Kafka brokers. Will be ignored if serviceName is defined. */
   def brokers: String
+
+  /** A mapping of Lagom topic id to real Kafka topic name. */
+  def topicNameMapping: Map[String, String]
 }
 
 object KafkaConfig {
@@ -30,6 +35,14 @@ object KafkaConfig {
   private final class KafkaConfigImpl(conf: Config) extends KafkaConfig {
     override val brokers: String             = conf.getString("brokers")
     override val serviceName: Option[String] = Some(conf.getString("service-name")).filter(_.nonEmpty)
+    override val topicNameMapping: Map[String, String] = conf
+      .getObject("topic-name-mappings")
+      .keySet()
+      .asScala
+      .map { key =>
+        key -> conf.getString("topic-name-mappings." + key)
+      }
+      .toMap
   }
 }
 
