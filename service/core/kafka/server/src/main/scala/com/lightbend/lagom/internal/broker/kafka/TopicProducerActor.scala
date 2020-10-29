@@ -4,45 +4,43 @@
 
 package com.lightbend.lagom.internal.broker.kafka
 
-import akka.kafka.ProducerSettings
-import akka.kafka.scaladsl.{ Producer => ReactiveProducer }
-import akka.stream.scaladsl.GraphDSL
-import akka.actor.Status
-import akka.stream.scaladsl.Source
-import akka.pattern.pipe
-import akka.stream.scaladsl.Flow
-
-import scala.concurrent.Future
-import akka.stream.scaladsl.Sink
-
-import scala.concurrent.ExecutionContext
-import com.lightbend.lagom.internal.api.UriUtils
-import com.lightbend.lagom.spi.persistence.OffsetDao
-import akka.NotUsed
-import akka.actor.ActorLogging
-import akka.stream.scaladsl.Unzip
-import org.apache.kafka.clients.producer.ProducerRecord
-import akka.stream.Materializer
-import akka.stream.scaladsl.Keep
-import akka.stream.KillSwitches
-import org.apache.kafka.common.serialization.StringSerializer
-import akka.actor.Props
-import org.apache.kafka.common.serialization.Serializer
-import akka.stream.KillSwitch
-import com.lightbend.lagom.spi.persistence.OffsetStore
-import akka.stream.FlowShape
-import akka.Done
-import akka.actor.Actor
-import akka.stream.scaladsl.Zip
 import java.net.URI
 
+import akka.Done
+import akka.NotUsed
+import akka.actor.Actor
+import akka.actor.ActorLogging
+import akka.actor.Props
+import akka.actor.Status
 import akka.kafka.ProducerMessage
-import akka.persistence.query.Offset
+import akka.kafka.ProducerSettings
+import akka.kafka.scaladsl.{ Producer => ReactiveProducer }
+import akka.pattern.pipe
 import akka.persistence.query.{ Offset => AkkaOffset }
+import akka.stream.FlowShape
+import akka.stream.KillSwitch
+import akka.stream.KillSwitches
+import akka.stream.Materializer
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.GraphDSL
+import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.RestartSource
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.Unzip
+import akka.stream.scaladsl.Zip
+import com.lightbend.lagom.internal.api.UriUtils
 import com.lightbend.lagom.internal.broker.kafka.TopicProducerActor.Start
 import com.lightbend.lagom.internal.projection.ProjectionRegistryActor.WorkerCoordinates
 import com.lightbend.lagom.internal.spi.projection.ProjectionSpi
+import com.lightbend.lagom.spi.persistence.OffsetDao
+import com.lightbend.lagom.spi.persistence.OffsetStore
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.serialization.Serializer
+import org.apache.kafka.common.serialization.StringSerializer
+
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 private[lagom] object TopicProducerActor {
   def props[Message](
@@ -252,7 +250,14 @@ private[lagom] class TopicProducerActor[Message](
 
     Flow[Message]
       .map { message =>
-        ProducerMessage.Message(new ProducerRecord[String, Message](topicId, keyOf(message), message), NotUsed)
+        ProducerMessage.Message(
+          new ProducerRecord[String, Message](
+            kafkaConfig.topicNameMapping.getOrElse(topicId, topicId),
+            keyOf(message),
+            message
+          ),
+          NotUsed
+        )
       }
       .via {
         ReactiveProducer.flexiFlow(producerSettings(endpoints))
