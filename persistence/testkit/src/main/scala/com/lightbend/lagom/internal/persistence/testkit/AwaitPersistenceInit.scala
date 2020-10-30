@@ -12,29 +12,26 @@ import akka.actor.Props
 import akka.actor.Scheduler
 import akka.pattern._
 import akka.persistence.PersistentActor
-import akka.testkit.TestProbe
 import akka.util.Timeout
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.duration._
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import scala.util.Failure
-import scala.util.Success
+import scala.concurrent.duration._
 
 // A copy of akka.persistence.cassandra.CassandraLifecycle's awaitPersistenceInit.
 private[lagom] object AwaitPersistenceInit {
 
   def awaitPersistenceInit(system: ActorSystem): Unit = {
 
-    val log   = LoggerFactory.getLogger(getClass)
-    val t0    = System.nanoTime()
-    var n     = 0
+    val log = LoggerFactory.getLogger(getClass)
+    val t0  = System.nanoTime()
+    var n   = 0
 
     implicit val dispatcher: ExecutionContext = system.dispatcher
     implicit val scheduler: Scheduler         = system.scheduler
-    implicit val askTimeout: Timeout        = Timeout(250.millis)
+    implicit val askTimeout: Timeout          = Timeout(250.millis)
 
     val uuid = UUID.randomUUID().toString
     def askToActor: Future[Done] = {
