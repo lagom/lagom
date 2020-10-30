@@ -37,6 +37,7 @@ import com.lightbend.lagom.javadsl.api.Descriptor
 import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.lightbend.lagom.javadsl.broker.TopicProducer
+import com.lightbend.lagom.javadsl.broker.TopicProducerCommand
 import com.lightbend.lagom.javadsl.broker.kafka.KafkaMetadataKeys
 import com.lightbend.lagom.javadsl.client.ConfigurationServiceLocator
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent
@@ -48,6 +49,7 @@ import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport
 import com.lightbend.lagom.spi.persistence.InMemoryOffsetStore
 import com.lightbend.lagom.spi.persistence.OffsetStore
 import org.scalatest._
+import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.ScalaFutures
 import org.slf4j.LoggerFactory
 import play.api.inject._
@@ -69,6 +71,7 @@ class JavadslKafkaApiSpec
     with BeforeAndAfter
     with BeforeAndAfterAll
     with ScalaFutures
+    with Eventually
     with OptionValues {
   private val log = LoggerFactory.getLogger(getClass)
   private val miniLogger = new MiniLogger {
@@ -243,12 +246,12 @@ class JavadslKafkaApiSpec
       initialOffset shouldBe NoOffset
 
       // Put some messages in the stream
-      test3EventJournal.append("firstMessage")
-      test3EventJournal.append("secondMessage")
-      test3EventJournal.append("thirdMessage")
+      test3EventJournal.append(("firstMessage", true))
+      test3EventJournal.append(("secondMessage", false))
+      test3EventJournal.append(("thirdMessage", true))
 
       // Wait for a subscriber to consume them all (which ensures they've all been published)
-      val allMessagesReceived = new CountDownLatch(3)
+      val allMessagesReceived = new CountDownLatch(2)
       testService
         .test3Topic()
         .subscribe()
@@ -264,9 +267,11 @@ class JavadslKafkaApiSpec
       assert(allMessagesReceived.await(10, TimeUnit.SECONDS))
 
       // After publishing all of the messages we expect the offset store
-      // to have been updated with the offset of the last consumed message
-      val updatedOffset = reloadOffset().loadedOffset
-      updatedOffset shouldBe Sequence(2)
+      // to have been updated with the offset of the last published message
+      eventually(timeout(10.seconds)) {
+        val updatedOffset = reloadOffset().loadedOffset
+        updatedOffset shouldBe Sequence(2)
+      }
     }
 
     "self-heal at-least-once consumer stream if a failure occurs" in {
@@ -394,7 +399,7 @@ object VarianceCompat {
 object JavadslKafkaApiSpec {
   private val test1EventJournal = new EventJournal[String]
   private val test2EventJournal = new EventJournal[String]
-  private val test3EventJournal = new EventJournal[String]
+  private val test3EventJournal = new EventJournal[(String, Boolean)]
   private val test4EventJournal = new EventJournal[String]
   private val test5EventJournal = new EventJournal[String]
   private val test6EventJournal = new EventJournal[String]
@@ -433,7 +438,7 @@ object JavadslKafkaApiSpec {
   class TestServiceImpl extends TestService {
     override def test1Topic(): Topic[String] = createTopicProducer(test1EventJournal)
     override def test2Topic(): Topic[String] = createTopicProducer(test2EventJournal)
-    override def test3Topic(): Topic[String] = createTopicProducer(test3EventJournal)
+    override def test3Topic(): Topic[String] = createTopicProducerWithCommand(test3EventJournal)
     override def test4Topic(): Topic[String] = createTopicProducer(test4EventJournal)
     override def test5Topic(): Topic[String] = createTopicProducer(test5EventJournal)
     override def test6Topic(): Topic[String] = createTopicProducer(test6EventJournal)
@@ -444,6 +449,18 @@ object JavadslKafkaApiSpec {
         eventJournal
           .eventStream(dslOffsetToOffset(fromOffset))
           .map(element => new JPair(messageTransformer(element._1), offsetToDslOffset(element._2)))
+          .asJava
+      }.asJava)
+
+    private def createTopicProducerWithCommand(eventJournal: EventJournal[(String, Boolean)]): Topic[String] =
+      TopicProducer.singleCommandStreamWithOffset[String]({ fromOffset: JOffset =>
+        eventJournal
+          .eventStream(dslOffsetToOffset(fromOffset))
+          .map[TopicProducerCommand[String]] {
+            case ((message, emit), offset) if emit =>
+              new TopicProducerCommand.EmitAndCommit(messageTransformer(message), offsetToDslOffset(offset))
+            case (_, offset) => new TopicProducerCommand.Commit(offsetToDslOffset(offset))
+          }
           .asJava
       }.asJava)
   }

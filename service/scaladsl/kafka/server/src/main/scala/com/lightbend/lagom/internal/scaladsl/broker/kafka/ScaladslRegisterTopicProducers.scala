@@ -9,15 +9,17 @@ import akka.persistence.query.Offset
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import com.lightbend.internal.broker.TaggedOffsetTopicProducer
+import com.lightbend.lagom.internal.broker.kafka.InternalTopicProducerCommand
 import com.lightbend.lagom.internal.broker.kafka.KafkaConfig
 import com.lightbend.lagom.internal.broker.kafka.Producer
 import com.lightbend.lagom.internal.projection.ProjectionRegistry
 import com.lightbend.lagom.internal.scaladsl.api.broker.TopicFactory
 import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
-import com.lightbend.lagom.scaladsl.api.ServiceInfo
-import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodTopic
 import com.lightbend.lagom.scaladsl.api.broker.kafka.KafkaProperties
+import com.lightbend.lagom.scaladsl.api.ServiceInfo
+import com.lightbend.lagom.scaladsl.api.ServiceLocator
+import com.lightbend.lagom.scaladsl.broker.TopicProducerCommand
 import com.lightbend.lagom.scaladsl.server.LagomServer
 import com.lightbend.lagom.scaladsl.server.LagomServiceBinding
 import com.lightbend.lagom.spi.persistence.OffsetStore
@@ -56,11 +58,14 @@ class ScaladslRegisterTopicProducers(
               case tagged: TaggedOffsetTopicProducer[Any, _] =>
                 val tags = tagged.tags
 
-                val eventStreamFactory: (String, Offset) => Source[(Any, Offset), _] = { (tag, offset) =>
-                  tags.find(_.tag == tag) match {
-                    case Some(aggregateTag) => tagged.readSideStream(aggregateTag, offset)
-                    case None               => throw new RuntimeException("Unknown tag: " + tag)
-                  }
+                val eventStreamFactory: (String, Offset) => Source[InternalTopicProducerCommand[Any], _] = {
+                  (tag, offset) =>
+                    tags.find(_.tag == tag) match {
+                      case Some(aggregateTag) =>
+                        tagged.readSideStream(aggregateTag, offset).map(toInternalTopicProducerCommand)
+
+                      case None => throw new RuntimeException("Unknown tag: " + tag)
+                    }
                 }
 
                 val partitionKeyStrategy: Option[Any => String] = {
@@ -108,4 +113,13 @@ class ScaladslRegisterTopicProducers(
         }
     }
   }
+
+  private def toInternalTopicProducerCommand[Message](
+      command: TopicProducerCommand[Message]
+  ): InternalTopicProducerCommand[Message] =
+    command match {
+      case cmd: TopicProducerCommand.EmitAndCommit[Message] =>
+        InternalTopicProducerCommand.EmitAndCommit(cmd.message, cmd.offset)
+      case cmd: TopicProducerCommand.Commit[Message] => InternalTopicProducerCommand.Commit(cmd.offset)
+    }
 }

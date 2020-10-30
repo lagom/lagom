@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.scaladsl.broker
 
+import akka.annotation.ApiMayChange
 import akka.persistence.query.Offset
 import akka.stream.scaladsl.Source
 import com.lightbend.internal.broker.TaggedOffsetTopicProducer
@@ -22,6 +23,10 @@ import scala.collection.immutable
  */
 object TopicProducer {
 
+  private trait SingletonEvent extends AggregateEvent[TopicProducer.SingletonEvent] {}
+
+  private val SINGLETON_TAG = List(AggregateEventTag[TopicProducer.SingletonEvent]("singleton"))
+
   /**
    * Publish a single stream.
    *
@@ -33,10 +38,6 @@ object TopicProducer {
    */
   def singleStreamWithOffset[Message](eventStream: Offset => Source[(Message, Offset), Any]): Topic[Message] =
     taggedStreamWithOffset(SINGLETON_TAG)((tag, offset) => eventStream(offset))
-
-  private trait SingletonEvent extends AggregateEvent[TopicProducer.SingletonEvent] {}
-
-  private val SINGLETON_TAG = List(AggregateEventTag[TopicProducer.SingletonEvent]("singleton"))
 
   /**
    * Publish a stream that is sharded across many tags.
@@ -53,8 +54,7 @@ object TopicProducer {
    */
   def taggedStreamWithOffset[Message, Event <: AggregateEvent[Event]](tags: immutable.Seq[AggregateEventTag[Event]])(
       eventStream: (AggregateEventTag[Event], Offset) => Source[(Message, Offset), Any]
-  ): Topic[Message] =
-    new TaggedOffsetTopicProducer[Message, Event](tags, eventStream)
+  ): Topic[Message] = TaggedOffsetTopicProducer.fromEventAndOffsetPairStream(tags, eventStream)
 
   /**
    * Publish all tags of a stream that is sharded across many tags.
@@ -71,6 +71,25 @@ object TopicProducer {
    */
   def taggedStreamWithOffset[Message, Event <: AggregateEvent[Event]](shards: AggregateEventShards[Event])(
       eventStream: (AggregateEventTag[Event], Offset) => Source[(Message, Offset), Any]
-  ): Topic[Message] =
-    new TaggedOffsetTopicProducer[Message, Event](shards.allTags.toList, eventStream)
+  ): Topic[Message] = TaggedOffsetTopicProducer.fromEventAndOffsetPairStream(shards.allTags.toList, eventStream)
+
+  // TODO(bossqone): add docs
+  @ApiMayChange
+  def singleCommandStreamWithOffset[Message](
+      eventStream: Offset => Source[TopicProducerCommand[Message], Any]
+  ): Topic[Message] = taggedCommandStreamWithOffset(SINGLETON_TAG)((_, offset) => eventStream(offset))
+
+  // TODO(bossqone): add docs
+  @ApiMayChange
+  def taggedCommandStreamWithOffset[Message, Event <: AggregateEvent[Event]](
+      tags: immutable.Seq[AggregateEventTag[Event]]
+  )(
+      eventStream: (AggregateEventTag[Event], Offset) => Source[TopicProducerCommand[Message], Any]
+  ): Topic[Message] = TaggedOffsetTopicProducer.fromTopicProducerCommandStream(tags, eventStream)
+
+  // TODO(bossqone): add docs
+  @ApiMayChange
+  def taggedCommandStreamWithOffset[Message, Event <: AggregateEvent[Event]](shards: AggregateEventShards[Event])(
+      eventStream: (AggregateEventTag[Event], Offset) => Source[TopicProducerCommand[Message], Any]
+  ): Topic[Message] = TaggedOffsetTopicProducer.fromTopicProducerCommandStream(shards.allTags.toList, eventStream)
 }

@@ -5,8 +5,8 @@
 package com.lightbend.lagom.internal.testkit
 
 import java.util.concurrent.CompletionStage
-import javax.inject.Inject
 
+import javax.inject.Inject
 import akka.Done
 import akka.stream.Materializer
 import akka.stream.javadsl.Flow
@@ -21,6 +21,7 @@ import com.lightbend.lagom.javadsl.api.broker.Topic.TopicId
 import com.lightbend.lagom.javadsl.api.broker.Message
 import com.lightbend.lagom.javadsl.api.broker.Subscriber
 import com.lightbend.lagom.javadsl.api.broker.Topic
+import com.lightbend.lagom.javadsl.broker.TopicProducerCommand
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent
 import com.lightbend.lagom.javadsl.persistence.Offset
 
@@ -56,7 +57,7 @@ class TestTopicFactory @Inject() (resolvedServices: ResolvedServices, materializ
       topicCall: TopicCall[Payload],
       topicProducer: TaggedOffsetTopicProducer[Payload, Event]
   ) extends Topic[Payload] {
-    override def topicId = topicCall.topicId
+    override def topicId: TopicId = topicCall.topicId
 
     override def subscribe(): Subscriber[Payload] = new TestSubscriber[Payload](identity)
 
@@ -77,8 +78,11 @@ class TestTopicFactory @Inject() (resolvedServices: ResolvedServices, materializ
           .from(topicProducer.tags)
           .asScala
           .flatMapMerge(topicProducer.tags.size(), { tag =>
-            topicProducer.readSideStream.apply(tag, Offset.NONE).asScala.map(_.first)
+            topicProducer.readSideStream.apply(tag, Offset.NONE).asScala
           })
+          .collect {
+            case command: TopicProducerCommand.EmitAndCommit[Payload] => command.message()
+          }
           .map { message =>
             serializer.serialize(message)
           }

@@ -4,6 +4,7 @@
 
 package com.lightbend.lagom.javadsl.broker;
 
+import akka.annotation.ApiMayChange;
 import akka.japi.Pair;
 import akka.stream.javadsl.Source;
 import com.lightbend.lagom.internal.broker.TaggedOffsetTopicProducer;
@@ -27,6 +28,11 @@ import java.util.function.Function;
  */
 public final class TopicProducer {
 
+  private interface SingletonEvent extends AggregateEvent<SingletonEvent> {}
+
+  private static final PSequence<AggregateEventTag<SingletonEvent>> SINGLETON_TAG =
+      TreePVector.singleton(AggregateEventTag.of(SingletonEvent.class, "singleton"));
+
   /**
    * Publish a single stream.
    *
@@ -42,11 +48,6 @@ public final class TopicProducer {
       Function<Offset, Source<Pair<Message, Offset>, ?>> eventStream) {
     return taggedStreamWithOffset(SINGLETON_TAG, (tag, offset) -> eventStream.apply(offset));
   }
-
-  private interface SingletonEvent extends AggregateEvent<SingletonEvent> {}
-
-  private static final PSequence<AggregateEventTag<SingletonEvent>> SINGLETON_TAG =
-      TreePVector.singleton(AggregateEventTag.of(SingletonEvent.class, "singleton"));
 
   /**
    * Publish a stream that is sharded across many tags.
@@ -68,7 +69,7 @@ public final class TopicProducer {
           PSequence<AggregateEventTag<Event>> tags,
           BiFunction<AggregateEventTag<Event>, Offset, Source<Pair<Message, Offset>, ?>>
               eventStream) {
-    return new TaggedOffsetTopicProducer<>(tags, eventStream);
+    return TaggedOffsetTopicProducer.fromEventAndOffsetPairStream(tags, eventStream);
   }
 
   /**
@@ -91,6 +92,33 @@ public final class TopicProducer {
           AggregateEventShards<Event> shards,
           BiFunction<AggregateEventTag<Event>, Offset, Source<Pair<Message, Offset>, ?>>
               eventStream) {
-    return new TaggedOffsetTopicProducer<>(shards.allTags(), eventStream);
+    return TaggedOffsetTopicProducer.fromEventAndOffsetPairStream(shards.allTags(), eventStream);
+  }
+
+  // TODO(bossqone): add docs
+  @ApiMayChange
+  public static <Message> Topic<Message> singleCommandStreamWithOffset(
+      Function<Offset, Source<TopicProducerCommand<Message>, ?>> eventStream) {
+    return taggedCommandStreamWithOffset(SINGLETON_TAG, (tag, offset) -> eventStream.apply(offset));
+  }
+
+  // TODO(bossqone): add docs
+  @ApiMayChange
+  public static <Message, Event extends AggregateEvent<Event>>
+      Topic<Message> taggedCommandStreamWithOffset(
+          PSequence<AggregateEventTag<Event>> tags,
+          BiFunction<AggregateEventTag<Event>, Offset, Source<TopicProducerCommand<Message>, ?>>
+              eventStream) {
+    return TaggedOffsetTopicProducer.fromTopicProducerCommandStream(tags, eventStream);
+  }
+
+  // TODO(bossqone): add docs
+  @ApiMayChange
+  public static <Message, Event extends AggregateEvent<Event>>
+      Topic<Message> taggedCommandStreamWithOffset(
+          AggregateEventShards<Event> shards,
+          BiFunction<AggregateEventTag<Event>, Offset, Source<TopicProducerCommand<Message>, ?>>
+              eventStream) {
+    return TaggedOffsetTopicProducer.fromTopicProducerCommandStream(shards.allTags(), eventStream);
   }
 }
