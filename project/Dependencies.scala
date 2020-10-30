@@ -19,7 +19,7 @@ object Dependencies {
 
     // This is not the sbt version used by Lagom build itself, but
     // instead the version used to build Lagom sbt plugin.
-    val TargetSbt1 = "1.2.8"
+    val TargetSbt1 = "1.3.13"
 
     // If you update the version of Play, you probably need to update the other Play* variables.
     val Play             = "2.8.2" // sync with docs/build.sbt
