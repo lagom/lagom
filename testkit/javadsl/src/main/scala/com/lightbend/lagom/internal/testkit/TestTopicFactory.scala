@@ -80,7 +80,7 @@ class TestTopicFactory @Inject() (resolvedServices: ResolvedServices, materializ
             topicProducer.readSideStream.apply(tag, Offset.NONE).asScala.map(_.first)
           })
           .map { message =>
-            serializer.serialize(message)
+            serializer.serialize(message.getPayload)
           }
           .map { bytes =>
             deserializer.deserialize(bytes)

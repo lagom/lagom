@@ -17,10 +17,13 @@ import com.lightbend.lagom.scaladsl.api.Descriptor.TopicCall
 import com.lightbend.lagom.scaladsl.api.ServiceInfo
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceSupport.ScalaMethodTopic
+import com.lightbend.lagom.scaladsl.api.broker.Message
 import com.lightbend.lagom.scaladsl.api.broker.kafka.KafkaProperties
+import com.lightbend.lagom.scaladsl.broker.kafka.KafkaMetadataKeys
 import com.lightbend.lagom.scaladsl.server.LagomServer
 import com.lightbend.lagom.scaladsl.server.LagomServiceBinding
 import com.lightbend.lagom.spi.persistence.OffsetStore
+import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
@@ -56,27 +59,30 @@ class ScaladslRegisterTopicProducers(
               case tagged: TaggedOffsetTopicProducer[Any, _] =>
                 val tags = tagged.tags
 
-                val eventStreamFactory: (String, Offset) => Source[(Any, Offset), _] = { (tag, offset) =>
+                val eventStreamFactory: (String, Offset) => Source[(Message[Any], Offset), _] = { (tag, offset) =>
                   tags.find(_.tag == tag) match {
                     case Some(aggregateTag) => tagged.readSideStream(aggregateTag, offset)
                     case None               => throw new RuntimeException("Unknown tag: " + tag)
                   }
                 }
 
-                val partitionKeyStrategy: Option[Any => String] = {
-                  topicCall.properties.get(KafkaProperties.partitionKeyStrategy).map { pks => message =>
-                    pks.computePartitionKey(message)
-                  }
+                val transform: Message[Any] => ProducerRecord[String, Any] = message => {
+                  val key: String = topicCall.properties
+                    .get(KafkaProperties.partitionKeyStrategy)
+                    .map(_.computePartitionKey(message.payload))
+                    .orNull
+                  val headers = message.get(KafkaMetadataKeys.Headers).orNull
+                  new ProducerRecord(topicId.name, null, null, key, message.payload, headers)
                 }
 
-                Producer.startTaggedOffsetProducer(
+                Producer.startTaggedOffsetProducer[Any, Message[Any]](
                   actorSystem,
                   tags.map(_.tag),
                   kafkaConfig,
                   serviceLocator.locateAll,
                   topicId.name,
                   eventStreamFactory,
-                  partitionKeyStrategy,
+                  transform,
                   new ScaladslKafkaSerializer(topicCall.messageSerializer.serializerForRequest),
                   offsetStore,
                   projectionRegistryImpl

@@ -23,8 +23,8 @@ public final class KafkaProperties {
    * are published.
    */
   @SuppressWarnings("unchecked")
-  public static <Message>
-      Descriptor.Properties.Property<Message, PartitionKeyStrategy<Message>>
+  public static <Payload>
+      Descriptor.Properties.Property<Payload, PartitionKeyStrategy<Payload>>
           partitionKeyStrategy() {
     return PARTITION_KEY_STRATEGY;
   }

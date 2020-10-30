@@ -95,7 +95,7 @@ private[lagom] class TestTopic[Payload, Event <: AggregateEvent[Event]](
           topicProducer.readSideStream.apply(tag, Offset.noOffset).map(_._1)
         })
         .map { evt =>
-          serializer.serializerForRequest.serialize(evt)
+          serializer.serializerForRequest.serialize(evt.payload)
         }
         .map { bytes =>
           serializer.deserializer(serializer.acceptResponseProtocols.head).deserialize(bytes)
