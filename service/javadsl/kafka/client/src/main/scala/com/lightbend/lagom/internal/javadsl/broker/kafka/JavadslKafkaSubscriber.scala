@@ -118,7 +118,9 @@ private[lagom] class JavadslKafkaSubscriber[Payload, SubscriberPayload](
       .withClientId(s"${info.serviceName()}-$consumerId")
   }
 
-  private def subscription = Subscriptions.topics(topicCall.topicId().value)
+  private def subscription = Subscriptions.topics(
+    kafkaConfig.topicNameMapping.getOrElse(topicCall.topicId().value, topicCall.topicId().value)
+  )
 
   override def atMostOnceSource: Source[SubscriberPayload, _] = {
     kafkaConfig.serviceName match {

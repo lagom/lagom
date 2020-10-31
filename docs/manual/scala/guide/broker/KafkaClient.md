@@ -28,6 +28,8 @@ Second, we have configuration that is specific to the publisher and the subscrib
 
 Third, the consumer has a few more configuration keys allowing you to decide how often the read-side offset is persisted in the datastore. When tuning these values, you are trading performances (storing the offset every time a message is consumed can be costly), with the risk of having to re-process some message if a failure occurs.
 
+Four, Lagom uses topic id as Kafka topic name by default. But sometime Kafka topics can be differently named by your naming conventions for different environments. For this case you can use a `topic-name-mappings` property for mapping of Lagom topic id to real Kafka topic name.
+
 ### Alpakka Kafka configuration
 
 See the [Alpakka Kafka producer settings](https://doc.akka.io/docs/alpakka-kafka/1.0/producer.html#settings) and [Alpakka Kafka consumer settings](https://doc.akka.io/docs/alpakka-kafka/1.0/consumer.html#settings) to find out about the available configuration parameters.
