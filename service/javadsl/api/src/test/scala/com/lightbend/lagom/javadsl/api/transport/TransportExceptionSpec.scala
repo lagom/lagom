@@ -25,12 +25,14 @@ class TransportExceptionSpec extends WordSpec with Matchers {
   val supportedExceptions: immutable.Seq[TransportException] = List(
     new DeserializationException("some msg - DeserializationException"),
     new BadRequest("some msg - BadRequest"),
+    new Unauthorized("some msg - Unauthorized"),
     new Forbidden("some msg - Forbidden"),
     new PolicyViolation("some msg - PolicyViolation"),
     new NotFound("some msg - NotFound"),
     new NotAcceptable(util.Arrays.asList(protocolJson, protocolTextPlain), protocolHtml),
     new PayloadTooLarge("some msg - PayloadTooLarge"),
     new UnsupportedMediaType(protocolTextPlain, protocolJson),
+    new TooManyRequests("some msg - TooManyRequests"),
     new SerializationException("some msg - SerializationException")
   )
 
