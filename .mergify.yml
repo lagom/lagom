@@ -20,3 +20,10 @@ pull_request_rules:
       delete_head_branch: {}
       label:
         remove: ["status:merge-when-green"]
+
+  - name: Labeling for Scala Steward PR's
+    conditions:
+      - author=scala-steward
+    actions:
+      label:
+        add: [ "type:updates" ]
