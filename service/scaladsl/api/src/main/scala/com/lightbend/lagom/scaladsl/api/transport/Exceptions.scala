@@ -72,6 +72,11 @@ object TransportErrorCode {
   val BadRequest: TransportErrorCode = UnsupportedData
 
   /**
+   * Authentication is required and has failed or has not yet been provided.
+   */
+  val Unauthorized: TransportErrorCode = TransportErrorCode(401, 4401, "Unauthorized")
+
+  /**
    * A particular operation was forbidden.
    */
   val Forbidden: TransportErrorCode = TransportErrorCode(403, 4403, "Forbidden")
@@ -107,6 +112,11 @@ object TransportErrorCode {
   val UnsupportedMediaType: TransportErrorCode = TransportErrorCode(415, 4415, "Unsupported Media Type")
 
   /**
+   * The user has sent too many requests in a given amount of time.
+   */
+  val TooManyRequests: TransportErrorCode = TransportErrorCode(429, 4429, "Too Many Requests")
+
+  /**
    * A generic error used to indicate that the end sending the error message because it encountered an unexpected
    * condition.
    */
@@ -131,12 +141,14 @@ object TransportErrorCode {
   private val allErrorCodes = Seq(
     ProtocolError,
     UnsupportedData,
+    Unauthorized,
     Forbidden,
     PolicyViolation,
     MethodNotAllowed,
     NotAcceptable,
     PayloadTooLarge,
     UnsupportedMediaType,
+    TooManyRequests,
     UnexpectedCondition,
     ServiceUnavailable
   )
@@ -267,11 +279,13 @@ object TransportException {
   private val ByCodeTransportExceptions
       : Map[TransportErrorCode, (TransportErrorCode, ExceptionMessage) => TransportException] = Map(
     DeserializationException.ErrorCode -> ((tec, em) => new DeserializationException(tec, em)),
+    Unauthorized.ErrorCode             -> ((tec, em) => new Unauthorized(tec, em)),
     Forbidden.ErrorCode                -> ((tec, em) => new Forbidden(tec, em)),
     PolicyViolation.ErrorCode          -> ((tec, em) => new PolicyViolation(tec, em)),
     NotAcceptable.ErrorCode            -> ((tec, em) => new NotAcceptable(tec, em)),
     PayloadTooLarge.ErrorCode          -> ((tec, em) => new PayloadTooLarge(tec, em)),
-    UnsupportedMediaType.ErrorCode     -> ((tec, em) => new UnsupportedMediaType(tec, em))
+    UnsupportedMediaType.ErrorCode     -> ((tec, em) => new UnsupportedMediaType(tec, em)),
+    TooManyRequests.ErrorCode          -> ((tec, em) => new TooManyRequests(tec, em))
   )
 }
 
@@ -415,6 +429,27 @@ object Forbidden {
   )
 }
 
+final class Unauthorized(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable)
+    extends TransportException(errorCode, exceptionMessage, cause) {
+  def this(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) = this(errorCode, exceptionMessage, null)
+}
+
+object Unauthorized {
+  val ErrorCode = TransportErrorCode.Unauthorized
+
+  def apply(message: String) = new Unauthorized(
+    ErrorCode,
+    new ExceptionMessage(classOf[Unauthorized].getSimpleName, message),
+    null
+  )
+
+  def apply(cause: Throwable) = new Unauthorized(
+    ErrorCode,
+    new ExceptionMessage(classOf[Unauthorized].getSimpleName, cause.getMessage),
+    cause
+  )
+}
+
 final class PayloadTooLarge(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable)
     extends TransportException(errorCode, exceptionMessage, cause) {
   def this(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) = this(errorCode, exceptionMessage, null)
@@ -432,6 +467,27 @@ object PayloadTooLarge {
   def apply(cause: Throwable) = new PayloadTooLarge(
     ErrorCode,
     new ExceptionMessage(classOf[PayloadTooLarge].getSimpleName, cause.getMessage),
+    cause
+  )
+}
+
+final class TooManyRequests(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage, cause: Throwable)
+    extends TransportException(errorCode, exceptionMessage, cause) {
+  def this(errorCode: TransportErrorCode, exceptionMessage: ExceptionMessage) = this(errorCode, exceptionMessage, null)
+}
+
+object TooManyRequests {
+  val ErrorCode = TransportErrorCode.TooManyRequests
+
+  def apply(message: String) = new TooManyRequests(
+    ErrorCode,
+    new ExceptionMessage(classOf[TooManyRequests].getSimpleName, message),
+    null
+  )
+
+  def apply(cause: Throwable) = new TooManyRequests(
+    ErrorCode,
+    new ExceptionMessage(classOf[TooManyRequests].getSimpleName, cause.getMessage),
     cause
   )
 }

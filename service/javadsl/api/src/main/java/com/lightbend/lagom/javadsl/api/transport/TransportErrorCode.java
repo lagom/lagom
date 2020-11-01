@@ -47,6 +47,10 @@ public final class TransportErrorCode implements Serializable {
   /** A bad request, most often this will be equivalent to unsupported data. */
   public static final TransportErrorCode BadRequest = UnsupportedData;
 
+  /** Authentication is required and has failed or has not yet been provided. */
+  public static final TransportErrorCode Unauthorized =
+      new TransportErrorCode(401, 4401, "Unauthorized");
+
   /** A particular operation was forbidden. */
   public static final TransportErrorCode Forbidden = new TransportErrorCode(403, 4403, "Forbidden");
 
@@ -75,6 +79,10 @@ public final class TransportErrorCode implements Serializable {
   /** The client or server doesn't know how to deserialize the request or response. */
   public static final TransportErrorCode UnsupportedMediaType =
       new TransportErrorCode(415, 4415, "Unsupported Media Type");
+
+  /** The user has sent too many requests in a given amount of time. */
+  public static final TransportErrorCode TooManyRequests =
+      new TransportErrorCode(429, 4429, "Too Many Requests");
 
   /**
    * A generic error used to indicate that the end sending the error message because it encountered

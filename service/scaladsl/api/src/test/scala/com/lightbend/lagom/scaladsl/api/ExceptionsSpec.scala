@@ -28,12 +28,14 @@ class ExceptionsSpec extends AnyWordSpec with Matchers {
   val supportedTransportExceptions: Seq[TransportException] = Seq(
     DeserializationException("some msg - DeserializationException"),
     BadRequest("some msg - BadRequest"),
+    Unauthorized("some msg - Unauthorized"),
     Forbidden("some msg - Forbidden"),
     PolicyViolation("some msg - PolicyViolation"),
     NotFound("some msg - NotFound"),
     NotAcceptable(List(protocolJson, protocolTextPlain), protocolHtml),
     PayloadTooLarge("some msg - PayloadTooLarge"),
     UnsupportedMediaType(protocolTextPlain, protocolJson),
+    TooManyRequests("some msg - TooManyRequests"),
     SerializationException("some msg - SerializationException")
   )
 
@@ -68,10 +70,12 @@ class ExceptionsSpec extends AnyWordSpec with Matchers {
       new TransportException(TransportErrorCode.BadRequest, customException),
       DeserializationException(customException),
       BadRequest(customException),
+      Unauthorized(customException),
       Forbidden(customException),
       PolicyViolation(customException),
       NotFound(customException),
       PayloadTooLarge(customException),
+      TooManyRequests(customException),
       SerializationException(customException)
     )
 
