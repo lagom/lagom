@@ -52,8 +52,8 @@ object LagomImport {
   val lagomScaladslTestKit              = component("lagom-scaladsl-testkit") % Test
 
   val lagomJUnitDeps = Seq(
-    "junit"        % "junit"           % "4.13" % Test,
-    "com.novocode" % "junit-interface" % "0.11" % Test
+    "junit"        % "junit"           % "4.13.1" % Test, // sync with docs/build.sbt and project/Dependencies.scala
+    "com.novocode" % "junit-interface" % "0.11"   % Test
   )
 
   // for forked tests, necessary for Cassandra

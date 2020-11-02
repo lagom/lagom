@@ -67,7 +67,7 @@ object Dependencies {
     // JUnit[Interface] should be sync with:
     //   lagomJUnitDeps in dev/sbt-plugin/src/main/scala/com/lightbend/lagom/sbt/LagomImport.scala
     //   JUnitVersion in docs/build.sbt
-    val JUnit          = "4.13"
+    val JUnit          = "4.13.1"
     val JUnitInterface = "0.11"
 
     val Slf4j   = "1.7.30"
