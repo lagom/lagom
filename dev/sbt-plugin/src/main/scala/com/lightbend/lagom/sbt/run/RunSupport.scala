@@ -12,18 +12,18 @@ import com.lightbend.lagom.devmode.Reloader.Source
 import com.lightbend.lagom.sbt.Internal
 import com.lightbend.lagom.sbt.LagomPlugin.autoImport._
 import com.lightbend.lagom.sbt.LagomReloadableService.autoImport._
-
 import sbt._
 import sbt.Keys._
 import sbt.internal.Output
 import xsbti.Position
 import xsbti.Problem
-
 import java.util.Optional
 
 import play.api.PlayException
 import play.sbt.PlayExceptions.CompilationException
 import play.sbt.PlayExceptions.UnexpectedException
+
+import scala.util.control.NonFatal
 
 private[sbt] object RunSupport {
   def reloadRunTask(
@@ -114,7 +114,7 @@ private[sbt] object RunSupport {
             .find(_.severity == xsbti.Severity.Error)
             .map(CompilationException)
             .getOrElse(UnexpectedException(Some("The compilation failed without reporting any problem!"), Some(e)))
-        case e: Exception => UnexpectedException(unexpected = Some(e))
+        case NonFatal(e) => UnexpectedException(unexpected = Some(e))
       }
       .getOrElse {
         UnexpectedException(Some("The compilation task failed without any exception!"))
