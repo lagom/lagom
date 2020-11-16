@@ -19,6 +19,7 @@ import com.lightbend.lagom.dev.Reloader.CompileFailure
 import com.lightbend.lagom.dev.Reloader.CompileResult
 import com.lightbend.lagom.dev.Reloader.CompileSuccess
 import com.lightbend.lagom.dev.Reloader.Source
+import scala.util.control.NonFatal
 
 trait RunSupportCompat {
   def taskFailureHandler(incomplete: Incomplete, streams: Option[Streams]): PlayException = {
@@ -32,7 +33,7 @@ trait RunSupportCompat {
             .find(_.severity == xsbti.Severity.Error)
             .map(CompilationException)
             .getOrElse(UnexpectedException(Some("The compilation failed without reporting any problem!"), Some(e)))
-        case e: Exception => UnexpectedException(unexpected = Some(e))
+        case NonFatal(e) => UnexpectedException(unexpected = Some(e))
       }
       .getOrElse {
         UnexpectedException(Some("The compilation task failed without any exception!"))
