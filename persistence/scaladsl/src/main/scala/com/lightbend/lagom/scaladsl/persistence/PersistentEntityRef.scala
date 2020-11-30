@@ -12,6 +12,8 @@ import akka.actor.NoSerializationVerificationNeeded
 import akka.actor.ActorSystem
 import akka.util.Timeout
 import akka.pattern.{ ask => akkaAsk }
+import org.slf4j.LoggerFactory
+import scala.util.Failure
 
 /**
  * Commands are sent to a [[PersistentEntity]] using a
@@ -25,6 +27,8 @@ final class PersistentEntityRef[Command](
 ) extends NoSerializationVerificationNeeded {
   private implicit val timeout = Timeout(askTimeout)
 
+  private val logger = LoggerFactory.getLogger(getClass)
+
   /**
    * Send the `command` to the [[PersistentEntity]]. The returned
    * `Future` will be completed with the reply from the `PersistentEntity`.
@@ -37,14 +41,23 @@ final class PersistentEntityRef[Command](
   def ask[Cmd <: Command with PersistentEntity.ReplyType[_]](command: Cmd): Future[command.ReplyType] = {
     import scala.compat.java8.FutureConverters._
     import system.dispatcher
-    (region ? CommandEnvelope(entityId, command))
+    val result = (region ? CommandEnvelope(entityId, command))
       .flatMap {
         case exc: Throwable =>
           // not using akka.actor.Status.Failure because it is using Java serialization
           Future.failed(exc)
         case result => Future.successful(result)
       }
-      .asInstanceOf[Future[command.ReplyType]]
+
+    result.onComplete {
+      case Failure(ex) =>
+        logger.error(
+          s"${ex.getClass.getName} when sending command [${command.getClass}] to entity identified by [$entityId]"
+        )
+      case _ =>
+    }
+
+    result.asInstanceOf[Future[command.ReplyType]]
   }
 
   /**
