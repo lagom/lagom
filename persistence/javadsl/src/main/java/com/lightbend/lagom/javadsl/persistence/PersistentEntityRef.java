@@ -8,6 +8,8 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.NoSerializationVerificationNeeded;
 import akka.pattern.Patterns;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.io.NotSerializableException;
@@ -24,6 +26,7 @@ public final class PersistentEntityRef<Command> implements NoSerializationVerifi
   private final String entityId;
   private final ActorRef region;
   private final Duration timeout;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   /**
    * @deprecated As of Lagom 1.5. Use {@link #PersistentEntityRef(String, ActorRef, Duration)}
@@ -70,16 +73,28 @@ public final class PersistentEntityRef<Command> implements NoSerializationVerifi
     CompletionStage<Object> future =
         Patterns.ask(region, new CommandEnvelope(entityId, command), timeout);
 
-    return future.thenCompose(
-        result -> {
-          if (result instanceof Throwable) {
-            CompletableFuture<Reply> failed = new CompletableFuture<>();
-            failed.completeExceptionally((Throwable) result);
-            return failed;
-          } else {
-            return CompletableFuture.completedFuture((Reply) result);
-          }
-        });
+    return future
+        .thenCompose(
+            result -> {
+              if (result instanceof Throwable) {
+                CompletableFuture<Reply> failed = new CompletableFuture<>();
+                failed.completeExceptionally((Throwable) result);
+                return failed;
+              } else {
+                return CompletableFuture.completedFuture((Reply) result);
+              }
+            })
+        .whenComplete(
+            (result, throwable) -> {
+              if (throwable != null)
+                logger.error(
+                    throwable.getClass().getName()
+                        + " when sending command ["
+                        + command.getClass()
+                        + "] to entity identified by ["
+                        + entityId
+                        + "]");
+            });
   }
 
   /**
