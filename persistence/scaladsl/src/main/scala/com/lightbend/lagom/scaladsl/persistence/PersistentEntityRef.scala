@@ -4,8 +4,11 @@
 
 package com.lightbend.lagom.scaladsl.persistence
 
-import akka.actor.{ActorRef, ActorSystem, NoSerializationVerificationNeeded}
-import akka.pattern.{AskTimeoutException, ask => akkaAsk}
+import akka.actor.ActorRef
+import akka.actor.ActorSystem
+import akka.actor.NoSerializationVerificationNeeded
+import akka.pattern.AskTimeoutException
+import akka.pattern.{ ask => akkaAsk }
 import akka.util.Timeout
 
 import java.io.NotSerializableException
