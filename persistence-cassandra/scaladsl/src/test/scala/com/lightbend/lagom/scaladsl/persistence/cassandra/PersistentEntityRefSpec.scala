@@ -136,7 +136,9 @@ class PersistentEntityRefSpec
         for (i <- 0 until 100) yield ref.ask(TestEntity.Add("c"))
 
       import scala.concurrent.ExecutionContext.Implicits.global
-      Future.sequence(replies).failed.futureValue(Timeout(20.seconds)) shouldBe an[AskTimeoutException]
+      val result = Future.sequence(replies).failed.futureValue(Timeout(20.seconds))
+      result shouldBe an[AskTimeoutException]
+      result.getMessage should startWith("Ask timed out on [PersistentEntityRef(10)] after [1 ms].")
     }
 
     "fail future on invalid command" in {

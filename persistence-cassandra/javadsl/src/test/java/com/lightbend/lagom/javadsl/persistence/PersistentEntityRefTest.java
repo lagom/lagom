@@ -10,6 +10,7 @@ import static com.lightbend.lagom.internal.persistence.testkit.PersistenceTestCo
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -121,7 +122,12 @@ public class PersistentEntityRefTest {
       try {
         reply.toCompletableFuture().get(20, SECONDS);
       } catch (ExecutionException e) {
-        throw e.getCause();
+        Throwable cause = e.getCause();
+        assertTrue(
+            cause
+                .getMessage()
+                .startsWith("Ask timed out on [PersistentEntityRef(10)] after [1 ms]."));
+        throw cause;
       }
     }
   }
