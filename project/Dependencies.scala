@@ -657,7 +657,6 @@ object Dependencies {
     akkaActor,
     akkaStream,
     play,
-    akkaPersistenceTestkit,
     akkaPersistenceCassandraLauncher,
     // Upgrades needed to match whitelist versions
     sslConfig,
@@ -779,7 +778,6 @@ object Dependencies {
     akkaManagementClusterHttp,
     akkaProtobuf_v3,
     akkaTestkit          % Test,
-    akkaPersistenceTestkit % Test,
     akkaMultiNodeTestkit % Test,
     scalaTest            % Test,
     junit                % Test,
@@ -812,7 +810,6 @@ object Dependencies {
   val `cluster-javadsl` = libraryDependencies ++= Seq(
     akkaTestkit          % Test,
     akkaMultiNodeTestkit % Test,
-    akkaPersistenceTestkit % Test,
     scalaTest            % Test,
     junit                % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
@@ -823,7 +820,6 @@ object Dependencies {
   val `cluster-scaladsl` = libraryDependencies ++= Seq(
     akkaTestkit          % Test,
     akkaMultiNodeTestkit % Test,
-    akkaPersistenceTestkit % Test,
     scalaTest            % Test,
     junit                % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
@@ -900,7 +896,6 @@ object Dependencies {
     akkaSlf4j,
     play,
     akkaTestkit          % Test,
-    akkaPersistenceTestkit % Test,
     akkaMultiNodeTestkit % Test,
     akkaStreamTestkit    % Test,
     scalaTest            % Test,
@@ -916,7 +911,6 @@ object Dependencies {
     akkaPersistence,
     akkaTestkit,
     akkaTestkitTyped,
-    akkaPersistenceTestkit,
     slf4jApi,
     scalaJava8Compat,
     // Upgrades needed to match whitelist versions
@@ -926,15 +920,13 @@ object Dependencies {
   val `persistence-javadsl` = libraryDependencies ++= Seq(
     slf4jApi,
     // this mean we have production code depending on testkit
-    akkaTestkit,
-    akkaPersistenceTestkit
+    akkaTestkit
   )
 
   val `persistence-scaladsl` = libraryDependencies ++= Seq(
     slf4jApi,
     // this mean we have production code depending on testkit
-    akkaTestkit,
-    akkaPersistenceTestkit
+    akkaTestkit
   )
   val `persistence-cassandra-core` = libraryDependencies ++= Seq(
     slf4jApi,
