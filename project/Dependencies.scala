@@ -119,6 +119,7 @@ object Dependencies {
   private val akkaMultiNodeTestkit = "com.typesafe.akka" %% "akka-multi-node-testkit" % Versions.Akka
   private val akkaPersistence      = "com.typesafe.akka" %% "akka-persistence" % Versions.Akka
   private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query" % Versions.Akka
+  private val akkaPersistenceTestkit = "com.typesafe.akka" %% "akka-persistence-testkit" % Versions.Akka
   private val akkaSlf4j            = ("com.typesafe.akka" %% "akka-slf4j" % Versions.Akka).excludeAll(excludeSlf4j: _*)
   private val akkaStream           = "com.typesafe.akka" %% "akka-stream" % Versions.Akka
   private val akkaProtobuf_v3      = "com.typesafe.akka" %% "akka-protobuf-v3" % Versions.Akka
@@ -402,6 +403,7 @@ object Dependencies {
       "akka-persistence-typed",
       "akka-actor-testkit-typed", // remove this when https://github.com/akka/akka/pull/27830 is fixed
       "akka-persistence-query",
+      "akka-persistence-testkit",
       "akka-protobuf-v3",
       "akka-remote",
       "akka-slf4j",
@@ -665,6 +667,7 @@ object Dependencies {
     akkaJackson,
     akkaStream,
     play,
+    akkaPersistenceTestkit,
     akkaPersistenceCassandraLauncher,
     // Upgrades needed to match allowed versions
     sslConfig,
@@ -786,6 +789,7 @@ object Dependencies {
     akkaManagementClusterHttp,
     akkaProtobuf_v3,
     akkaTestkit          % Test,
+    akkaPersistenceTestkit % Test,
     akkaMultiNodeTestkit % Test,
     scalaTest            % Test,
     junit                % Test,
@@ -818,6 +822,7 @@ object Dependencies {
   val `cluster-javadsl` = libraryDependencies ++= Seq(
     akkaTestkit          % Test,
     akkaMultiNodeTestkit % Test,
+    akkaPersistenceTestkit % Test,
     scalaTest            % Test,
     junit                % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
@@ -828,6 +833,7 @@ object Dependencies {
   val `cluster-scaladsl` = libraryDependencies ++= Seq(
     akkaTestkit          % Test,
     akkaMultiNodeTestkit % Test,
+    akkaPersistenceTestkit % Test,
     scalaTest            % Test,
     junit                % Test,
     "com.novocode"       % "junit-interface" % "0.11" % Test,
@@ -904,6 +910,7 @@ object Dependencies {
     akkaSlf4j,
     play,
     akkaTestkit          % Test,
+    akkaPersistenceTestkit % Test,
     akkaMultiNodeTestkit % Test,
     akkaStreamTestkit    % Test,
     scalaTest            % Test,
@@ -919,6 +926,7 @@ object Dependencies {
     akkaPersistence,
     akkaTestkit,
     akkaTestkitTyped,
+    akkaPersistenceTestkit,
     slf4jApi,
     scalaJava8Compat,
     // Upgrades needed to match allowed versions
@@ -928,13 +936,15 @@ object Dependencies {
   val `persistence-javadsl` = libraryDependencies ++= Seq(
     slf4jApi,
     // this mean we have production code depending on testkit
-    akkaTestkit
+    akkaTestkit,
+    akkaPersistenceTestkit
   )
 
   val `persistence-scaladsl` = libraryDependencies ++= Seq(
     slf4jApi,
     // this mean we have production code depending on testkit
-    akkaTestkit
+    akkaTestkit,
+    akkaPersistenceTestkit
   )
   val `persistence-cassandra-core` = libraryDependencies ++= Seq(
     slf4jApi,
