@@ -104,19 +104,20 @@ object Dependencies {
   private val cassandraDriverCore =
     ("com.datastax.cassandra" % "cassandra-driver-core" % Versions.CassandraDriver).excludeAll(excludeSlf4j: _*)
 
-  private val akkaActor            = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
-  private val akkaRemote           = "com.typesafe.akka" %% "akka-remote" % Versions.Akka
-  private val akkaCluster          = "com.typesafe.akka" %% "akka-cluster" % Versions.Akka
-  private val akkaClusterSharding  = "com.typesafe.akka" %% "akka-cluster-sharding" % Versions.Akka
-  private val akkaClusterTools     = "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka
-  private val akkaDistributedData  = "com.typesafe.akka" %% "akka-distributed-data" % Versions.Akka
-  private val akkaJackson          = "com.typesafe.akka" %% "akka-serialization-jackson" % Versions.Akka
-  private val akkaMultiNodeTestkit = "com.typesafe.akka" %% "akka-multi-node-testkit" % Versions.Akka
-  private val akkaPersistence      = "com.typesafe.akka" %% "akka-persistence" % Versions.Akka
-  private val akkaPersistenceQuery = "com.typesafe.akka" %% "akka-persistence-query" % Versions.Akka
-  private val akkaSlf4j            = ("com.typesafe.akka" %% "akka-slf4j" % Versions.Akka).excludeAll(excludeSlf4j: _*)
-  private val akkaStream           = "com.typesafe.akka" %% "akka-stream" % Versions.Akka
-  private val akkaProtobuf_v3      = "com.typesafe.akka" %% "akka-protobuf-v3" % Versions.Akka
+  private val akkaActor              = "com.typesafe.akka" %% "akka-actor" % Versions.Akka
+  private val akkaRemote             = "com.typesafe.akka" %% "akka-remote" % Versions.Akka
+  private val akkaCluster            = "com.typesafe.akka" %% "akka-cluster" % Versions.Akka
+  private val akkaClusterSharding    = "com.typesafe.akka" %% "akka-cluster-sharding" % Versions.Akka
+  private val akkaClusterTools       = "com.typesafe.akka" %% "akka-cluster-tools" % Versions.Akka
+  private val akkaDistributedData    = "com.typesafe.akka" %% "akka-distributed-data" % Versions.Akka
+  private val akkaJackson            = "com.typesafe.akka" %% "akka-serialization-jackson" % Versions.Akka
+  private val akkaMultiNodeTestkit   = "com.typesafe.akka" %% "akka-multi-node-testkit" % Versions.Akka
+  private val akkaPersistence        = "com.typesafe.akka" %% "akka-persistence" % Versions.Akka
+  private val akkaPersistenceQuery   = "com.typesafe.akka" %% "akka-persistence-query" % Versions.Akka
+  private val akkaPersistenceTestkit = "com.typesafe.akka" %% "akka-persistence-testkit" % Versions.Akka
+  private val akkaSlf4j              = ("com.typesafe.akka" %% "akka-slf4j" % Versions.Akka).excludeAll(excludeSlf4j: _*)
+  private val akkaStream             = "com.typesafe.akka" %% "akka-stream" % Versions.Akka
+  private val akkaProtobuf_v3        = "com.typesafe.akka" %% "akka-protobuf-v3" % Versions.Akka
 
   // akka typed dependencies
   private val akkaActorTyped           = "com.typesafe.akka" %% "akka-actor-typed"            % Versions.Akka
@@ -276,6 +277,7 @@ object Dependencies {
       akkaManagementClusterBootstrap,
       akkaPersistenceCassandra,
       akkaPersistenceCassandraLauncher,
+      akkaPersistenceTestkit,
       sprayJson,
       "com.typesafe.netty" % "netty-reactive-streams"      % Versions.NettyReactiveStreams,
       "com.typesafe.netty" % "netty-reactive-streams-http" % Versions.NettyReactiveStreams,
