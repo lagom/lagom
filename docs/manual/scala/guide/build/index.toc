@@ -3,3 +3,4 @@ MultipleBuilds:Splitting a system into multiple builds
 IntellijSbt:Importing an sbt project into Intellij;next=RunningServices,TestingServices
 EclipseSbt:Importing an sbt project into Eclipse;next=RunningServices,TestingServices
 JVMMemoryOnDev:Increase Memory in sbt
+UpgradingAkkaPlay:Using a newer version of Akka and Play Framework
