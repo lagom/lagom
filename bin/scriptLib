@@ -26,7 +26,7 @@ if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then
     EXTRA_OPTS+=("-Dlagom.build.akka.version=${AKKA_VERSION}")
 
     # Avoid Travis CI problem https://github.com/lagom/lagom/issues/3027#issuecomment-704808821
-    EXTRA_OPTS+=("-Dcassandra-query-journal.first-time-bucket=yesterday")
+    EXTRA_OPTS+=("-Dcassandra-query-journal.first-time-bucket=\"20201221T00:00\"")
 fi
 
 runSbt() {
