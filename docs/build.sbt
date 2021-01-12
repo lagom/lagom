@@ -7,9 +7,15 @@ val AkkaVersion = sys.props.getOrElse("lagom.build.akka.version", "2.6.8") // sy
 
 val JUnitVersion          = "4.13"
 val JUnitInterfaceVersion = "0.11"
+<<<<<<< HEAD
 val ScalaTestVersion      = "3.0.8"
 val PlayVersion           = "2.8.4" // sync with project/Dependencies.scala
 val Log4jVersion          = "2.12.1"
+=======
+val ScalaTestVersion      = "3.1.4"
+val PlayVersion           = "2.8.7" // sync with project/Dependencies.scala
+val Log4jVersion          = "2.13.3"
+>>>>>>> d699fbd85... build-link, play, play-ahc-ws, ... 2.8.7 (was 2.8.4)
 val MacWireVersion        = "2.3.3"
 val LombokVersion         = "1.18.8"
 val HibernateVersion      = "5.4.8.Final"
