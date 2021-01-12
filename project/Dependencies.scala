@@ -188,7 +188,7 @@ object Dependencies {
   private val checkerQual = "org.checkerframework" % "checker-qual" % "2.11.1"
 
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
-  private val okio    = "com.squareup.okio"    % "okio"   % "2.7.0"
+  private val okio    = "com.squareup.okio"    % "okio"   % "2.10.0"
   private val kotlinDeps = Seq(
     "org.jetbrains.kotlin" % "kotlin-stdlib"        % "1.3.70",
     "org.jetbrains.kotlin" % "kotlin-stdlib-common" % "1.3.70",
