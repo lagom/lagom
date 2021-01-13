@@ -57,7 +57,7 @@ object Dependencies {
     val Kafka = "2.4.1"
 
     val Curator       = "2.12.0"
-    val Immutables    = "2.8.8"
+    val Immutables    = "2.8.9-ea-1"
     val HibernateCore = "5.4.23.Final"
     val PCollections  = "3.1.4"
 
