@@ -123,10 +123,11 @@ public class PersistentEntityRefTest {
         reply.toCompletableFuture().get(20, SECONDS);
       } catch (ExecutionException e) {
         Throwable cause = e.getCause();
-        assertTrue(
-            cause
-                .getMessage()
-                .startsWith("Ask timed out on [PersistentEntityRef(10)] after [1 ms]."));
+        assertEquals(
+            "Ask timed out on [PersistentEntityRef(10)] after [1 ms]. "
+                + "Message of type [class com.lightbend.lagom.javadsl.persistence.TestEntity$Add]. "
+                + "A typical reason for `AskTimeoutException` is that the recipient actor didn't send a reply.",
+            cause.getMessage());
         throw cause;
       }
     }

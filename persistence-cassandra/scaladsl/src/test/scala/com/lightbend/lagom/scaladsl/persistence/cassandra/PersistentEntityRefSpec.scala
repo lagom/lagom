@@ -138,7 +138,11 @@ class PersistentEntityRefSpec
       import scala.concurrent.ExecutionContext.Implicits.global
       val result = Future.sequence(replies).failed.futureValue(Timeout(20.seconds))
       result shouldBe an[AskTimeoutException]
-      result.getMessage should startWith("Ask timed out on [PersistentEntityRef(10)] after [1 ms].")
+      val expectedMsg =
+        "Ask timed out on [PersistentEntityRef(10)] after [1 ms]. " +
+          "Message of type [class com.lightbend.lagom.scaladsl.persistence.TestEntity$Add]. " +
+          "A typical reason for `AskTimeoutException` is that the recipient actor didn't send a reply."
+      result.getMessage shouldBe expectedMsg
     }
 
     "fail future on invalid command" in {
