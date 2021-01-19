@@ -7,6 +7,7 @@ package com.lightbend.lagom.javadsl.persistence;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.NoSerializationVerificationNeeded;
+import akka.pattern.AskTimeoutException;
 import akka.pattern.Patterns;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +75,24 @@ public final class PersistentEntityRef<Command> implements NoSerializationVerifi
         Patterns.ask(region, new CommandEnvelope(entityId, command), timeout);
 
     return future
+        .exceptionally(
+            cause -> {
+              if (cause instanceof AskTimeoutException) {
+                String msg =
+                    "Ask timed out on ["
+                        + this
+                        + "] after ["
+                        + timeout.toMillis()
+                        + " ms]. Message of type ["
+                        + command.getClass()
+                        + "]. "
+                        + "A typical reason for `AskTimeoutException` is that the recipient actor didn't send a reply.";
+                return new AskTimeoutException(msg, cause);
+
+              } else {
+                return cause;
+              }
+            })
         .thenCompose(
             result -> {
               if (result instanceof Throwable) {
@@ -83,17 +102,6 @@ public final class PersistentEntityRef<Command> implements NoSerializationVerifi
               } else {
                 return CompletableFuture.completedFuture((Reply) result);
               }
-            })
-        .whenComplete(
-            (result, throwable) -> {
-              if (throwable != null)
-                logger.error(
-                    throwable.getClass().getName()
-                        + " when sending command ["
-                        + command.getClass()
-                        + "] to entity identified by ["
-                        + entityId
-                        + "]");
             });
   }
 

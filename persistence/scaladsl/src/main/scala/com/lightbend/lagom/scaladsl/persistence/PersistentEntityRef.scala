@@ -4,16 +4,16 @@
 
 package com.lightbend.lagom.scaladsl.persistence
 
-import scala.concurrent.duration._
-import scala.concurrent.Future
 import akka.actor.ActorRef
-import java.io.NotSerializableException
-import akka.actor.NoSerializationVerificationNeeded
 import akka.actor.ActorSystem
-import akka.util.Timeout
+import akka.actor.NoSerializationVerificationNeeded
+import akka.pattern.AskTimeoutException
 import akka.pattern.{ ask => akkaAsk }
-import org.slf4j.LoggerFactory
-import scala.util.Failure
+import akka.util.Timeout
+
+import java.io.NotSerializableException
+import scala.concurrent.Future
+import scala.concurrent.duration._
 
 /**
  * Commands are sent to a [[PersistentEntity]] using a
@@ -27,8 +27,6 @@ final class PersistentEntityRef[Command](
 ) extends NoSerializationVerificationNeeded {
   private implicit val timeout = Timeout(askTimeout)
 
-  private val logger = LoggerFactory.getLogger(getClass)
-
   /**
    * Send the `command` to the [[PersistentEntity]]. The returned
    * `Future` will be completed with the reply from the `PersistentEntity`.
@@ -39,7 +37,6 @@ final class PersistentEntityRef[Command](
    * The timeout can defined in configuration or overridden using [[#withAskTimeout]].
    */
   def ask[Cmd <: Command with PersistentEntity.ReplyType[_]](command: Cmd): Future[command.ReplyType] = {
-    import scala.compat.java8.FutureConverters._
     import system.dispatcher
     val result = (region ? CommandEnvelope(entityId, command))
       .flatMap {
@@ -48,14 +45,14 @@ final class PersistentEntityRef[Command](
           Future.failed(exc)
         case result => Future.successful(result)
       }
+      .recoverWith {
+        case cause: AskTimeoutException =>
+          val message =
+            s"Ask timed out on [$this] after [${timeout.duration.toMillis} ms]. Message of type [${command.getClass}]. " +
+              "A typical reason for `AskTimeoutException` is that the recipient actor didn't send a reply."
 
-    result.onComplete {
-      case Failure(ex) =>
-        logger.error(
-          s"${ex.getClass.getName} when sending command [${command.getClass}] to entity identified by [$entityId]"
-        )
-      case _ =>
-    }
+          Future.failed(new AskTimeoutException(message, cause))
+      }
 
     result.asInstanceOf[Future[command.ReplyType]]
   }
