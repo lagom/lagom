@@ -7,3 +7,4 @@ IntellijMaven:Importing an existing Maven Project into Intellij;next=ImmutablesI
 IntellijSbtJava:Importing an sbt project into Intellij;next=ImmutablesInIDEs,JVMMemoryOnDev,RunningServices
 ImmutablesInIDEs:Set up Immutables in your IDE
 JVMMemoryOnDev:Increase memory for sbt and Maven
+UpgradingAkkaPlay:Using a newer version of Akka and Play Framework
