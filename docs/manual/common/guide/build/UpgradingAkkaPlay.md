@@ -11,9 +11,9 @@ Bear in mind that neither Akka nor Akka HTTP allow [mixed versions](https://doc.
 When you are using sbt, you can force new versions of Akka and Play by adding the following to your `build.sbt`:
 
 ```scala
-val akkaVersion = "2.5.31"
-val akkaHttpVersion = "10.1.12"
-val playVersion = "2.7.6"
+val akkaVersion = "2.5.x"
+val akkaHttpVersion = "10.1.y"
+val playVersion = "2.7.z"
 
 libraryDependencies in ThisBuild ++= Seq(
   "com.typesafe.akka" %% "akka-discovery" % akkaVersion,
@@ -52,11 +52,10 @@ Below is an example of how you would overwrite the version for some Akka, Akka H
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.binary.version>2.12</scala.binary.version>
-        <akka.version>2.5.31</akka.version>
-        <akka.http.version>10.1.12</akka.http.version>
-        <play.version>2.7.6</play.version>
+        <akka.version>2.6.x</akka.version>
+        <akka.http.version>10.1.y</akka.http.version>
+        <play.version>2.7.z</play.version>
     </properties>
-
 
     <dependencyManagement>
         <dependencies>
@@ -157,9 +156,9 @@ In latest versions of Akka you may also use the BOM provided instead of manually
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.binary.version>2.12</scala.binary.version>
-        <akka.version>2.6.11</akka.version>
-        <akka.http.version>10.1.12</akka.http.version>
-        <play.version>2.7.6</play.version>
+        <akka.version>2.6.x</akka.version>
+        <akka.http.version>10.1.y</akka.http.version>
+        <play.version>2.7.z</play.version>
     </properties>
     <dependencyManagement>
       <dependencies>
