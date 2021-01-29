@@ -5,7 +5,7 @@ lagomCassandraEnabled in ThisBuild := false
 lagomKafkaEnabled in ThisBuild := false
 
 val h2Driver = "com.h2database" % "h2" % "1.4.199"
-val lombok = "org.projectlombok" % "lombok" % "1.18.8"
+val lombok = "org.projectlombok" % "lombok" % "1.18.18"
 val hibernateEntityManager = "org.hibernate" % "hibernate-entitymanager" % "5.4.2.Final"
 val jpaApi  = "org.hibernate.javax.persistence" % "hibernate-jpa-2.1-api" % "1.0.0.Final"
 val validationApi = "javax.validation" % "validation-api" % "1.1.0.Final"
