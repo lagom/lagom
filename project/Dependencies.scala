@@ -23,7 +23,7 @@ object Dependencies {
 
     // If you update the version of Play, you probably need to update the other Play* variables.
     val Play             = "2.8.7" // sync with docs/build.sbt
-    val PlayJson         = "2.9.1"
+    val PlayJson         = "2.9.2"
     val PlayStandaloneWs = "2.1.2"
     val Twirl            = "1.5.0" // sync with docs/project/plugins.sbt
     val PlayFileWatch    = "1.1.14"
@@ -44,12 +44,12 @@ object Dependencies {
     val Jackson              = "2.10.5"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
-    val JacksonDatabind      = Jackson
-    val Guava                = "29.0-jre"
+    val JacksonDatabind      = "2.10.5.1"
+    val Guava                = "30.1-jre"
     val Maven                = "3.6.3"
     val MavenWagon           = "3.3.3"
     val MavenResolver        = "1.4.1"
-    val Netty                = "4.1.50.Final"
+    val Netty                = "4.1.57.Final"
     val NettyReactiveStreams = "2.0.5"
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
     val AlpakkaKafka = "2.0.4"
@@ -58,7 +58,7 @@ object Dependencies {
 
     val Curator       = "2.12.0"
     val Immutables    = "2.8.8"
-    val HibernateCore = "5.4.23.Final"
+    val HibernateCore = "5.4.27.Final"
     val PCollections  = "3.1.4"
 
     val ScalaJava8Compat = "0.9.1"
@@ -77,7 +77,7 @@ object Dependencies {
     val jetty = "9.4.20.v20190813"
 
     val Selenium  = "3.141.59"
-    val ByteBuddy = "1.10.18"
+    val ByteBuddy = "1.10.19"
   }
 
   // Some setup before we start creating ModuleID vals
@@ -98,7 +98,7 @@ object Dependencies {
   private val scalaTest: ModuleID    = ("org.scalatest" %% "scalatest" % Versions.ScalaTest).excludeAll(excludeSlf4j: _*)
   private val guava                  = "com.google.guava" % "guava" % Versions.Guava
   private val scalaJava8Compat       = "org.scala-lang.modules" %% "scala-java8-compat" % Versions.ScalaJava8Compat
-  private val scalaCollectionCompat  = "org.scala-lang.modules" %% "scala-collection-compat" % "2.2.0"
+  private val scalaCollectionCompat  = "org.scala-lang.modules" %% "scala-collection-compat" % "2.3.2"
   private val scalaXml               = "org.scala-lang.modules" %% "scala-xml" % Versions.ScalaXml
   private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
   private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % Versions.ByteBuddy
@@ -185,10 +185,10 @@ object Dependencies {
   private val javaxAnnotationApi    = "javax.annotation" % "javax.annotation-api" % "1.3.2"
   private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "3.2.6").excludeAll(excludeSlf4j: _*)
 
-  private val checkerQual = "org.checkerframework" % "checker-qual" % "2.11.1"
+  private val checkerQual = "org.checkerframework" % "checker-qual" % "3.9.0"
 
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
-  private val okio    = "com.squareup.okio"    % "okio"   % "2.7.0"
+  private val okio    = "com.squareup.okio"    % "okio"   % "2.10.0"
   private val kotlinDeps = Seq(
     "org.jetbrains.kotlin" % "kotlin-stdlib"        % "1.3.70",
     "org.jetbrains.kotlin" % "kotlin-stdlib-common" % "1.3.70",
@@ -210,7 +210,7 @@ object Dependencies {
   private val jnra64asm    = "com.github.jnr" % "jnr-a64asm"    % "1.0.0"
   private val jnrx86asm    = "com.github.jnr" % "jnr-x86asm"    % "1.0.2"
 
-  private val mockitoCore = "org.mockito" % "mockito-core" % "3.4.6"
+  private val mockitoCore = "org.mockito" % "mockito-core" % "3.7.0"
 
   private val jacksonFamily =
     libraryFamily("com.fasterxml.jackson.core", Versions.JacksonCore)(
