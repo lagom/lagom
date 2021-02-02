@@ -52,8 +52,8 @@ Below is an example of how you would overwrite the version for some Akka, Akka H
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.binary.version>2.12</scala.binary.version>
-        <akka.version>2.6.2.8.newer-version</akka.version>
-        <akka.http.version>10.1.2.8.newer-version</akka.http.version>
+        <akka.version>2.6.newer-version</akka.version>
+        <akka.http.version>10.1.newer-version</akka.http.version>
         <play.version>2.8.newer-version</play.version>
     </properties>
 
