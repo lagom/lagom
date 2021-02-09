@@ -4,7 +4,6 @@
 
 package com.lightbend.lagom.scaladsl.testkit
 
-import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -55,6 +54,16 @@ object ServiceTest {
      * @return A copy of this setup.
      */
     def withCassandra(enabled: Boolean): Setup
+
+    /**
+     * Enable or disable Cassandra on the specified port.
+     *
+     * @param enabled True if Cassandra should be enabled, or false if disabled. Enabling Cassandra will also enable the
+     *                cluster.
+     * @param port    The port to assign the Cassandra server to.
+     * @return A copy of this setup.
+     */
+    def withCassandra(enabled: Boolean, port: Int): Setup
 
     /**
      * Enable Cassandra.
@@ -115,6 +124,15 @@ object ServiceTest {
     def withSsl(enabled: Boolean): Setup
 
     /**
+     * Enable or disable SSL on the specified port.
+     * @param enabled True if the server should bind an HTTP+TLS port, or false if only HTTP should be bound.
+     * @param port The port to bind to.
+     * @return A copy of this setup.
+     */
+    @ApiMayChange
+    def withSsl(enabled: Boolean, port: Int): Setup
+
+    /**
      * Enable the SSL port.
      *
      * @return A copy of this setup.
@@ -123,9 +141,29 @@ object ServiceTest {
     def withSsl(): Setup = withSsl(true)
 
     /**
+     * Sets the HTTP port the server should run on.
+     *
+     * By default, a dynamically assigned port will be used.
+     *
+     * @param port The port to assign the server to.
+     * @return A copy of this setup.
+     */
+    def withPort(port: Int): Setup
+
+    /**
+     * The server HTTP port.
+     */
+    def port: Int
+
+    /**
      * Whether Cassandra is enabled.
      */
     def cassandra: Boolean
+
+    /**
+     * The Cassandra server port.
+     */
+    def cassandraPort: Int
 
     /**
      * Whether JDBC is enabled.
@@ -141,17 +179,26 @@ object ServiceTest {
      * Whether SSL is enabled.
      */
     def ssl: Boolean
+
+    /**
+     * The server HTTPS port.
+     */
+    def sslPort: Int
   }
 
   private case class SetupImpl(
+      port: Int = 0,
       cassandra: Boolean = false,
+      cassandraPort: Int = 0,
       jdbc: Boolean = false,
       cluster: Boolean = false,
-      ssl: Boolean = false
+      ssl: Boolean = false,
+      sslPort: Int = 0
   ) extends Setup {
-    override def withCassandra(enabled: Boolean): Setup = {
+    override def withCassandra(enabled: Boolean): Setup = withCassandra(enabled, port = 0)
+    override def withCassandra(enabled: Boolean, port: Int): Setup = {
       if (enabled) {
-        copy(cassandra = true, cluster = true)
+        copy(cassandra = true, cassandraPort = port, cluster = true)
       } else {
         copy(cassandra = false)
       }
@@ -172,8 +219,13 @@ object ServiceTest {
       }
     }
 
-    override def withSsl(enabled: Boolean): Setup = {
-      copy(ssl = enabled)
+    override def withSsl(enabled: Boolean): Setup = withSsl(enabled, port = 0)
+    override def withSsl(enabled: Boolean, port: Int): Setup = {
+      copy(ssl = enabled, sslPort = port)
+    }
+
+    override def withPort(port: Int): Setup = {
+      copy(port = port)
     }
   }
 
@@ -287,7 +339,7 @@ object ServiceTest {
         val now      = DateTimeFormatter.ofPattern("yyMMddHHmmssSSS").format(LocalDateTime.now())
         val testName = s"ServiceTest_$now"
 
-        val cassandraPort = CassandraTestServer.run(testName, lifecycle)
+        val cassandraPort = CassandraTestServer.run(testName, lifecycle, setup.cassandraPort)
 
         cassandraConfigMap(testName, cassandraPort)
       } else if (setup.jdbc) {
@@ -317,7 +369,12 @@ object ServiceTest {
       val clientSslContext: SSLContext = sslHolder.sslContext
       // In tests we're using a self-signed certificate so we use the same keyStore for both
       // the server and the client trustStore.
-      TestkitSslSetup.enabled(sslHolder.keyStoreMetadata, sslHolder.trustStoreMetadata, clientSslContext)
+      TestkitSslSetup.enabled(
+        sslHolder.keyStoreMetadata,
+        sslHolder.trustStoreMetadata,
+        clientSslContext,
+        Some(setup.sslPort)
+      )
     } else {
       Disabled
     }
@@ -327,7 +384,7 @@ object ServiceTest {
       Configuration.load(this.getClass.getClassLoader, props, sslSetup.sslSettings, allowMissingApplicationConf = true)
 
     val serverConfig: ServerConfig = new ServerConfig(
-      port = Some(0),
+      port = Some(setup.port),
       sslPort = sslSetup.sslPort,
       mode = lagomApplication.environment.mode,
       configuration = sslConfig,
