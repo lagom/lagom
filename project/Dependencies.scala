@@ -77,7 +77,7 @@ object Dependencies {
     val jetty = "9.4.20.v20190813"
 
     val Selenium  = "3.141.59"
-    val ByteBuddy = "1.10.19"
+    val ByteBuddy = "1.10.20"
   }
 
   // Some setup before we start creating ModuleID vals
