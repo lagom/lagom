@@ -404,21 +404,21 @@ object LagomPlugin extends AutoPlugin {
   private val serviceLocatorProject = Project("lagom-internal-meta-project-service-locator", file("."))
     .configure(p => p.in(file("target") / "lagom-dynamic-projects" / p.id))
     .settings(
-      scalaVersion := "2.12.10",
+      scalaVersion := "2.12.13",
       libraryDependencies += LagomImport.component("lagom-service-locator")
     )
 
   private val cassandraProject = Project("lagom-internal-meta-project-cassandra", file("."))
     .configure(p => p.in(file("target") / "lagom-dynamic-projects" / p.id))
     .settings(
-      scalaVersion := "2.12.10",
+      scalaVersion := "2.12.13",
       libraryDependencies += LagomImport.component("lagom-cassandra-server")
     )
 
   private val kafkaServerProject = Project("lagom-internal-meta-project-kafka", file("."))
     .configure(p => p.in(file("target") / "lagom-dynamic-projects" / p.id))
     .settings(
-      scalaVersion := "2.12.10",
+      scalaVersion := "2.12.13",
       libraryDependencies += LagomImport.component("lagom-kafka-server")
     )
 
