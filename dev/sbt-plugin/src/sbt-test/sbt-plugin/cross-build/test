@@ -2,4 +2,4 @@
 # =======================
 
 # Test that a Lagom project can be cross-built.
-> ++2.12.10 compile
+> ++2.12.13 compile

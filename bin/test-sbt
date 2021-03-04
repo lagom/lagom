@@ -5,7 +5,7 @@
 # shellcheck source=bin/scriptLib
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
-SCALA_VERSION="${SCALA_VERSION:-2.12.10}"
+SCALA_VERSION="${SCALA_VERSION:-2.12.13}"
 
 # disable publishing javadoc for scripted
 runSbtNoisy ";set publishArtifact in (Compile, packageDoc) in ThisBuild := false ;+ server-containers/publishLocal;++$SCALA_VERSION publishScriptedDependencies ;++${SCALA_VERSION} scripted"
