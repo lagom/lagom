@@ -54,7 +54,7 @@ object ScriptedTools extends AutoPlugin {
         )
       case None => Seq.empty
     }),
-    scalaVersion := sys.props.get("scala.version").getOrElse("2.12.10")
+    scalaVersion := sys.props.get("scala.version").getOrElse("2.12.13")
   )
 
   private def validateRequestImpl = Def.inputTask {
