@@ -37,6 +37,7 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSett
   licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))),
   homepage := Some(url("https://www.lagomframework.com/")),
   sonatypeProfileName := "com.lightbend",
+  Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
   headerLicense := Some(
     HeaderLicense.Custom(
       // When updating, keep in sync with docs/build.sbt configuration
