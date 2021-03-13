@@ -40,7 +40,7 @@ object Dependencies {
     val Disruptor = "3.4.2"
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
-    val ScalaTest            = "3.1.4"
+    val ScalaTest            = "3.2.6"
     val Jackson              = "2.10.5"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
