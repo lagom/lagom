@@ -35,7 +35,7 @@ object Dependencies {
     // this is the version used in AkkaPersistenceCassandra, we stick with it
     val CassandraDriver     = "3.7.2"
     val AkkaPersistenceJdbc = "3.5.3"
-    val AkkaManagement      = "1.0.9"
+    val AkkaManagement      = "1.0.10"
 
     val Disruptor = "3.4.2"
 
