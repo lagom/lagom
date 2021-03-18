@@ -14,6 +14,7 @@ import com.datastax.driver.core.BatchStatement
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetDao
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetStore
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSettings
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.scaladsl.persistence._
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
@@ -28,8 +29,8 @@ import scala.collection.JavaConverters._
  * Internal API
  */
 private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEvent[Event], Handler](
-    system: ActorSystem,
     session: CassandraSession,
+    readSideSettings: CassandraReadSideSettings,
     handlers: Map[Class[_ <: Event], Handler],
     dispatcher: String
 )(implicit ec: ExecutionContext)
@@ -46,6 +47,7 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
       // statements is never empty, there is at least the store offset statement
       // for simplicity we just use batch api (even if there is only one)
       batch.addAll(statements.asJava)
+      batch.setConsistencyLevel(readSideSettings.writeConsistency)
       session.executeWriteBatch(batch)
     }
 
@@ -91,6 +93,7 @@ private[cassandra] object CassandraAutoReadSideHandler {
  */
 private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEvent[Event]](
     session: CassandraSession,
+    readSideSettings: CassandraReadSideSettings,
     offsetStore: CassandraOffsetStore,
     handlers: Map[Class[_ <: Event], CassandraAutoReadSideHandler.Handler[Event]],
     globalPrepareCallback: () => Future[Done],
@@ -100,6 +103,7 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
 )(implicit ec: ExecutionContext)
     extends CassandraReadSideHandler[Event, CassandraAutoReadSideHandler.Handler[Event]](
       session,
+      readSideSettings,
       handlers,
       dispatcher
     ) {

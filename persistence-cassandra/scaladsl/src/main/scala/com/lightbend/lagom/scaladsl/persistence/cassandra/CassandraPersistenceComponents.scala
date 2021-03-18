@@ -63,5 +63,5 @@ trait ReadSideCassandraPersistenceComponents extends ReadSidePersistenceComponen
   lazy val offsetStore: OffsetStore = cassandraOffsetStore
 
   lazy val cassandraReadSide: CassandraReadSide =
-    new CassandraReadSideImpl(actorSystem, cassandraSession, cassandraOffsetStore)
+    new CassandraReadSideImpl(actorSystem, cassandraSession, testCasReadSideSettings, cassandraOffsetStore)
 }
