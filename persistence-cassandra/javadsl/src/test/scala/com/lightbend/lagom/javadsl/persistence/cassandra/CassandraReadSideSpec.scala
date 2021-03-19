@@ -63,7 +63,8 @@ class CassandraReadSideSpec
   private lazy val testCasReadSideSettings: CassandraReadSideSettings = new CassandraReadSideSettings(system)
   private lazy val offsetStore =
     new JavadslCassandraOffsetStore(system, testSession, testCasReadSideSettings, ReadSideConfig())
-  private lazy val cassandraReadSide = new CassandraReadSideImpl(system, testSession, offsetStore, null, injector)
+  private lazy val cassandraReadSide =
+    new CassandraReadSideImpl(system, testSession, testCasReadSideSettings, offsetStore, null, injector)
 
   override def processorFactory(): ReadSideProcessor[TestEntity.Evt] =
     new TestEntityReadSide.TestEntityReadSideProcessor(cassandraReadSide, testSession)
