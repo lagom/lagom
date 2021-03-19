@@ -68,7 +68,7 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
 
         for {
           statements <- invoke(handler, elem)
-          _ <- executeStatements(statements)
+          _          <- executeStatements(statements)
           // important: only commit offset once read view
           // statements has completed successfully
           _ <- executeStatements(offsetStatement(elem.offset) :: Nil)
@@ -117,8 +117,8 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
       element: EventStreamElement[Event]
   ): Future[immutable.Seq[BoundStatement]] =
     handler
-        .asInstanceOf[EventStreamElement[Event] => Future[immutable.Seq[BoundStatement]]]
-        .apply(element)
+      .asInstanceOf[EventStreamElement[Event] => Future[immutable.Seq[BoundStatement]]]
+      .apply(element)
 
   override def globalPrepare(): Future[Done] = {
     globalPrepareCallback.apply()
