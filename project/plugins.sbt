@@ -24,3 +24,5 @@ addSbtPlugin("org.scalameta"     % "sbt-scalafmt"       % "2.3.4")
 addSbtPlugin("com.dwijnand"      % "sbt-dynver"         % "4.1.1")
 
 addSbtPlugin("com.lightbend.akka" % "sbt-akka-version-check" % "0.1")
+
+addSbtPlugin("com.lightbend.sbt" % "sbt-bill-of-materials" % "1.0.2")
