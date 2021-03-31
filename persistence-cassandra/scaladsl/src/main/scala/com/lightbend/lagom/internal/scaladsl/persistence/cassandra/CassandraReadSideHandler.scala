@@ -9,10 +9,12 @@ import akka.stream.ActorAttributes
 import akka.stream.scaladsl.Flow
 import akka.Done
 import akka.NotUsed
+import akka.actor.ActorSystem
 import com.datastax.driver.core.BatchStatement
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetDao
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetStore
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSettings
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.scaladsl.persistence._
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
@@ -28,6 +30,7 @@ import scala.collection.JavaConverters._
  */
 private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEvent[Event], Handler](
     session: CassandraSession,
+    readSideSettings: CassandraReadSideSettings,
     handlers: Map[Class[_ <: Event], Handler],
     dispatcher: String
 )(implicit ec: ExecutionContext)
@@ -36,12 +39,15 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
 
   protected def invoke(handler: Handler, event: EventStreamElement[Event]): Future[immutable.Seq[BoundStatement]]
 
+  protected def offsetStatement(offset: Offset): BoundStatement
+
   override def handle(): Flow[EventStreamElement[Event], Done, NotUsed] = {
     def executeStatements(statements: Seq[BoundStatement]): Future[Done] = {
       val batch = new BatchStatement
       // statements is never empty, there is at least the store offset statement
       // for simplicity we just use batch api (even if there is only one)
       batch.addAll(statements.asJava)
+      batch.setConsistencyLevel(readSideSettings.writeConsistency)
       session.executeWriteBatch(batch)
     }
 
@@ -60,7 +66,13 @@ private[cassandra] abstract class CassandraReadSideHandler[Event <: AggregateEve
             }
           )
 
-        invoke(handler, elem).flatMap(executeStatements)
+        for {
+          statements <- invoke(handler, elem)
+          _          <- executeStatements(statements)
+          // important: only commit offset once read view
+          // statements has completed successfully
+          _ <- executeStatements(offsetStatement(elem.offset) :: Nil)
+        } yield Done
       }
       .withAttributes(ActorAttributes.dispatcher(dispatcher))
   }
@@ -81,6 +93,7 @@ private[cassandra] object CassandraAutoReadSideHandler {
  */
 private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEvent[Event]](
     session: CassandraSession,
+    readSideSettings: CassandraReadSideSettings,
     offsetStore: CassandraOffsetStore,
     handlers: Map[Class[_ <: Event], CassandraAutoReadSideHandler.Handler[Event]],
     globalPrepareCallback: () => Future[Done],
@@ -90,6 +103,7 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
 )(implicit ec: ExecutionContext)
     extends CassandraReadSideHandler[Event, CassandraAutoReadSideHandler.Handler[Event]](
       session,
+      readSideSettings,
       handlers,
       dispatcher
     ) {
@@ -101,20 +115,17 @@ private[cassandra] final class CassandraAutoReadSideHandler[Event <: AggregateEv
   protected override def invoke(
       handler: Handler[Event],
       element: EventStreamElement[Event]
-  ): Future[immutable.Seq[BoundStatement]] = {
-    for {
-      statements <- handler
-        .asInstanceOf[EventStreamElement[Event] => Future[immutable.Seq[BoundStatement]]]
-        .apply(element)
-    } yield statements :+ offsetDao.bindSaveOffset(element.offset)
-  }
-
-  protected def offsetStatement(offset: Offset): immutable.Seq[BoundStatement] =
-    immutable.Seq(offsetDao.bindSaveOffset(offset))
+  ): Future[immutable.Seq[BoundStatement]] =
+    handler
+      .asInstanceOf[EventStreamElement[Event] => Future[immutable.Seq[BoundStatement]]]
+      .apply(element)
 
   override def globalPrepare(): Future[Done] = {
     globalPrepareCallback.apply()
   }
+
+  override def offsetStatement(offset: Offset): BoundStatement =
+    offsetDao.bindSaveOffset(offset)
 
   override def prepare(tag: AggregateEventTag[Event]): Future[Offset] = {
     for {

@@ -10,7 +10,6 @@ import java.util.concurrent.CompletionStage
 import java.util.function.BiFunction
 import java.util.function.Function
 import java.util.function.Supplier
-
 import javax.inject.Inject
 import javax.inject.Singleton
 import akka.Done
@@ -18,6 +17,7 @@ import akka.actor.ActorSystem
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.internal.javadsl.persistence.ReadSideImpl
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetStore
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSettings
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.javadsl.persistence._
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide.ReadSideHandlerBuilder
@@ -32,6 +32,7 @@ import play.api.inject.Injector
 private[lagom] final class CassandraReadSideImpl @Inject() (
     system: ActorSystem,
     session: CassandraSession,
+    cassandraReadSideSettings: CassandraReadSideSettings,
     offsetStore: CassandraOffsetStore,
     readSide: ReadSideImpl,
     injector: Injector
@@ -79,6 +80,7 @@ private[lagom] final class CassandraReadSideImpl @Inject() (
       override def build(): ReadSideHandler[Event] = {
         new CassandraAutoReadSideHandler[Event](
           session,
+          cassandraReadSideSettings,
           offsetStore,
           handlers,
           globalPrepareCallback,

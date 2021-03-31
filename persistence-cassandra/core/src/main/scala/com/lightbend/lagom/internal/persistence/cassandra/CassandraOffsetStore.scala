@@ -76,9 +76,11 @@ private[lagom] abstract class CassandraOffsetStore(
   }
 
   private def prepareWriteOffset: Future[PreparedStatement] = {
-    session.prepare(
-      "INSERT INTO offsetStore (eventProcessorId, tag, timeUuidOffset, sequenceOffset) VALUES (?, ?, ?, ?)"
-    )
+    session
+      .prepare(
+        "INSERT INTO offsetStore (eventProcessorId, tag, timeUuidOffset, sequenceOffset) VALUES (?, ?, ?, ?)"
+      )
+      .map(_.setConsistencyLevel(cassandraReadSideSettings.writeConsistency))
   }
 
   private def readOffset(eventProcessorId: String, tag: String): Future[Offset] = {

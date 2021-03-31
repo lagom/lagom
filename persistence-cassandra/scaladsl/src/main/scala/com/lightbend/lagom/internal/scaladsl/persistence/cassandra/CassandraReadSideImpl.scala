@@ -8,6 +8,7 @@ import akka.Done
 import akka.actor.ActorSystem
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.internal.persistence.cassandra.CassandraOffsetStore
+import com.lightbend.lagom.internal.persistence.cassandra.CassandraReadSideSettings
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandler
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide.ReadSideHandlerBuilder
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
@@ -26,6 +27,7 @@ import scala.reflect.ClassTag
 private[lagom] final class CassandraReadSideImpl(
     system: ActorSystem,
     session: CassandraSession,
+    cassandraReadSideSettings: CassandraReadSideSettings,
     offsetStore: CassandraOffsetStore
 ) extends CassandraReadSide {
   private val dispatcher = system.settings.config.getString("lagom.persistence.read-side.use-dispatcher")
@@ -59,6 +61,7 @@ private[lagom] final class CassandraReadSideImpl(
       override def build(): ReadSideHandler[Event] = {
         new CassandraAutoReadSideHandler[Event](
           session,
+          cassandraReadSideSettings,
           offsetStore,
           handlers,
           globalPrepareCallback,
