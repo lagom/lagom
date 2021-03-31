@@ -1110,7 +1110,8 @@ lazy val devEnvironmentProjects = Seq[ProjectReference](
   `maven-java-archetype`,
   `maven-dependencies`,
   `server-containers`,
-  `kafka-server`
+  `kafka-server`,
+  `bill-of-materials`
 )
 
 lazy val `dev-environment` = (project in file("dev"))
@@ -1393,6 +1394,14 @@ def archetypeProject(archetypeName: String) =
     )
 
 lazy val `maven-java-archetype` = archetypeProject("java")
+lazy val `bill-of-materials` = (project in file("dev") / "bill-of-materials")
+  .enablePlugins(SonatypeOnly, BillOfMaterialsPlugin)
+  .settings(sonatypeSettings, common, noMima, sbtScalaSettings, publishMavenStyleSettings)
+  .settings(
+    name := "lagom-bom",
+    bomIncludeProjects := coreProjects ++ javadslProjects ++ scaladslProjects,
+    pomExtra := pomExtra.value :+ bomDependenciesListing.value,
+  )
 lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
   .enablePlugins(HeaderPlugin, SonatypeOnly)
   .settings(sonatypeSettings, common, noMima, sbtScalaSettings, publishMavenStyleSettings)
