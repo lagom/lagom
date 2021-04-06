@@ -50,6 +50,7 @@ object ScriptedTools extends AutoPlugin {
       case Some(_) =>
         Seq(
           "akka-snapshot-repository".at("https://repo.akka.io/snapshots"),
+          // TODO: obtain the Akka snapshots from sonatype (when available)
           "akka-http-snapshot-repository".at("https://dl.bintray.com/akka/snapshots/")
         )
       case None => Seq.empty
