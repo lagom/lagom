@@ -19,14 +19,14 @@ object Dependencies {
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.8.7" // sync with docs/build.sbt
+    val Play             = "2.8.7+134-5d66d60d" // sync with docs/build.sbt
     val PlayJson         = "2.9.1"
-    val PlayStandaloneWs = "2.1.2"
-    val Twirl            = "1.5.0" // sync with docs/project/plugins.sbt
+    val PlayStandaloneWs = "2.1.3"
+    val Twirl            = "1.5.1" // sync with docs/project/plugins.sbt
     val PlayFileWatch    = "1.1.14"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.10") // sync with docs/build.sbt
-    val AkkaHttp     = "10.1.13"
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.13") // sync with docs/build.sbt
+    val AkkaHttp     = "10.1.14"
 
     val AkkaPersistenceCassandra = "0.104"
     // this is the version used in AkkaPersistenceCassandra, we stick with it
@@ -38,16 +38,16 @@ object Dependencies {
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
     val ScalaTest            = "3.0.8"
-    val Jackson              = "2.10.5"
+    val Jackson              = "2.11.4"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
-    val JacksonDatabind      = "2.10.5.1"
+    val JacksonDatabind      = Jackson
     val Guava                = "28.2-jre"
     val Maven                = "3.6.2"
     val MavenWagon           = "3.3.3"
     val MavenResolver        = "1.4.1"
-    val Netty                = "4.1.50.Final"
-    val NettyReactiveStreams = "2.0.4"
+    val Netty                = "4.1.63.Final"
+    val NettyReactiveStreams = "2.0.5"
     val Kafka                = "2.1.1"
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
     val AlpakkaKafka  = "1.1.0"
@@ -62,7 +62,7 @@ object Dependencies {
     // JUnit[Interface] should be sync with:
     //   lagomJUnitDeps in dev/sbt-plugin/src/main/scala/com/lightbend/lagom/sbt/LagomImport.scala
     //   JUnitVersion in docs/build.sbt
-    val JUnit          = "4.13"
+    val JUnit          = "4.13.2"
     val JUnitInterface = "0.11"
 
     val Slf4j   = "1.7.30"
@@ -117,6 +117,7 @@ object Dependencies {
   private val akkaPersistenceTestkit = "com.typesafe.akka" %% "akka-persistence-testkit" % Versions.Akka
   private val akkaSlf4j              = ("com.typesafe.akka" %% "akka-slf4j" % Versions.Akka).excludeAll(excludeSlf4j: _*)
   private val akkaStream             = "com.typesafe.akka" %% "akka-stream" % Versions.Akka
+  private val akkaStreamTyped        = "com.typesafe.akka" %% "akka-stream-typed" % Versions.Akka
   private val akkaProtobuf_v3        = "com.typesafe.akka" %% "akka-protobuf-v3" % Versions.Akka
 
   // akka typed dependencies
@@ -350,7 +351,7 @@ object Dependencies {
       "net.jodah"           % "typetools"               % "0.5.0",
       "org.lz4"             % "lz4-java"                % "1.7.1",
       "com.github.luben"    % "zstd-jni"                % "1.3.7-1",
-      "org.agrona"          % "agrona"                  % "1.4.1",
+      "org.agrona"          % "agrona"                  % "1.9.0",
       commonsLang,
       kafkaClients,
       "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.18",
@@ -361,7 +362,7 @@ object Dependencies {
       "org.joda"       % "joda-convert"  % "1.9.2",
       "org.hamcrest"   % "hamcrest-core" % "1.3",
       "org.lmdbjava"   % "lmdbjava"      % "0.7.0",
-      "com.hierynomus" % "asn-one"       % "0.4.0",
+      "com.hierynomus" % "asn-one"       % "0.5.0",
       pcollections,
       reactiveStreams,
       "org.scalactic" %% "scalactic" % Versions.ScalaTest,
@@ -403,6 +404,7 @@ object Dependencies {
       "akka-remote",
       "akka-slf4j",
       "akka-stream",
+      "akka-stream-typed",
       "akka-stream-testkit",
       "akka-testkit",
       "akka-coordination",
@@ -507,6 +509,7 @@ object Dependencies {
     akkaActor,
     akkaSlf4j,
     akkaStream,
+    akkaStreamTyped,
     akkaActorTyped,
     akkaJackson,
     play,
@@ -581,6 +584,7 @@ object Dependencies {
     scalaParserCombinators,
     scalaXml,
     akkaStream,
+    akkaStreamTyped,
     akkaActor,
     akkaActorTyped,
     akkaJackson,
@@ -656,6 +660,7 @@ object Dependencies {
   val `testkit-core` = libraryDependencies ++= Seq(
     akkaActor,
     akkaStream,
+    akkaStreamTyped,
     play,
     akkaPersistenceCassandraLauncher,
     // Upgrades needed to match whitelist versions
@@ -747,6 +752,7 @@ object Dependencies {
     akkaManagement,
     // Upgrades needed to match whitelist versions
     akkaStream,
+    akkaStreamTyped,
     akkaActor,
     akkaActorTyped,
     akkaJackson,
@@ -1044,6 +1050,7 @@ object Dependencies {
     playJson,
     scalaParserCombinators,
     akkaStream,
+    akkaStreamTyped,
     akkaActor,
     akkaActorTyped,
     akkaJackson,
@@ -1074,6 +1081,7 @@ object Dependencies {
       scalaXml,
       scalaParserCombinators,
       akkaStream,
+      akkaStreamTyped,
       akkaActor,
       akkaActorTyped,
       akkaJackson,
@@ -1095,6 +1103,7 @@ object Dependencies {
     scalaParserCombinators,
     scalaXml,
     akkaStream,
+    akkaStreamTyped,
     akkaActor,
     akkaActorTyped,
     slf4jApi,
@@ -1156,6 +1165,7 @@ object Dependencies {
     akkaActorTyped,
     akkaJackson,
     akkaStream,
+    akkaStreamTyped,
     akkaProtobuf_v3,
     akkaSlf4j,
     slf4jApi,
