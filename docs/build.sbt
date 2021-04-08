@@ -3,7 +3,7 @@ import akka.CrossJava
 
 val ScalaVersion = "2.12.13"
 
-val AkkaVersion = sys.props.getOrElse("lagom.build.akka.version", "2.6.10") // sync with project/Dependencies.scala
+val AkkaVersion = sys.props.getOrElse("lagom.build.akka.version", "2.6.14") // sync with project/Dependencies.scala
 
 val JUnitVersion          = "4.13.2" // sync with project/Dependencies.scala and LagomImport.scala
 val JUnitInterfaceVersion = "0.11"
