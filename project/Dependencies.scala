@@ -355,13 +355,8 @@ object Dependencies {
       "junit"               % "junit"                   % Versions.JUnit,
       "net.jodah"           % "typetools"               % "0.5.0",
       "org.lz4"             % "lz4-java"                % "1.7.1",
-<<<<<<< HEAD
       "com.github.luben"    % "zstd-jni"                % "1.4.3-1",
-      "org.agrona"          % "agrona"                  % "1.4.1",
-=======
-      "com.github.luben"    % "zstd-jni"                % "1.3.7-1",
       "org.agrona"          % "agrona"                  % "1.9.0",
->>>>>>> aecd0cdbe (First pass at whitelist version bumping)
       commonsLang,
       kafkaClients,
       "org.codehaus.mojo"               % "animal-sniffer-annotations" % "1.18",
