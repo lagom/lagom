@@ -28,10 +28,10 @@ object Dependencies {
     val Twirl            = "1.5.1" // sync with docs/project/plugins.sbt
     val PlayFileWatch    = "1.1.14"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.13") // sync with docs/build.sbt
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.14") // sync with docs/build.sbt
     val AkkaHttp     = "10.1.14"
 
-    val AkkaPersistenceCassandra = "0.104"
+    val AkkaPersistenceCassandra = "0.106"
     // this is the version used in AkkaPersistenceCassandra, we stick with it
     val CassandraDriver     = "3.7.2"
     val AkkaPersistenceJdbc = "3.5.3"
