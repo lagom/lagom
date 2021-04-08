@@ -26,9 +26,16 @@ env:
 before_install:
   # See https://github.com/travis-ci/travis-ci/issues/4629#issuecomment-239493916
   - rm ~/.m2/settings.xml
-  - if [ ! -f ~/.jabba/jabba.sh ]; then curl -L -v --retry 5 -o jabba-install.sh "https://raw.githubusercontent.com/shyiko/jabba/master/install.sh" && bash jabba-install.sh; fi
-  - . ~/.jabba/jabba.sh
-install: jabba install $(jabba ls-remote "adopt@~1.$TRAVIS_JDK.0-0" --latest=patch) && jabba use "$_" && java -Xmx32m -version
+  - curl -s "https://get.sdkman.io" | bash
+  - source "$HOME/.sdkman/bin/sdkman-init.sh"
+  - echo sdkman_auto_answer=true > ~/.sdkman/etc/config
+  # Just to debug the installation
+  - sdk version
+install:
+  - sdk install java $(sdk list java | grep -o "$TRAVIS_JDK\.[0-9]*\.[0-9]*\.hs-adpt" | head -1) || true
+  - unset _JAVA_OPTIONS
+  - unset JAVA_HOME
+  - java -Xmx32m -version
 
 git:
   depth: false # Avoid sbt-dynver not seeing the tag
