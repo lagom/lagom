@@ -1379,7 +1379,7 @@ def archetypeProject(archetypeName: String) =
 
 lazy val `maven-java-archetype` = archetypeProject("java")
 lazy val `bill-of-materials` = (project in file("dev") / "bill-of-materials")
-  .enablePlugins(SonatypeOnly, BillOfMaterialsPlugin)
+  .enablePlugins(Sonatype, BillOfMaterialsPlugin)
   .settings(sonatypeSettings, common, noMima, sbtScalaSettings, publishMavenStyleSettings)
   .settings(
     name := "lagom-bom",
