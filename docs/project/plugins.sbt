@@ -5,7 +5,7 @@ lazy val dev = ProjectRef(Path.fileProperty("user.dir").getParentFile, "sbt-plug
 resolvers += Resolver.typesafeIvyRepo("releases") // sbt 1.3 regression
 addSbtPlugin("com.lightbend.markdown" %% "sbt-lightbend-markdown" % "1.8.0")
 
-addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.6")
+addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.6.1")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-web"    % "1.4.4")
 addSbtPlugin("com.typesafe.sbt" % "sbt-twirl"  % "1.5.0") // sync with project/Dependencies.scala
