@@ -12,25 +12,7 @@ Even with multiple builds, you will still often want to run your services togeth
 
 Suppose you have a `hello` service that you want to publish and import into another build.  You can publish this to your local repository by running `publishLocal` from sbt.  This is the simplest way to publish a service, however it means every developer that wants to run a build that imports the service will need publish it to their own repository themselves, and they'll need to do that for each version that they want to import.
 
-More commonly, many developers can share a single Maven or Ivy repository that they can publish and pull artifacts from.  There are a few options for how to do this, if you're happy to use a hosted repository, [Bintray](https://bintray.com) is a good option, if you want to run the repository locally, [Artifactory](https://www.jfrog.com/open-source/) or [Nexus](https://www.sonatype.com/products-overview) are common solutions.  For information on how to configure these in sbt, see [how to publish artifacts](https://www.scala-sbt.org/1.x/docs/Publishing.html) .
-
-### Publishing to Bintray
-
-Bintray offers both free open source hosting, as well as a paid private hosting service.
-
-If you are using Bintray, the first thing you'll need to do is sign up for an account, and create an organization.  In your Bintray organization, you can then create a Bintray repository, we recommend creating a Maven repository.
-
-Having set Bintray up, you now need to configure your build to publish to this.
-
-First, add the sbt-bintray plugin to your `project/plugins.sbt` file:
-
-@[bintray-plugin](code/multiple-builds.sbt)
-
-The Bintray plugin manages its own credentials, this can be configured by running `sbt bintrayChangeCredentials`, which will save the credentials in `~/.bintray/.credentials`.
-
-Once you've authenticated with Bintray, you can then configure your build to publish to it, by adding the following configuration to `build.sbt`:
-
-@[bintray-publish](code/multiple-builds.sbt)
+More commonly, many developers can share a single Maven or Ivy repository that they can publish and pull artifacts from.  There are a few options for how to do this. If you want to run the repository locally, [Artifactory](https://www.jfrog.com/open-source/) or [Nexus](https://www.sonatype.com/products-overview) are common solutions.  For information on how to configure these in sbt, see [how to publish artifacts](https://www.scala-sbt.org/1.x/docs/Publishing.html) .
 
 ## Importing a service
 

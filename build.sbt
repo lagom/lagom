@@ -31,7 +31,7 @@ def overridesScalaParserCombinators = Seq(
   dependencyOverrides ++= Dependencies.scalaParserCombinatorOverrides
 )
 
-def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSettings ++ Seq(
+def common: Seq[Setting[_]] = releaseSettings ++ evictionSettings ++ Seq(
   organization := "com.lightbend.lagom",
   // Must be "Apache-2.0", because bintray requires that it is a license that it knows about
   licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))),
@@ -80,13 +80,6 @@ def common: Seq[Setting[_]] = releaseSettings ++ bintraySettings ++ evictionSett
   LagomPublish.validatePublishSettingsSetting
 )
 
-def bintraySettings: Seq[Setting[_]] = Seq(
-  bintrayOrganization := Some("lagom"),
-  bintrayRepository := "sbt-plugin-releases",
-  bintrayPackage := "lagom-sbt-plugin",
-  bintrayReleaseOnPublish := false
-)
-
 // Customise sbt-dynver's behaviour to make it work with Lagom's tags (which aren't v-prefixed)
 dynverVTagPrefix in ThisBuild := false
 
@@ -111,7 +104,6 @@ def releaseSettings: Seq[Setting[_]] = Seq(
       checkSnapshotDependencies,
       releaseStepCommandAndRemaining("+publishSigned"),
       releaseStepCommand("sonatypeBundleRelease"),
-      releaseStepTask(bintrayRelease in thisProjectRef.value),
       pushChanges
     )
   }
@@ -365,8 +357,7 @@ lazy val root = (project in file("."))
   .settings(UnidocRoot.settings(javadslProjects, scaladslProjects, `projection-core`))
   .aggregate((javadslProjects ++ scaladslProjects ++ coreProjects ++ otherProjects ++ sbtScriptedProjects): _*)
 
-def SonatypeOnly      = Sonatype && PluginsAccessor.exclude(BintrayPlugin)
-def RuntimeLibPlugins = SonatypeOnly && HeaderPlugin && Unidoc
+def RuntimeLibPlugins = Sonatype && HeaderPlugin && Unidoc
 
 lazy val api = (project in file("service/core/api"))
   .configure(withLagomVersion)
@@ -1038,7 +1029,7 @@ lazy val `reloadable-server` = (project in file("dev") / "reloadable-server")
   .dependsOn(`dev-mode-ssl-support`)
 
 lazy val `server-containers` = (project in file("dev") / "server-containers")
-  .enablePlugins(HeaderPlugin, SonatypeOnly)
+  .enablePlugins(HeaderPlugin, Sonatype)
   .settings(
     common,
     mimaSettings,
@@ -1067,7 +1058,7 @@ def withLagomVersion(p: Project): Project =
 
 def sharedBuildToolSupportSetup(p: Project): Project =
   withLagomVersion(p)
-    .enablePlugins(HeaderPlugin, SonatypeOnly)
+    .enablePlugins(HeaderPlugin, Sonatype)
     .settings(sonatypeSettings, common, mimaSettings)
     .settings(
       name := s"lagom-${thisProject.value.id}",
@@ -1101,8 +1092,8 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
   )
 
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
-  .settings(common, mimaSettings, scriptedSettings)
-  .enablePlugins(HeaderPlugin, BintrayPlugin && PluginsAccessor.exclude(Sonatype), SbtPlugin)
+  .settings(sonatypeSettings, common, mimaSettings, scriptedSettings)
+  .enablePlugins(HeaderPlugin, Sonatype, SbtPlugin)
   .settings(
     name := "lagom-sbt-plugin",
     crossScalaVersions := Dependencies.Versions.SbtScala,
@@ -1190,19 +1181,12 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
       val () = (publishLocal in `sbt-scripted-library`).value
       val () = (publishLocal in LocalProject("sbt-scripted-tools")).value
     },
-    publishTo := {
-      val old = publishTo.value
-      if (isSnapshot.value) {
-        // Bintray doesn't support publishing snapshots, publish to Sonatype snapshots instead
-        Some(Opts.resolver.sonatypeSnapshots)
-      } else old
-    },
-    publishMavenStyle := isSnapshot.value
+    publishMavenStyle := true
   )
   .dependsOn(`sbt-build-tool-support`)
 
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
-  .enablePlugins(lagom.SbtMavenPlugin, HeaderPlugin, SonatypeOnly, Unidoc)
+  .enablePlugins(lagom.SbtMavenPlugin, HeaderPlugin, Sonatype, Unidoc)
   .settings(sonatypeSettings, common, mimaSettings, publishMavenStyleSettings)
   .settings(
     name := "Lagom Maven Plugin",
@@ -1260,7 +1244,7 @@ val ArchetypeVariablePattern = "%([A-Z-]+)%".r
 
 def archetypeProject(archetypeName: String) =
   Project(s"maven-$archetypeName-archetype", file("dev") / "archetypes" / s"maven-$archetypeName")
-    .enablePlugins(HeaderPlugin, SonatypeOnly)
+    .enablePlugins(HeaderPlugin, Sonatype)
     .settings(sonatypeSettings, common, mimaSettings, sbtScalaSettings, publishMavenStyleSettings)
     .settings(
       name := s"maven-archetype-lagom-$archetypeName",
@@ -1294,7 +1278,7 @@ def archetypeProject(archetypeName: String) =
 
 lazy val `maven-java-archetype` = archetypeProject("java")
 lazy val `bill-of-materials` = (project in file("dev") / "bill-of-materials")
-  .enablePlugins(SonatypeOnly, BillOfMaterialsPlugin)
+  .enablePlugins(Sonatype, BillOfMaterialsPlugin)
   .settings(sonatypeSettings, common, noMima, sbtScalaSettings, publishMavenStyleSettings)
   .settings(
     name := "lagom-bom",
@@ -1302,7 +1286,7 @@ lazy val `bill-of-materials` = (project in file("dev") / "bill-of-materials")
     pomExtra := pomExtra.value :+ bomDependenciesListing.value,
   )
 lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
-  .enablePlugins(HeaderPlugin, SonatypeOnly)
+  .enablePlugins(HeaderPlugin, Sonatype)
   .settings(sonatypeSettings, common, noMima, sbtScalaSettings, publishMavenStyleSettings)
   .settings(
     name := "lagom-maven-dependencies",
@@ -1380,7 +1364,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
 
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
-  .enablePlugins(HeaderPlugin, SonatypeOnly)
+  .enablePlugins(HeaderPlugin, Sonatype)
   .settings(sonatypeSettings, common, mimaSettings)
   .settings(
     name := "lagom-sbt-scripted-tools",
