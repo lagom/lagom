@@ -20,6 +20,7 @@ def evictionSettings: Seq[Setting[_]] = Seq(
   evictionWarningOptions in update := EvictionWarningOptions.default
     .withWarnTransitiveEvictions(false)
     .withWarnDirectEvictions(false)
+    .withWarnEvictionSummary(false)
 )
 
 def overridesScalaParserCombinators = Seq(
