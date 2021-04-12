@@ -30,6 +30,10 @@ jobs:
         uses: AdoptOpenJDK/install-jdk@v1
         with:
           version: '11'
+      - name: Install Adopt OpenJDK 8
+        uses: AdoptOpenJDK/install-jdk@v1
+        with:
+          version: '8'
       - name: Debug env
         run: env
       - name: Code validations (format, binary compatibilty, whitesource, etc.)
