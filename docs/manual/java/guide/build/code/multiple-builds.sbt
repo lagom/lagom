@@ -1,13 +1,3 @@
-//#bintray-plugin
-addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
-//#bintray-plugin
-
-//#bintray-publish
-// Set this to the organization that you want to publish to
-bintrayOrganization in ThisBuild := Some("example-organization")
-// This is needed for projects that are not open source
-bintrayOmitLicense in ThisBuild := false
-//#bintray-publish
 
 //#hello-build
 organization in ThisBuild := "com.example"
