@@ -1250,8 +1250,8 @@ object Dependencies {
     // We validate compile dependencies to ensure that whatever we are exporting, we are exporting the right
     // versions. We validate test dependencies to ensure that our tests run against the same versions that we are
     // exporting
-    val compileClasspath = (managedClasspath in Compile).value
-    val testClasspath    = (managedClasspath in Test).value
+    val compileClasspath = (Compile / managedClasspath).value
+    val testClasspath    = (Test / managedClasspath).value
     val cross            = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)
     val log              = streams.value.log
     val svb              = scalaBinaryVersion.value
@@ -1322,8 +1322,8 @@ object Dependencies {
   }
 
   val allowedPruneTask: Def.Initialize[Task[Unit]] = Def.task {
-    val compileClasspath = (managedClasspath in Compile).value
-    val testClasspath    = (managedClasspath in Test).value
+    val compileClasspath = (Compile / managedClasspath).value
+    val testClasspath    = (Test / managedClasspath).value
     val cross            = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)
     val log              = streams.value.log
     val svb              = scalaBinaryVersion.value

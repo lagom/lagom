@@ -31,7 +31,7 @@
 # Disabled service locator
 # ---------------
 
-> set lagomServiceLocatorEnabled in ThisBuild := false
+> set ThisBuild / lagomServiceLocatorEnabled := false
 # Part 1
 > runAll
 $ sleep 1000
@@ -40,7 +40,7 @@ $ sleep 1000
 
 # Cleanup
 > stop
-> set lagomServiceLocatorEnabled in ThisBuild := true
+> set ThisBuild / lagomServiceLocatorEnabled := true
 
 # runAll runs both service locator and cassandra
 # ---------------
@@ -66,7 +66,7 @@ $ sleep 1000
 > stop
 
 # Test cassandra service's availability
-> set lagomCassandraEnabled in ThisBuild := false
+> set ThisBuild / lagomCassandraEnabled := false
 
 # Preconditions - ensure everything is down
 > validateRequest http://localhost:9008 should-be-down

@@ -27,7 +27,7 @@ val branch = {
 def evictionSettings: Seq[Setting[_]] = Seq(
   // This avoids a lot of dependency resolution warnings to be showed.
   // No need to show them here since it is the docs project.
-  evictionWarningOptions in update := EvictionWarningOptions.default
+  (update / evictionWarningOptions) := EvictionWarningOptions.default
     .withWarnTransitiveEvictions(false)
     .withWarnDirectEvictions(false)
 )
@@ -62,12 +62,12 @@ lazy val docs = project
       "-Xlint:deprecation",
       "-Werror"
     ) ++ JavaVersion.sourceAndTarget(CrossJava.Keys.fullJavaHomes.value("8")),
-    testOptions in Test += Tests.Argument("-oDF"),
+    (Test / testOptions) += Tests.Argument("-oDF"),
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
     // This is needed so that Java APIs that use immutables will typecheck by the Scala compiler
-    compileOrder in Test := CompileOrder.JavaThenScala,
-    sourceDirectories in javafmt in Test ++= (unmanagedSourceDirectories in Test).value,
-    sourceDirectories in javafmt in Test ++= (unmanagedResourceDirectories in Test).value,
+    Test / compileOrder := CompileOrder.JavaThenScala,
+    Test / javafmt / sourceDirectories ++= (unmanagedSourceDirectories in Test).value,
+    Test / javafmt / sourceDirectories ++= (unmanagedResourceDirectories in Test).value,
     markdownDocumentation := {
       val javaUnidocTarget = parentDir / "target" / "javaunidoc"
       val unidocTarget     = parentDir / "target" / "unidoc"
@@ -159,10 +159,10 @@ val defaultJavaOptions = Vector("-Xms256M", "-Xmx512M") ++ sys.props.collect {
 
 // for forked tests, necessary for Cassandra
 def forkedTests: Seq[Setting[_]] = Seq(
-  fork in Test := true,
-  concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
-  javaOptions in Test ++= defaultJavaOptions,
-  testGrouping in Test := (definedTests in Test).map(singleTestsGrouping).value
+  (Test / fork) := true,
+  (Global / concurrentRestrictions) += Tags.limit(Tags.Test, 1),
+  (Test / javaOptions) ++= defaultJavaOptions,
+  (Test / testGrouping) := (Test / definedTests).map(singleTestsGrouping).value
 )
 
 // group tests, a single test per group

@@ -4,7 +4,7 @@ addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "X.Y.Z")
 //#add-sbt-plugin
 
 //#scala-version
-scalaVersion in ThisBuild := "2.12.10"
+ThisBuild / scalaVersion := "2.12.10"
 //#scala-version
 
 //#hello-api

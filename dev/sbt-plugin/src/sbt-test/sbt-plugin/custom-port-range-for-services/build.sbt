@@ -1,6 +1,6 @@
 import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
 
-lagomServicesPortRange in ThisBuild := PortRange(10000, 10003)
+ThisBuild / lagomServicesPortRange := PortRange(10000, 10003)
 
 lazy val a = (project in file("a"))
   .enablePlugins(LagomJava)

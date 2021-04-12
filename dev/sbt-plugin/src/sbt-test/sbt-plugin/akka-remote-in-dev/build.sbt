@@ -2,8 +2,8 @@ val netty = "io.netty" % "netty" % "3.10.6.Final"
 val macwire = "com.softwaremill.macwire" %% "macros" % "2.3.3" % "provided"
 
 // no need for Cassandra and Kafka on this test
-lagomCassandraEnabled in ThisBuild := false
-lagomKafkaEnabled in ThisBuild := false
+ThisBuild / lagomCassandraEnabled := false
+ThisBuild / lagomKafkaEnabled := false
 
 lazy val `a-api` = (project in file("a") / "api")
   .settings(

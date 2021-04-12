@@ -3,7 +3,7 @@ import java.io.Closeable
 
 val startElasticSearch = taskKey[Closeable]("Starts elastic search")
 
-startElasticSearch in ThisBuild := {
+ThisBuild / startElasticSearch := {
   val esVersion     = "5.4.0"
   val log           = streams.value.log
   val elasticsearch = target.value / s"elasticsearch-$esVersion"
@@ -31,5 +31,5 @@ startElasticSearch in ThisBuild := {
 //#start-elastic-search
 
 //#infrastructure-services
-lagomInfrastructureServices in ThisBuild += (startElasticSearch in ThisBuild).taskValue
+ThisBuild / lagomInfrastructureServices += ( ThisBuild / startElasticSearch ).taskValue
 //#infrastructure-services
