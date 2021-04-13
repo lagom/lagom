@@ -26,10 +26,6 @@ jobs:
             - $HOME/.m2/repositories
           key: lagom-dependencies-cache-${{ hashFiles('**/*.sbt') }}
           restore-keys: lagom-dependencies-cache-
-      - name: Set up JDK 11
-        uses: olafurpg/setup-scala@v10
-        with:
-          java-version: adopt@1.11.0-9
       - name: Set up JDK 8
         uses: olafurpg/setup-scala@v10
         with:
@@ -69,10 +65,17 @@ jobs:
             - $HOME/.m2/repositories
           key: lagom-dependencies-cache-${{ hashFiles('**/*.sbt') }}
           restore-keys: lagom-dependencies-cache-
-      - name: Install Adopt OpenJDK ${{ matrix.JDK }}
-        uses: AdoptOpenJDK/install-jdk@v1
+      ## JDK 8 must always be installed.
+      - name: Set up JDK 8
+        uses: olafurpg/setup-scala@v10
         with:
-          version: ${{ matrix.JDK }}
+          java-version: adopt@1.8.0-275
+      ## When we want to use JDK 11, then we install it last so it's the one used
+      - name: Set up JDK 11
+        if: ${{ matrix.JDK == 11 }}
+        uses: olafurpg/setup-scala@v10
+        with:
+          java-version: adopt@1.11.0-9
       - name: Run tests
         run: SCALA_VERSION=${{ matrix.SCALA_VERSION }} bin/test-2.1x
       - name: Run multi-jvm tests
@@ -93,10 +96,17 @@ jobs:
           # Pull tags because of sbt-dynver.
           # See https://github.com/actions/checkout#Fetch-all-history-for-all-tags-and-branches
           fetch-depth: 0
-      - name: Install Adopt OpenJDK ${{ matrix.JDK }}
-        uses: AdoptOpenJDK/install-jdk@v1
+      ## JDK 8 must always be installed.
+      - name: Set up JDK 8
+        uses: olafurpg/setup-scala@v10
         with:
-          version: ${{ matrix.JDK }}
+          java-version: adopt@1.8.0-275
+      ## When we want to use JDK 11, then we install it last so it's the one used
+      - name: Set up JDK 11
+        if: ${{ matrix.JDK == 11 }}
+        uses: olafurpg/setup-scala@v10
+        with:
+          java-version: adopt@1.11.0-9
       - name: "Documentation validations and tests"
         run: bin/test-documentation
 
@@ -115,10 +125,17 @@ jobs:
           # Pull tags because of sbt-dynver.
           # See https://github.com/actions/checkout#Fetch-all-history-for-all-tags-and-branches
           fetch-depth: 0
-      - name: Install Adopt OpenJDK ${{ matrix.JDK }}
-        uses: AdoptOpenJDK/install-jdk@v1
+      ## JDK 8 must always be installed.
+      - name: Set up JDK 8
+        uses: olafurpg/setup-scala@v10
         with:
-          version: ${{ matrix.JDK }}
+          java-version: adopt@1.8.0-275
+      ## When we want to use JDK 11, then we install it last so it's the one used
+      - name: Set up JDK 11
+        if: ${{ matrix.JDK == 11 }}
+        uses: olafurpg/setup-scala@v10
+        with:
+          java-version: adopt@1.11.0-9
       - name: "Scripted tests for sbt 1"
         run: SCALA_VERSION=2.12.13 bin/test-sbt
       - name: "PublishM2 and test Maven"
