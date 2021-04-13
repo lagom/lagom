@@ -125,8 +125,8 @@ jobs:
           # Pull tags because of sbt-dynver.
           # See https://github.com/actions/checkout#Fetch-all-history-for-all-tags-and-branches
           fetch-depth: 0
-      - name: Install xmllint
-        run: sudo apt-get install libxml2-utils
+      - name: Install xml tools
+        run: sudo apt-get install libxml2-utils xmlstarlet wget
       ## JDK 8 must always be installed.
       - name: Set up JDK 8
         uses: olafurpg/setup-scala@v10
