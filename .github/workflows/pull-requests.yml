@@ -29,11 +29,11 @@ jobs:
       - name: Set up JDK 11
         uses: olafurpg/setup-scala@v10
         with:
-          java-version: adopt@~1.11.0-0
+          java-version: adopt@1.11.0-9
       - name: Set up JDK 8
         uses: olafurpg/setup-scala@v10
         with:
-          java-version: adopt@~1.8.0-0
+          java-version: adopt@1.8.0-275
       - name: Debug env
         run: env
       - name: Code validations (format, binary compatibilty, whitesource, etc.)
