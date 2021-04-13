@@ -26,7 +26,7 @@ object Dependencies {
     val PlayJson         = "2.9.2"
     val PlayStandaloneWs = "2.1.3"
     val Twirl            = "1.5.1" // sync with docs/project/plugins.sbt
-    val PlayFileWatch    = "1.1.14"
+    val PlayFileWatch    = "1.1.16"
 
     val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.14") // sync with docs/build.sbt
     val AkkaHttp     = "10.1.14"
