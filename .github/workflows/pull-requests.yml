@@ -26,13 +26,10 @@ jobs:
             - $HOME/.m2/repositories
           key: lagom-dependencies-cache-${{ hashFiles('**/*.sbt') }}
           restore-keys: lagom-dependencies-cache-
-      - uses: AdoptOpenJDK/install-jdk@v1
+      - name: Set up JDK 8
+        uses: olafurpg/setup-scala@v10
         with:
-          version: '11'
-      - uses: AdoptOpenJDK/install-jdk@v1
-        with:
-          version: '8'
-          targets: 'JDK_8'
+          java-version: adopt@1.8.0-275
       - name: Debug env
         run: env
       - name: Code validations (format, binary compatibilty, whitesource, etc.)
