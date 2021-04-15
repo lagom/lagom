@@ -363,6 +363,9 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.LagomProcess"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.MiniLogger"),
+      // Newer MiMa detected more violations: (bumping from 0.7.0 to 0.8.1 listed this new filter)
+      ProblemFilters.exclude[DirectMissingMethodProblem]("com.lightbend.lagom.scaladsl.devmode.LagomDevModeServiceLocatorComponents.serviceRegistry")
+
       // Add mima new filters just above this comment to avoid merge conflicts (avoiding interleaving)
     )
   )
