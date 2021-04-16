@@ -30,6 +30,8 @@ class JdbcPersistenceModuleSpec extends AsyncWordSpec with Matchers with BeforeA
         new GuiceApplicationBuilder()
           .bindings(playBind[DbWrapper].toSelf)
           .configure(
+            // don't trust `getHostAddress` and use 127.0.0.1 in all cases.
+            "akka.remote.artery.canonical.hostname"         -> "127.0.0.1",
             // Correct configuration, but the database is not available
             "db.default.driver"                             -> "org.h2.Driver",
             "db.default.url"                                -> "jdbc:h2:tcp://localhost/~/notavailable",
