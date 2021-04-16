@@ -188,7 +188,7 @@ class ScaladslMockServiceSpec extends AnyWordSpec with Matchers {
           import scala.collection.JavaConverters._
           super.additionalConfiguration ++ ConfigFactory.parseMap(
             Map(
-              "play.server.provider" -> httpBackend.provider,
+              "play.server.provider"                  -> httpBackend.provider,
               "akka.remote.artery.canonical.hostname" -> "127.0.0.1",
             ).asJava
           )

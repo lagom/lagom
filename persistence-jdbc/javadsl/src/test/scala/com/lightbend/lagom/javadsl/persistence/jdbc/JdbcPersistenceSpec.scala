@@ -29,10 +29,14 @@ abstract class JdbcPersistenceSpec private (actorSystemFactory: () => ActorSyste
     extends ActorSystemSpec(actorSystemFactory) {
 
   def this(testName: String, config: Config) = {
-    this(() => ActorSystem(testName,
-      JdbcPersistenceSpec.akkaRemoteHostConfig.withFallback(
-      config.withFallback(Configuration.load(Environment.simple()).underlying))
-    ))
+    this(
+      () =>
+        ActorSystem(
+          testName,
+          JdbcPersistenceSpec.akkaRemoteHostConfig
+            .withFallback(config.withFallback(Configuration.load(Environment.simple()).underlying))
+        )
+    )
   }
 
   def this(config: Config) = this(PersistenceSpec.testNameFromCallStack(classOf[JdbcPersistenceSpec]), config)

@@ -32,7 +32,7 @@ object JdbcPersistenceSpec {
   val akkaRemoteHostConfig = ConfigFactory.parseString("akka.remote.artery.canonical.hostname = 127.0.0.1")
 }
 abstract class JdbcPersistenceSpec private (actorSystemFactory: () => ActorSystem)
-  extends ActorSystemSpec(actorSystemFactory) {
+    extends ActorSystemSpec(actorSystemFactory) {
 
   def this(testName: String, config: Config, registry: JsonSerializerRegistry) =
     this(
