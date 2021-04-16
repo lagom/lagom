@@ -77,6 +77,9 @@ trait ServiceSupport extends AnyWordSpecLike with Matchers {
   ): WithService[S] =
     withServiceImpl(
       applicationBuilder
+        .configure(
+          // don't trust `getHostAddress` and use 127.0.0.1 in all cases.
+          "akka.remote.artery.canonical.hostname" -> "127.0.0.1")
         .bindings(new AbstractModule with ServiceGuiceSupport {
           override def configure(): Unit = {
             bindService(implicitly[ClassTag[S]].runtimeClass.asInstanceOf[Class[S]], impl)
