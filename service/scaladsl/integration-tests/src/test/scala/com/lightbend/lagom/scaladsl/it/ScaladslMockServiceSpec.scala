@@ -172,45 +172,6 @@ class ScaladslMockServiceSpec extends AnyWordSpec with Matchers {
         ) should ===("foo")
       }
 
-      "work with collections of entities" in withServer { implicit mat => client =>
-        val request  = new MockRequestEntity("results", 10)
-        val response = Await.result(client.listResults.invoke(request), 10.seconds)
-
-        response.size should ===(request.field2)
-      }
-
-      "work with custom serializers" when {
-        "the serializer protocol uses a custom contentType" in withServer { implicit mat => client =>
-          val id       = 20
-          val request  = new MockRequestEntity("bar", id)
-          val response = Await.result(client.customContentType.invoke(request), 10.seconds)
-          response.incomingId should ===(id)
-          response.incomingRequest should ===(request)
-        }
-
-        "the serializer protocol does not specify a contentType" in withServer { implicit mat => client =>
-          val id       = 20
-          val request  = new MockRequestEntity("bar", id)
-          val response = Await.result(client.noContentType.invoke(request), 10.seconds)
-          response.incomingId should ===(id)
-          response.incomingRequest should ===(request)
-        }
-      }
-
-      "be invoked with circuit breaker" in withServer { implicit mat => client =>
-        MockService.invoked.set(false)
-        (1 to 20).foreach { _ =>
-          intercept[Exception] {
-            Await.result(client.alwaysFail.invoke(), 10.seconds)
-          }
-        }
-        MockService.invoked.get() should ===(true)
-        MockService.invoked.set(false)
-        intercept[CircuitBreakerOpenException] {
-          Await.result(client.alwaysFail.invoke(), 10.seconds)
-        }
-        MockService.invoked.get() should ===(false)
-      }
     }
   }
 
@@ -227,7 +188,8 @@ class ScaladslMockServiceSpec extends AnyWordSpec with Matchers {
           import scala.collection.JavaConverters._
           super.additionalConfiguration ++ ConfigFactory.parseMap(
             Map(
-              "play.server.provider" -> httpBackend.provider
+              "play.server.provider" -> httpBackend.provider,
+              "akka.remote.artery.canonical.hostname" -> "127.0.0.1",
             ).asJava
           )
         }

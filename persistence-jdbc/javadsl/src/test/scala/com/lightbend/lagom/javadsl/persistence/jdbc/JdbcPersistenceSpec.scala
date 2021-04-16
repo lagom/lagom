@@ -24,7 +24,7 @@ abstract class JdbcPersistenceSpec private (actorSystemFactory: () => ActorSyste
     extends ActorSystemSpec(actorSystemFactory) {
   // Wherever this test is run, it should not trust it'll have access to bind to `getHostAddress`.
   // Instead, we hardcode to bind to 127.0.0.1 only.
-  private val akkaRemoteHostConfig = ConfigFactory.parseString("akka.remote.artery.canonical.hostname= 127.0.0.1")
+  private val akkaRemoteHostConfig = ConfigFactory.parseString("akka.remote.artery.canonical.hostname = 127.0.0.1")
 
   def this(testName: String, config: Config) = {
     this(() => ActorSystem(testName,
