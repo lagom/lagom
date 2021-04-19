@@ -25,7 +25,7 @@ object Scaladoc extends AutoPlugin {
   override lazy val projectSettings = {
     inTask(doc)(
       Seq(
-        (Compile / scalacOptions) ++= scaladocOptions(version.value, (ThisBuild / baseDirectory).value),
+        scalacOptions in Compile ++= scaladocOptions(version.value, (baseDirectory in ThisBuild).value),
         autoAPIMappings := CliOptions.scaladocAutoAPI.get
       )
     )
@@ -67,9 +67,9 @@ object UnidocRoot extends AutoPlugin {
   ) = {
     inTask(unidoc)(
       Seq(
-        (ScalaUnidoc / unidocProjectFilter) := projectsAndDependencies(scaladslProjects ++ otherProjects),
-        (JavaUnidoc / unidocProjectFilter) := projectsAndDependencies(javadslProjects ++ otherProjects),
-        (ScalaUnidoc / autoAPIMappings) := true
+        unidocProjectFilter in ScalaUnidoc := projectsAndDependencies(scaladslProjects ++ otherProjects),
+        unidocProjectFilter in JavaUnidoc := projectsAndDependencies(javadslProjects ++ otherProjects),
+        autoAPIMappings in ScalaUnidoc := true
       )
     )
   }
@@ -77,7 +77,7 @@ object UnidocRoot extends AutoPlugin {
   def excludeJavadoc = Set("internal", "protobuf", "scaladsl")
 
   private val allGenjavadocSources = Def.taskDyn {
-    (Genjavadoc / doc / sources).all((JavaUnidoc / unidoc / unidocScopeFilter).value)
+    (sources in (Genjavadoc, doc)).all((unidocScopeFilter in (JavaUnidoc, unidoc)).value)
   }
 
   /**
@@ -194,19 +194,19 @@ object UnidocRoot extends AutoPlugin {
     ) ++ enableScriptsArgs
 
   override lazy val projectSettings = Seq(
-    (JavaUnidoc / unidoc / unidocAllSources) ++= allGenjavadocSources.value,
-    (JavaUnidoc / unidoc / unidocAllSources) := {
-      (JavaUnidoc / unidoc / unidocAllSources).value
+    unidocAllSources in (JavaUnidoc, unidoc) ++= allGenjavadocSources.value,
+    unidocAllSources in (JavaUnidoc, unidoc) := {
+      (unidocAllSources in (JavaUnidoc, unidoc)).value
         .map(_.filterNot(f => excludeJavadoc.exists(f.getCanonicalPath.contains)))
     },
     // Override the Scala unidoc target to *not* include the Scala version, since we don't cross-build docs
-    (ScalaUnidoc / unidoc / target) := target.value / "unidoc",
-    (ScalaUnidoc / unidoc / scalacOptions) ++= Seq("-skip-packages", "com.lightbend.lagom.internal"),
+    target in (ScalaUnidoc, unidoc) := target.value / "unidoc",
+    scalacOptions in (ScalaUnidoc, unidoc) ++= Seq("-skip-packages", "com.lightbend.lagom.internal"),
     // The settings below are very similar. JDK8 honours both `javacOptions in doc`
     // and `javacOptions in (JavaUnidoc, unidoc)` but JDK11 only seems to pick `javacOptions in (JavaUnidoc, unidoc)`.
     // We're keeping both just in case.
-    (doc / javacOptions) := baseJavaDocArguments ++ extraJavadocArguments,
-    (JavaUnidoc / unidoc / javacOptions) := baseJavaDocArguments ++ extraJavadocArguments,
+    javacOptions in doc := baseJavaDocArguments ++ extraJavadocArguments,
+    javacOptions in (JavaUnidoc, unidoc) := baseJavaDocArguments ++ extraJavadocArguments,
   )
 
   def packageList(names: String*): String =
@@ -231,20 +231,20 @@ object Unidoc extends AutoPlugin {
     ivyConfigurations += GenjavadocCompilerPlugin,
     libraryDependencies += ("com.typesafe.genjavadoc" % "genjavadoc-plugin" % "0.17" % "genjavadocplugin->default(compile)")
       .cross(CrossVersion.full),
-    (Genjavadoc / scalacOptions) ++= Seq(
+    scalacOptions in Genjavadoc ++= Seq(
       "-P:genjavadoc:out=" + (target.value / "java"),
       "-P:genjavadoc:fabricateParams=false"
     ),
-    (Genjavadoc / scalacOptions) ++=
+    scalacOptions in Genjavadoc ++=
       update.value
         .matching(configurationFilter(GenjavadocCompilerPlugin.name))
         .filter(_.getName.contains("genjavadoc"))
         .map("-Xplugin:" + _.getAbsolutePath),
-    (Genjavadoc / sources) := (Compile / sources).value,
-    (Genjavadoc / doc / sources) := {
-      val _ = (Genjavadoc / compile).value
+    sources in Genjavadoc := (sources in Compile).value,
+    sources in (Genjavadoc, doc) := {
+      val _ = (compile in Genjavadoc).value
       (target.value / "java" ** "*.java").get
     },
-    (Genjavadoc / dependencyClasspath) := (Compile / dependencyClasspath).value
+    dependencyClasspath in Genjavadoc := (dependencyClasspath in Compile).value
   )
 }
