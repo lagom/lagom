@@ -32,7 +32,6 @@ object SlickPersistenceSpec {
   val akkaRemoteHostConfig = ConfigFactory.parseString("akka.remote.artery.canonical.hostname = 127.0.0.1")
 }
 
-
 abstract class SlickPersistenceSpec private (actorSystemFactory: () => ActorSystem)
     extends ActorSystemSpec(actorSystemFactory) {
   def this(testName: String, config: Config, registry: JsonSerializerRegistry) =
