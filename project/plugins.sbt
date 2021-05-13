@@ -13,7 +13,7 @@ addSbtPlugin("com.github.gseitz" % "sbt-release"  % "1.0.13")
 addSbtPlugin("com.jsuereth"      % "sbt-pgp"      % "2.0.1")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm"   % "0.4.0")
-addSbtPlugin("com.typesafe"     % "sbt-mima-plugin" % "0.7.0")
+addSbtPlugin("com.typesafe"     % "sbt-mima-plugin" % "0.9.0")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")
 addSbtPlugin("com.lightbend"    % "sbt-whitesource"      % "0.1.18")
