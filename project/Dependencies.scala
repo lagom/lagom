@@ -37,7 +37,7 @@ object Dependencies {
     val AkkaPersistenceJdbc = "3.5.3"
     val AkkaManagement      = "1.0.9"
 
-    val Disruptor = "3.4.2"
+    val Disruptor = "3.4.4"
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
     val ScalaTest            = "3.1.4"
