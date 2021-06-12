@@ -58,7 +58,7 @@ object Dependencies {
 
     val Curator       = "2.12.0"
     val Immutables    = "2.8.8"
-    val HibernateCore = "5.4.30.Final"
+    val HibernateCore = "5.4.32.Final"
     val PCollections  = "3.1.4"
 
     val ScalaJava8Compat = "0.9.1"
