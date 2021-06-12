@@ -102,7 +102,7 @@ object Dependencies {
   private val scalaXml               = "org.scala-lang.modules" %% "scala-xml" % Versions.ScalaXml
   private val javassist              = "org.javassist" % "javassist" % "3.24.0-GA"
   private val byteBuddy              = "net.bytebuddy" % "byte-buddy" % Versions.ByteBuddy
-  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
+  private val scalaParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "2.0.0"
   private val typesafeConfig         = "com.typesafe" % "config" % "1.4.1"
   private val sslConfig              = "com.typesafe" %% "ssl-config-core" % "0.4.3"
   private val h2                     = "com.h2database" % "h2" % "1.4.200"
