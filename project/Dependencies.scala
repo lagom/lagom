@@ -13,7 +13,7 @@ object Dependencies {
     // Version numbers
 
     val Scala212 = "2.12.13"
-    val Scala213 = "2.13.5"
+    val Scala213 = "2.13.6"
     val Scala    = Seq(Scala212, Scala213)
     val SbtScala = Seq(Scala212)
 

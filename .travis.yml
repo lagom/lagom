@@ -57,14 +57,14 @@ jobs:
     - script: SCALA_VERSION=2.12.13 bin/test-2.1x
       env: TRAVIS_JDK=8
       name: "Run tests for Scala 2.12 and Java 8"
-    - script: SCALA_VERSION=2.13.5 bin/test-2.1x
+    - script: SCALA_VERSION=2.13.6 bin/test-2.1x
       name: "Run tests for Scala 2.13"
     - script: SCALA_VERSION=2.12.13 bin/test-multi-jvm-2.1x
       name: "Run multi-jvm tests for Scala 2.12"
     - script: SCALA_VERSION=2.12.13 bin/test-multi-jvm-2.1x
       env: TRAVIS_JDK=8
       name: "Run multi-jvm tests for Scala 2.12 and Java 8"
-    - script: SCALA_VERSION=2.13.5 bin/test-multi-jvm-2.1x
+    - script: SCALA_VERSION=2.13.6 bin/test-multi-jvm-2.1x
       name: "Run multi-jvm tests for Scala 2.13"
     - script: bin/test-documentation
       name: "Documentation validations and tests"
