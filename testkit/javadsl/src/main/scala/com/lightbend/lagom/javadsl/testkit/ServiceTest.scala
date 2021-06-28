@@ -235,10 +235,12 @@ object ServiceTest {
       configureBuilder: JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder]
   ) extends Setup {
     def this() = this(
+      port = 0,
       cassandra = false,
       jdbc = false,
       cluster = false,
       ssl = false,
+      sslPort = 0,
       configureBuilder = new JFunction[GuiceApplicationBuilder, GuiceApplicationBuilder] {
         override def apply(b: GuiceApplicationBuilder): GuiceApplicationBuilder = b
       }
