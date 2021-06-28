@@ -56,16 +56,6 @@ object ServiceTest {
     def withCassandra(enabled: Boolean): Setup
 
     /**
-     * Enable or disable Cassandra on the specified port.
-     *
-     * @param enabled True if Cassandra should be enabled, or false if disabled. Enabling Cassandra will also enable the
-     *                cluster.
-     * @param port    The port to assign the Cassandra server to.
-     * @return A copy of this setup.
-     */
-    def withCassandra(enabled: Boolean, port: Int): Setup
-
-    /**
      * Enable Cassandra.
      *
      * If enabled, this will start an embedded Cassandra server before the tests start, and shut it down afterwards.
@@ -161,11 +151,6 @@ object ServiceTest {
     def cassandra: Boolean
 
     /**
-     * The Cassandra server port.
-     */
-    def cassandraPort: Int
-
-    /**
      * Whether JDBC is enabled.
      */
     def jdbc: Boolean
@@ -189,16 +174,14 @@ object ServiceTest {
   private case class SetupImpl(
       port: Int = 0,
       cassandra: Boolean = false,
-      cassandraPort: Int = 0,
       jdbc: Boolean = false,
       cluster: Boolean = false,
       ssl: Boolean = false,
       sslPort: Int = 0
   ) extends Setup {
-    override def withCassandra(enabled: Boolean): Setup = withCassandra(enabled, port = 0)
-    override def withCassandra(enabled: Boolean, port: Int): Setup = {
+    override def withCassandra(enabled: Boolean): Setup = {
       if (enabled) {
-        copy(cassandra = true, cassandraPort = port, cluster = true)
+        copy(cassandra = true, cluster = true)
       } else {
         copy(cassandra = false)
       }
@@ -339,7 +322,7 @@ object ServiceTest {
         val now      = DateTimeFormatter.ofPattern("yyMMddHHmmssSSS").format(LocalDateTime.now())
         val testName = s"ServiceTest_$now"
 
-        val cassandraPort = CassandraTestServer.run(testName, lifecycle, setup.cassandraPort)
+        val cassandraPort = CassandraTestServer.run(testName, lifecycle)
 
         cassandraConfigMap(testName, cassandraPort)
       } else if (setup.jdbc) {
@@ -397,7 +380,7 @@ object ServiceTest {
     lagomApplication match {
       case requiresPort: RequiresLagomServicePort =>
         requiresPort.provideLagomServicePort(server.httpPort.orElse(server.httpsPort).get)
-      case other => ()
+      case _ => ()
     }
 
     if (setup.cassandra || setup.jdbc) {

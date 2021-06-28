@@ -21,7 +21,7 @@ private[lagom] object CassandraTestServer {
 
   private lazy val log = Logger(getClass)
 
-  def run(cassandraDirectoryPrefix: String, lifecycle: ApplicationLifecycle, port: Int): Int = {
+  def run(cassandraDirectoryPrefix: String, lifecycle: ApplicationLifecycle): Int = {
 
     val cassandraDirectory = Files.createTempDirectory(cassandraDirectoryPrefix)
 
@@ -40,7 +40,7 @@ private[lagom] object CassandraTestServer {
       cassandraDirectory.toFile,
       LagomTestConfigResource,
       clean = false,
-      port = port,
+      port = 0,
       CassandraLauncher.classpathForResources(LagomTestConfigResource)
     )
 
