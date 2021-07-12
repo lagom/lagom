@@ -19,7 +19,7 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")
 addSbtPlugin("com.lightbend"    % "sbt-whitesource"      % "0.1.18")
 
 addSbtPlugin("com.lightbend.sbt" % "sbt-java-formatter" % "0.5.1")
-addSbtPlugin("org.scalameta"     % "sbt-scalafmt"       % "2.4.2")
+addSbtPlugin("org.scalameta"     % "sbt-scalafmt"       % "2.4.3")
 addSbtPlugin("com.dwijnand"      % "sbt-dynver"         % "4.1.1")
 
 addSbtPlugin("com.lightbend.akka" % "sbt-akka-version-check" % "0.1")
