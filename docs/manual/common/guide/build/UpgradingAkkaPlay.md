@@ -15,7 +15,7 @@ val akkaVersion = "2.6.<newer-version>"
 val akkaHttpVersion = "10.1.<newer-version>"
 val playVersion = "2.8.<newer-version>"
 
-libraryDependencies in ThisBuild ++= Seq(
+ThisBuild / libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-discovery" % akkaVersion,
   "com.typesafe.akka" %% "akka-cluster-sharding" % akkaVersion,
   "com.typesafe.akka" %% "akka-cluster-tools" % akkaVersion,

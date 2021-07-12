@@ -11,8 +11,8 @@ object Whitesource extends AutoPlugin {
   override lazy val projectSettings = Seq(
     whitesourceProduct := "Lightbend Reactive Platform",
     whitesourceAggregateProjectName := {
-      (moduleName in LocalRootProject).value + "-" +
-        whitesourceProjectSuffix(isSnapshot.value, currentBranch.value, (version in LocalRootProject).value)
+      (LocalRootProject / moduleName).value + "-" +
+        whitesourceProjectSuffix(isSnapshot.value, currentBranch.value, (LocalRootProject / version).value)
     },
     whitesourceForceCheckAllDependencies := true,
     whitesourceFailOnError := true

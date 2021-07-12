@@ -1,8 +1,8 @@
-lagomServiceEnableSsl in ThisBuild := true
+ThisBuild / lagomServiceEnableSsl := true
 
 // no need for Cassandra and Kafka on this test
-lagomCassandraEnabled in ThisBuild := false
-lagomKafkaEnabled in ThisBuild := false
+ThisBuild / lagomCassandraEnabled := false
+ThisBuild / lagomKafkaEnabled := false
 
 lazy val root = (project in file(".")).enablePlugins(LagomJava)
 

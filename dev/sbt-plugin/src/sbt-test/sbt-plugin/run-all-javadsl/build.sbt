@@ -1,8 +1,8 @@
 import com.lightbend.lagom.sbt.Internal.Keys.interactionMode
 
 // no need for Cassandra and Kafka on this test
-lagomCassandraEnabled in ThisBuild := false
-lagomKafkaEnabled in ThisBuild := false
+ThisBuild / lagomCassandraEnabled := false
+ThisBuild / lagomKafkaEnabled := false
 
 lazy val `a-api` = (project in file("a") / "api")
   .settings(
