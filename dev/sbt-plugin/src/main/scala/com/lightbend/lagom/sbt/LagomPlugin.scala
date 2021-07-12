@@ -50,7 +50,7 @@ object LagomJava extends AutoPlugin {
   import LagomPlugin.autoImport._
 
   override def projectSettings = LagomSettings.defaultSettings ++ Seq(
-    Keys.run in Compile := {
+    Compile / Keys.run := {
       val service = lagomRun.value
       val log     = state.value.log
       SbtConsoleHelper.printStartScreen(log, service)
@@ -93,7 +93,7 @@ object LagomScala extends AutoPlugin {
   import LagomPlugin.autoImport._
 
   override def projectSettings = LagomSettings.defaultSettings ++ Seq(
-    Keys.run in Compile := {
+    Compile / Keys.run := {
       val service = lagomRun.value
       val log     = state.value.log
       SbtConsoleHelper.printStartScreen(log, service)
@@ -206,7 +206,7 @@ object LagomExternalProject extends AutoPlugin {
   import LagomPlugin.autoImport._
 
   override def projectSettings = Seq(
-    Keys.run in Compile := {
+    Compile / Keys.run := {
       val service = lagomRun.value
       val log     = state.value.log
       SbtConsoleHelper.printStartScreen(log, service)
@@ -437,7 +437,7 @@ object LagomPlugin extends AutoPlugin {
     val extracted = Project.extract(state)
 
     val scope     = Scope(Select(ThisBuild), Zero, Zero, Zero)
-    val enableSsl = extracted.get(lagomServiceEnableSsl in ThisBuild)
+    val enableSsl = extracted.get(ThisBuild / lagomServiceEnableSsl)
     val portRange = extracted.structure.data
       .get(scope, lagomServicesPortRange.key)
       .getOrElse(defaultPortRange)
@@ -479,8 +479,8 @@ object LagomPlugin extends AutoPlugin {
       lagomServiceLocatorUrl := s"http://${lagomServiceLocatorAddress.value}:${lagomServiceLocatorPort.value}",
       inScope(ThisScope in serviceLocatorProject)(
         Seq(
-          lagomServiceLocatorStart in ThisBuild := startServiceLocatorTask.value,
-          lagomServiceLocatorStop in ThisBuild := Servers.ServiceLocator.tryStop(new SbtLoggerProxy(state.value.log))
+          ThisBuild / lagomServiceLocatorStart := startServiceLocatorTask.value,
+          ThisBuild / lagomServiceLocatorStop := Servers.ServiceLocator.tryStop(new SbtLoggerProxy(state.value.log))
         )
       ),
       lagomCassandraEnabled := true,
@@ -491,8 +491,8 @@ object LagomPlugin extends AutoPlugin {
       lagomCassandraYamlFile := None,
       inScope(ThisScope in cassandraProject)(
         Seq(
-          lagomCassandraStart in ThisBuild := startCassandraServerTask.value,
-          lagomCassandraStop in ThisBuild := Servers.CassandraServer.tryStop(new SbtLoggerProxy(state.value.log))
+          ThisBuild / lagomCassandraStart := startCassandraServerTask.value,
+          ThisBuild / lagomCassandraStop := Servers.CassandraServer.tryStop(new SbtLoggerProxy(state.value.log))
         )
       ),
       lagomKafkaEnabled := true,
@@ -504,8 +504,8 @@ object LagomPlugin extends AutoPlugin {
       lagomKafkaJvmOptions := Seq("-Xms256m", "-Xmx1024m"),
       inScope(ThisScope in kafkaServerProject)(
         Seq(
-          lagomKafkaStart in ThisBuild := startKafkaServerTask.value,
-          lagomKafkaStop in ThisBuild := Servers.KafkaServer.tryStop(new SbtLoggerProxy(state.value.log))
+          ThisBuild / lagomKafkaStart := startKafkaServerTask.value,
+          ThisBuild / lagomKafkaStop := Servers.KafkaServer.tryStop(new SbtLoggerProxy(state.value.log))
         )
       ),
       runAll := runAllMicroservicesTask.value,
@@ -704,7 +704,7 @@ object LagomPlugin extends AutoPlugin {
   }
 
   private lazy val cassandraServerConfiguration: Initialize[Map[String, String]] = Def.setting {
-    if ((lagomCassandraEnabled in ThisBuild).value) {
+    if ((ThisBuild / lagomCassandraEnabled).value) {
       val port = lagomCassandraPort.value
       LagomConfig.cassandraPort(port)
     } else

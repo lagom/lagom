@@ -70,7 +70,7 @@ object Dependencies {
     val JUnit          = "4.13.2"
     val JUnitInterface = "0.11"
 
-    val Slf4j   = "1.7.30"
+    val Slf4j   = "1.7.31"
     val Logback = "1.2.3"
     val Log4j   = "2.13.3"
 
@@ -204,10 +204,10 @@ object Dependencies {
     "asm-util"
   )
 
-  private val jffi         = "com.github.jnr" % "jffi"          % "1.2.23"
+  private val jffi         = "com.github.jnr" % "jffi"          % "1.3.4"
   private val jnrConstants = "com.github.jnr" % "jnr-constants" % "0.9.15"
   private val jnrFfi       = "com.github.jnr" % "jnr-ffi"       % "2.1.15"
-  private val jnrPosix     = "com.github.jnr" % "jnr-posix"     % "3.0.61"
+  private val jnrPosix     = "com.github.jnr" % "jnr-posix"     % "3.1.7"
   private val jnra64asm    = "com.github.jnr" % "jnr-a64asm"    % "1.0.0"
   private val jnrx86asm    = "com.github.jnr" % "jnr-x86asm"    % "1.0.2"
 
@@ -1250,8 +1250,8 @@ object Dependencies {
     // We validate compile dependencies to ensure that whatever we are exporting, we are exporting the right
     // versions. We validate test dependencies to ensure that our tests run against the same versions that we are
     // exporting
-    val compileClasspath = (managedClasspath in Compile).value
-    val testClasspath    = (managedClasspath in Test).value
+    val compileClasspath = (Compile / managedClasspath).value
+    val testClasspath    = (Test / managedClasspath).value
     val cross            = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)
     val log              = streams.value.log
     val svb              = scalaBinaryVersion.value
@@ -1322,8 +1322,8 @@ object Dependencies {
   }
 
   val allowedPruneTask: Def.Initialize[Task[Unit]] = Def.task {
-    val compileClasspath = (managedClasspath in Compile).value
-    val testClasspath    = (managedClasspath in Test).value
+    val compileClasspath = (Compile / managedClasspath).value
+    val testClasspath    = (Test / managedClasspath).value
     val cross            = CrossVersion(scalaVersion.value, scalaBinaryVersion.value)
     val log              = streams.value.log
     val svb              = scalaBinaryVersion.value

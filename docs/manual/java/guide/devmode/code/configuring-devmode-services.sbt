@@ -1,9 +1,9 @@
 //#service-locator-address
-lagomServiceLocatorAddress in ThisBuild := "0.0.0.0"
+ThisBuild / lagomServiceLocatorAddress := "0.0.0.0"
 //#service-locator-address
 
 //#port-range
-lagomServicesPortRange in ThisBuild := PortRange(40000, 45000)
+ThisBuild / lagomServicesPortRange := PortRange(40000, 45000)
 //#port-range
 
 //#service-port

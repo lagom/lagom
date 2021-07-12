@@ -39,14 +39,14 @@ object SbtMavenPlugin extends AutoPlugin {
   override def projectSettings = inConfig(Compile)(unscopedSettings) ++ mavenTestSettings
 
   def unscopedSettings: Seq[Setting[_]] = Seq(
-    sourceDirectory in mavenGeneratePluginXml := sourceDirectory.value / "maven",
-    sources in mavenGeneratePluginXml :=
-      Seq((sourceDirectory in mavenGeneratePluginXml).value / "plugin.xml").filter(_.exists()),
-    target in mavenGeneratePluginXml := target.value / "maven-plugin-xml",
-    managedResourceDirectories += (target in mavenGeneratePluginXml).value,
+    (mavenGeneratePluginXml / sourceDirectory) := sourceDirectory.value / "maven",
+    (mavenGeneratePluginXml / sources) :=
+      Seq((mavenGeneratePluginXml / sourceDirectory).value / "plugin.xml").filter(_.exists()),
+    (mavenGeneratePluginXml / target) := target.value / "maven-plugin-xml",
+    managedResourceDirectories += (mavenGeneratePluginXml / target).value,
     mavenGeneratePluginXml := {
-      val files  = (sources in mavenGeneratePluginXml).value
-      val outDir = (target in mavenGeneratePluginXml).value / "META-INF" / "maven"
+      val files  = (mavenGeneratePluginXml / sources).value
+      val outDir = (mavenGeneratePluginXml / target).value / "META-INF" / "maven"
       IO.createDirectory(outDir)
 
       val pid  = projectID.value
@@ -83,14 +83,14 @@ object SbtMavenPlugin extends AutoPlugin {
   )
 
   def mavenTestSettings: Seq[Setting[_]] = Seq(
-    sourceDirectory in mavenTest := sourceDirectory.value / "maven-test",
+    (mavenTest / sourceDirectory) := sourceDirectory.value / "maven-test",
     mavenTest := {
       import sbt.complete.Parsers._
 
       val toRun = (OptSpace ~> StringBasic).?.parsed
 
       runMavenTests(
-        (sourceDirectory in mavenTest).value,
+        (mavenTest / sourceDirectory).value,
         mavenClasspath.value,
         mavenTestArgs.value,
         toRun,

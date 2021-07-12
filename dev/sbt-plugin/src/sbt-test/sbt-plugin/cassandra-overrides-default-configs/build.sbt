@@ -4,9 +4,9 @@ lazy val `my-project` = (project in file("."))
     libraryDependencies ++= Seq(lagomJavadslPersistenceCassandra, lagomSbtScriptedLibrary)
   )
 
-lagomCassandraEnabled in ThisBuild := true
+ThisBuild / lagomCassandraEnabled := true
 // no need for Kafka on this test
-lagomKafkaEnabled in ThisBuild := false
+ThisBuild / lagomKafkaEnabled := false
 
 val CassandraJournalKeyspace       = "cassandra-journal.keyspace"
 val CassandraJournalPort           = "cassandra-journal.port"
