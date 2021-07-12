@@ -351,6 +351,9 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[IncompatibleResultTypeProblem](
         "com.lightbend.lagom.scaladsl.devmode.LagomDevModeServiceLocatorComponents.serviceRegistry"
       ),
+      ProblemFilters.exclude[DirectMissingMethodProblem](
+        "com.lightbend.lagom.scaladsl.devmode.LagomDevModeServiceLocatorComponents.serviceRegistry"
+      ),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers$KafkaServer$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.LagomProcess$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers$ServerContainer"),
