@@ -26,8 +26,14 @@ import play.api.Environment
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
+object JdbcPersistenceSpec {
+  // Wherever this test is run, it should not trust it'll have access to bind to `getHostAddress`.
+  // Instead, we hardcode to bind to 127.0.0.1 only.
+  val akkaRemoteHostConfig = ConfigFactory.parseString("akka.remote.artery.canonical.hostname = 127.0.0.1")
+}
 abstract class JdbcPersistenceSpec private (actorSystemFactory: () => ActorSystem)
     extends ActorSystemSpec(actorSystemFactory) {
+
   def this(testName: String, config: Config, registry: JsonSerializerRegistry) =
     this(
       () =>
@@ -35,7 +41,9 @@ abstract class JdbcPersistenceSpec private (actorSystemFactory: () => ActorSyste
           testName,
           ActorSystemSetup(
             BootstrapSetup(
-              config.withFallback(Configuration.load(Environment.simple()).underlying)
+              JdbcPersistenceSpec.akkaRemoteHostConfig.withFallback(
+                config.withFallback(Configuration.load(Environment.simple()).underlying)
+              )
             ),
             JsonSerializerRegistry.serializationSetupFor(registry)
           )
