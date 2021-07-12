@@ -54,9 +54,18 @@ class ServiceTestSpec extends AnyWordSpec with Matchers {
     }
 
     "started with JDBC" should {
-      "start successfully" in {
+      "start successfully on dynamic port" in {
         ServiceTest.withServer(ServiceTest.defaultSetup.withJdbc())(new JdbcTestApplication(_)) { _ =>
           ()
+        }
+      }
+      "start successfully on specific port" in {
+        // TODO should use some kind of port manager to ensure this doesn't collide with other test suites
+        val port = 30000
+        ServiceTest.withServer(
+          ServiceTest.defaultSetup.withJdbc().withPort(port)
+        )(new JdbcTestApplication(_)) { server =>
+          server.playServer.httpPort should be(Some(port))
         }
       }
     }

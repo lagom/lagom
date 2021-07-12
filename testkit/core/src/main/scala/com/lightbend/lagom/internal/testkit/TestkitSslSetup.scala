@@ -32,15 +32,17 @@ private[lagom] object TestkitSslSetup {
 
   /**
    *
-   * @param serverKeyStoreFile keyStore to setup the server
-   * @param trustStoreFile     trustStore for the clients
+   * @param keyStoreMetadata   keyStore to setup the server
+   * @param trustStoreMetadata trustStore for the clients
    * @param clientSslContext   SSLContext to create SSL clients
+   * @param sslPort            The port to bind to.
    * @return
    */
   def enabled(
       keyStoreMetadata: KeyStoreMetadata,
       trustStoreMetadata: KeyStoreMetadata,
-      clientSslContext: SSLContext
+      clientSslContext: SSLContext,
+      sslPort: Option[Int]
   ): TestkitSslSetup = {
     val sslSettings: Map[String, AnyRef] = Map(
       // See also play/core/server/devmode/LagomDevModeReloadableServer.scala
@@ -54,6 +56,6 @@ private[lagom] object TestkitSslSetup {
       "ssl-config.trustManager.stores.0.type"        -> trustStoreMetadata.storeType,
       "ssl-config.trustManager.stores.0.password"    -> String.valueOf(trustStoreMetadata.storePassword)
     )
-    Enabled(Some(0), sslSettings, Some(clientSslContext))
+    Enabled(sslPort, sslSettings, Some(clientSslContext))
   }
 }
