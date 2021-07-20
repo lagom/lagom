@@ -2,9 +2,9 @@ val lombok = "org.projectlombok" % "lombok" % "1.18.18"
 val macwire = "com.softwaremill.macwire" %% "macros" % "2.3.3" % "provided"
 val scalaTest = "org.scalatest" %% "scalatest" % "3.1.2" % Test
 
-lagomCassandraEnabled in ThisBuild := true
+ThisBuild / lagomCassandraEnabled := true
 // no need for Kafka on this test
-lagomKafkaEnabled in ThisBuild := false
+ThisBuild / lagomKafkaEnabled := false
 
 lazy val `projections-happpy-path` = (project in file(".")).aggregate(`hello-javadsl`, `hello-scaladsl`)
 
@@ -12,7 +12,7 @@ lazy val `hello-javadsl` = (project in file("hello-javadsl"))
   .enablePlugins(LagomJava)
   .settings(
     lagomServiceHttpPort := 10001,
-    Seq(javacOptions in Compile += "-parameters"),
+    Seq(Compile / javacOptions += "-parameters"),
     libraryDependencies ++= Seq(
       lagomJavadslApi,
       lagomJavadslPersistenceCassandra,

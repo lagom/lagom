@@ -1,8 +1,8 @@
-organization in ThisBuild := "com.example"
+ThisBuild / organization := "com.example"
 
 // no need for Kafka on this test
-lagomCassandraEnabled in ThisBuild := false
-lagomKafkaEnabled in ThisBuild := false
+ThisBuild / lagomCassandraEnabled := false
+ThisBuild / lagomKafkaEnabled := false
 
 val h2Driver = "com.h2database" % "h2" % "1.4.199"
 val lombok = "org.projectlombok" % "lombok" % "1.18.18"

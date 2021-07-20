@@ -1,9 +1,9 @@
-organization in ThisBuild := "com.example"
-version in ThisBuild := "1.0-SNAPSHOT"
+ThisBuild / organization := "com.example"
+ThisBuild / version := "1.0-SNAPSHOT"
 
 // no need for Cassandra and Kafka on this test
-lagomCassandraEnabled in ThisBuild := false
-lagomKafkaEnabled in ThisBuild := false
+ThisBuild / lagomCassandraEnabled := false
+ThisBuild / lagomKafkaEnabled := false
 
 lazy val `server-backend-switch` = (project in file("."))
   .aggregate(`apis`, `netty-impl`, `akka-http-impl`)

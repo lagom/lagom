@@ -1,5 +1,5 @@
 //#port-range
-lagomServicesPortRange in ThisBuild := PortRange(40000, 45000)
+ThisBuild / lagomServicesPortRange := PortRange(40000, 45000)
 //#port-range
 
 //#service-port

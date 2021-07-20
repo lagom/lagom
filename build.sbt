@@ -10,16 +10,17 @@ import lagom.build._
 import org.scalafmt.sbt.ScalafmtPlugin
 
 // Turn off "Resolving" log messages that clutter build logs
-ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
+(ThisBuild / ivyLoggingLevel) := UpdateLogging.Quiet
 
 def evictionSettings: Seq[Setting[_]] = Seq(
   // This avoids a lot of dependency resolution warnings to be showed.
   // They are not required in Lagom since we have a more strict whitelist
   // of which dependencies are allowed. So it should be safe to not have
   // the build logs polluted with evictions warnings.
-  evictionWarningOptions in update := EvictionWarningOptions.default
+  (update / evictionWarningOptions) := EvictionWarningOptions.default
     .withWarnTransitiveEvictions(false)
     .withWarnDirectEvictions(false)
+    .withWarnEvictionSummary(false)
 )
 
 def overridesScalaParserCombinators = Seq(
@@ -55,13 +56,13 @@ def common: Seq[Setting[_]] = releaseSettings ++ evictionSettings ++ Seq(
   pomIncludeRepository := { _ =>
     false
   },
-  concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
-  scalacOptions in (Compile, doc) ++= (scalaBinaryVersion.value match {
+  (Global / concurrentRestrictions) += Tags.limit(Tags.Test, 1),
+  (Compile / doc / scalacOptions) ++= (scalaBinaryVersion.value match {
     case "2.12" => Seq("-no-java-comments")
     case _      => Seq.empty
   }),
   // Setting javac options in common allows IntelliJ IDEA to import them automatically
-  javacOptions in compile ++= Seq(
+  (compile / javacOptions) ++= Seq(
     "-encoding",
     "UTF-8",
     "-parameters",
@@ -72,7 +73,7 @@ def common: Seq[Setting[_]] = releaseSettings ++ evictionSettings ++ Seq(
 )
 
 // Customise sbt-dynver's behaviour to make it work with Lagom's tags (which aren't v-prefixed)
-dynverTagPrefix in ThisBuild := ""
+(ThisBuild / dynverTagPrefix) := ""
 
 // Sanity-check: assert that version comes from a tag (e.g. not a too-shallow clone)
 // https://github.com/dwijnand/sbt-dynver/#sanity-checking-the-version
@@ -87,7 +88,7 @@ Global / onLoad := (Global / onLoad).value.andThen { s =>
 
 def releaseSettings: Seq[Setting[_]] = Seq(
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  releaseTagName := (version in ThisBuild).value,
+  releaseTagName := (ThisBuild / version).value,
   releaseProcess := {
     import ReleaseTransformations._
 
@@ -142,7 +143,7 @@ def runtimeScalaSettings: Seq[Setting[_]] = Seq(
   crossScalaVersions := Dependencies.Versions.Scala,
   scalaVersion := Dependencies.Versions.Scala.head,
   // compile options
-  scalacOptions in Compile ++= Seq(
+  (Compile / scalacOptions) ++= Seq(
     "-encoding",
     "UTF-8",
     "-target:jvm-1.8",
@@ -163,7 +164,7 @@ def runtimeLibCommon: Seq[Setting[_]] = common ++ sonatypeSettings ++ runtimeSca
   Dependencies.allowedPruneSetting,
   Dependencies.allowDependenciesSetting,
   // show full stack traces and test case durations
-  testOptions in Test += Tests.Argument("-oDF"),
+  (Test / testOptions) += Tests.Argument("-oDF"),
   // -v Log "test run started" / "test started" / "test run finished" events on log level "info" instead of "debug".
   // -a Show stack traces and exception class name for AssertionErrors.
   testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a")
@@ -208,29 +209,29 @@ def multiJvm(project: Project): Project = {
         // see https://github.com/sbt/sbt-header/issues/37
         headerSettings(MultiJvm) ++
         Seq(
-          parallelExecution in Test := false,
-          parallelExecution in MultiJvm := false,
+          (Test / parallelExecution) := false,
+          (MultiJvm / parallelExecution) := false,
           // -o D(report the duration of the tests) F(show full stack traces)
           // -u select the JUnit XML reporter
-          scalatestOptions in MultiJvm := Seq("-oDF", "-u", (target.value / "test-reports").getAbsolutePath),
-          MultiJvmKeys.jvmOptions in MultiJvm := defaultMultiJvmOptions,
+          (MultiJvm / scalatestOptions) := Seq("-oDF", "-u", (target.value / "test-reports").getAbsolutePath),
+          (MultiJvm / MultiJvmKeys.jvmOptions) := defaultMultiJvmOptions,
           // tag MultiJvm tests so that we can use concurrentRestrictions to disable parallel tests
-          executeTests in MultiJvm := (executeTests in MultiJvm).tag(Tags.Test).value,
+          (MultiJvm / executeTests) := (MultiJvm / executeTests).tag(Tags.Test).value,
           // change multi-jvm lib folder to reflect the scala version used during crossbuild
-          multiRunCopiedClassLocation in MultiJvm := crossbuildMultiJvm.value
+          (MultiJvm / multiRunCopiedClassLocation) := crossbuildMultiJvm.value
         )
     }
 }
 
 def macroCompileSettings: Seq[Setting[_]] = Seq(
-  compile in Test := {
+  (Test / compile) := {
     // Delete classes in "compile" packages after compiling.
     // These are used for compile-time tests and should be recompiled every time.
-    val products = (crossTarget in Test).value ** new SimpleFileFilter(
+    val products = (Test / crossTarget).value ** new SimpleFileFilter(
       _.getParentFile.getName == "compile"
     )
     IO.delete(products.get)
-    (compile in Test).value
+    (Test / compile).value
   }
 )
 
@@ -244,8 +245,8 @@ val mimaSettings: Seq[Setting[_]] = {
       val moduleID = organization.value % s"${moduleName.value}$suffix" % version
 
       // For sbt plugins if that is the case for the current subproject
-      val sbtBV   = (sbtBinaryVersion in pluginCrossBuild).value
-      val scalaBV = (scalaBinaryVersion in pluginCrossBuild).value
+      val sbtBV   = (pluginCrossBuild / sbtBinaryVersion).value
+      val scalaBV = (pluginCrossBuild / scalaBinaryVersion).value
 
       if (sbtPlugin.value) Defaults.sbtPluginExtra(moduleID, sbtBV, scalaBV)
       else moduleID
@@ -362,6 +363,11 @@ val mimaSettings: Seq[Setting[_]] = {
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.LagomProcess"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.Servers$"),
       ProblemFilters.exclude[MissingClassProblem]("com.lightbend.lagom.dev.MiniLogger"),
+      // Newer MiMa detected more violations: (bumping from 0.7.0 to 0.8.1 listed this new filter)
+      ProblemFilters.exclude[DirectMissingMethodProblem](
+        "com.lightbend.lagom.scaladsl.devmode.LagomDevModeServiceLocatorComponents.serviceRegistry"
+      )
+
       // Add mima new filters just above this comment to avoid merge conflicts (avoiding interleaving)
     )
   )
@@ -451,7 +457,7 @@ lazy val root = (project in file("."))
     scalaVersion := Dependencies.Versions.Scala.head,
     PgpKeys.publishSigned := {},
     publishLocal := {},
-    publishArtifact in Compile := false,
+    (Compile / publishArtifact) := false,
     publish := {}
   )
   .enablePlugins(lagom.UnidocRoot)
@@ -679,10 +685,10 @@ lazy val `integration-tests-scaladsl` = (project in file("service/scaladsl/integ
 
 // for forked tests
 def forkedTests: Seq[Setting[_]] = Seq(
-  fork in Test := true,
-  concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),
-  javaOptions in Test ++= Seq("-Xms256M", "-Xmx512M"),
-  testGrouping in Test := singleTestsGrouping((definedTests in Test).value)
+  (Test / fork) := true,
+  (Global / concurrentRestrictions) += Tags.limit(Tags.Test, 1),
+  (Test / javaOptions) ++= Seq("-Xms256M", "-Xmx512M"),
+  (Test / testGrouping) := singleTestsGrouping((Test / definedTests).value)
 )
 
 // group tests, a single test per group
@@ -1115,7 +1121,7 @@ lazy val `dev-environment` = (project in file("dev"))
     scalaVersion := Dependencies.Versions.Scala.head,
     PgpKeys.publishSigned := {},
     publishLocal := {},
-    publishArtifact in Compile := false,
+    (Compile / publishArtifact) := false,
     publish / skip := true
   )
 
@@ -1146,13 +1152,13 @@ lazy val `server-containers` = (project in file("dev") / "server-containers")
 
 def withLagomVersion(p: Project): Project =
   p.settings(
-    sourceGenerators in Compile += Def.task {
+    (Compile / sourceGenerators) += Def.task {
       Generators.version(
         version.value,
         Dependencies.Versions.Akka,
         Dependencies.Versions.AkkaHttp,
         Dependencies.Versions.Play,
-        (sourceManaged in Compile).value
+        (Compile / sourceManaged).value
       )
     }.taskValue,
   )
@@ -1186,7 +1192,7 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
   .settings(
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
-    sbtVersion in pluginCrossBuild := Dependencies.Versions.TargetSbt1,
+    (pluginCrossBuild / sbtVersion) := Dependencies.Versions.TargetSbt1,
     sbtPlugin := true,
     scriptedDependencies := (()),
     target := target.value / "lagom-sbt-build-tool-support",
@@ -1199,88 +1205,88 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
     name := "lagom-sbt-plugin",
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
-    sbtVersion in pluginCrossBuild := Dependencies.Versions.TargetSbt1,
+    (pluginCrossBuild / sbtVersion) := Dependencies.Versions.TargetSbt1,
     Dependencies.`sbt-plugin`,
     libraryDependencies ++= Seq(
       Defaults
         .sbtPluginExtra(
           "com.typesafe.play" % "sbt-plugin" % Dependencies.Versions.Play,
-          CrossVersion.binarySbtVersion((sbtVersion in pluginCrossBuild).value),
+          CrossVersion.binarySbtVersion((pluginCrossBuild / sbtVersion).value),
           CrossVersion.binaryScalaVersion(scalaVersion.value)
         )
         .exclude("org.slf4j", "slf4j-simple")
     ),
     // This ensure that files in sbt-test are also included
-    headerSources in Compile ++= (sbtTestDirectory.value ** ("*.scala" || "*.java")).get,
+    (Compile / headerSources) ++= (sbtTestDirectory.value ** ("*.scala" || "*.java")).get,
     scriptedDependencies := (()),
     publishScriptedDependencies := {
       // core projects
-      val () = (publishLocal in `akka-management-core`).value
-      val () = (publishLocal in `akka-management-javadsl`).value
-      val () = (publishLocal in `akka-management-scaladsl`).value
-      val () = (publishLocal in `api`).value
-      val () = (publishLocal in `api-javadsl`).value
-      val () = (publishLocal in `api-scaladsl`).value
-      val () = (publishLocal in `client`).value
-      val () = (publishLocal in `client-javadsl`).value
-      val () = (publishLocal in `client-scaladsl`).value
-      val () = (publishLocal in `cluster-core`).value
-      val () = (publishLocal in `cluster-javadsl`).value
-      val () = (publishLocal in `cluster-scaladsl`).value
-      val () = (publishLocal in `projection-core`).value
-      val () = (publishLocal in `projection-scaladsl`).value
-      val () = (publishLocal in `projection-javadsl`).value
-      val () = (publishLocal in `immutables`).value
-      val () = (publishLocal in `jackson`).value
-      val () = (publishLocal in `logback`).value
-      val () = (publishLocal in `persistence-core`).value
-      val () = (publishLocal in `persistence-javadsl`).value
-      val () = (publishLocal in `persistence-scaladsl`).value
-      val () = (publishLocal in `persistence-testkit`).value
-      val () = (publishLocal in `persistence-cassandra-core`).value
-      val () = (publishLocal in `persistence-cassandra-javadsl`).value
-      val () = (publishLocal in `persistence-cassandra-scaladsl`).value
-      val () = (publishLocal in `persistence-jdbc-core`).value
-      val () = (publishLocal in `persistence-jdbc-scaladsl`).value
-      val () = (publishLocal in `persistence-jdbc-javadsl`).value
-      val () = (publishLocal in `persistence-jpa-javadsl`).value
-      val () = (publishLocal in `play-json`).value
-      val () = (publishLocal in `server`).value
-      val () = (publishLocal in `server-javadsl`).value
-      val () = (publishLocal in `server-scaladsl`).value
-      val () = (publishLocal in `spi`).value
-      val () = (publishLocal in `testkit-core`).value
-      val () = (publishLocal in `broker-javadsl`).value
-      val () = (publishLocal in `broker-scaladsl`).value
-      val () = (publishLocal in `kafka-broker`).value
-      val () = (publishLocal in `kafka-client`).value
-      val () = (publishLocal in `kafka-broker-scaladsl`).value
-      val () = (publishLocal in `kafka-client-scaladsl`).value
-      val () = (publishLocal in `pubsub-javadsl`).value
-      val () = (publishLocal in `pubsub-scaladsl`).value
-      val () = (publishLocal in `testkit-javadsl`).value
-      val () = (publishLocal in `testkit-scaladsl`).value
+      val () = (`akka-management-core` / publishLocal).value
+      val () = (`akka-management-javadsl` / publishLocal).value
+      val () = (`akka-management-scaladsl` / publishLocal).value
+      val () = (`api` / publishLocal).value
+      val () = (`api-javadsl` / publishLocal).value
+      val () = (`api-scaladsl` / publishLocal).value
+      val () = (`client` / publishLocal).value
+      val () = (`client-javadsl` / publishLocal).value
+      val () = (`client-scaladsl` / publishLocal).value
+      val () = (`cluster-core` / publishLocal).value
+      val () = (`cluster-javadsl` / publishLocal).value
+      val () = (`cluster-scaladsl` / publishLocal).value
+      val () = (`projection-core` / publishLocal).value
+      val () = (`projection-scaladsl` / publishLocal).value
+      val () = (`projection-javadsl` / publishLocal).value
+      val () = (`immutables` / publishLocal).value
+      val () = (`jackson` / publishLocal).value
+      val () = (`logback` / publishLocal).value
+      val () = (`persistence-core` / publishLocal).value
+      val () = (`persistence-javadsl` / publishLocal).value
+      val () = (`persistence-scaladsl` / publishLocal).value
+      val () = (`persistence-testkit` / publishLocal).value
+      val () = (`persistence-cassandra-core` / publishLocal).value
+      val () = (`persistence-cassandra-javadsl` / publishLocal).value
+      val () = (`persistence-cassandra-scaladsl` / publishLocal).value
+      val () = (`persistence-jdbc-core` / publishLocal).value
+      val () = (`persistence-jdbc-scaladsl` / publishLocal).value
+      val () = (`persistence-jdbc-javadsl` / publishLocal).value
+      val () = (`persistence-jpa-javadsl` / publishLocal).value
+      val () = (`play-json` / publishLocal).value
+      val () = (`server` / publishLocal).value
+      val () = (`server-javadsl` / publishLocal).value
+      val () = (`server-scaladsl` / publishLocal).value
+      val () = (`spi` / publishLocal).value
+      val () = (`testkit-core` / publishLocal).value
+      val () = (`broker-javadsl` / publishLocal).value
+      val () = (`broker-scaladsl` / publishLocal).value
+      val () = (`kafka-broker` / publishLocal).value
+      val () = (`kafka-client` / publishLocal).value
+      val () = (`kafka-broker-scaladsl` / publishLocal).value
+      val () = (`kafka-client-scaladsl` / publishLocal).value
+      val () = (`pubsub-javadsl` / publishLocal).value
+      val () = (`pubsub-scaladsl` / publishLocal).value
+      val () = (`testkit-javadsl` / publishLocal).value
+      val () = (`testkit-scaladsl` / publishLocal).value
 
       // dev service registry
-      val () = (publishLocal in `devmode-scaladsl`).value
-      val () = (publishLocal in `play-integration-javadsl`).value
-      val () = (publishLocal in `service-locator`).value
-      val () = (publishLocal in `service-registration-javadsl`).value
-      val () = (publishLocal in `service-registry-client-core`).value
-      val () = (publishLocal in `service-registry-client-javadsl`).value
+      val () = (`devmode-scaladsl` / publishLocal).value
+      val () = (`play-integration-javadsl` / publishLocal).value
+      val () = (`service-locator` / publishLocal).value
+      val () = (`service-registration-javadsl` / publishLocal).value
+      val () = (`service-registry-client-core` / publishLocal).value
+      val () = (`service-registry-client-javadsl` / publishLocal).value
 
       // dev environment projects
-      val () = (publishLocal in `cassandra-server`).value
-      val () = (publishLocal in `dev-mode-ssl-support`).value
-      val () = (publishLocal in `kafka-server`).value
-      val () = (publishLocal in `reloadable-server`).value
-      val () = (publishLocal in `server-containers`).value
-      val () = (publishLocal in `sbt-build-tool-support`).value
+      val () = (`cassandra-server` / publishLocal).value
+      val () = (`dev-mode-ssl-support` / publishLocal).value
+      val () = (`kafka-server` / publishLocal).value
+      val () = (`reloadable-server` / publishLocal).value
+      val () = (`server-containers` / publishLocal).value
+      val () = (`sbt-build-tool-support` / publishLocal).value
       val () = publishLocal.value
 
       // sbt scripted projects
-      val () = (publishLocal in `sbt-scripted-library`).value
-      val () = (publishLocal in LocalProject("sbt-scripted-tools")).value
+      val () = (`sbt-scripted-library` / publishLocal).value
+      val () = (LocalProject("sbt-scripted-tools") / publishLocal).value
     },
     publishMavenStyle := true
   )
@@ -1293,9 +1299,9 @@ lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
     name := "Lagom Maven Plugin",
     description := "Provides Lagom development environment support to maven.",
     Dependencies.`maven-plugin`,
-    mavenClasspath := (externalDependencyClasspath in (`maven-launcher`, Compile)).value.map(_.data),
+    mavenClasspath := (`maven-launcher` / Compile / externalDependencyClasspath).value.map(_.data),
     // This ensure that files in maven-test are also included
-    headerSources in Compile ++= (sourceDirectory.value / "maven-test" ** ("*.scala" || "*.java")).get,
+    (Compile / headerSources) ++= (sourceDirectory.value / "maven-test" ** ("*.scala" || "*.java")).get,
     mavenTestArgs := Seq(
       "-Xmx768m",
       "-XX:MaxMetaspaceSize=384m",
@@ -1332,7 +1338,7 @@ def scriptedSettings: Seq[Setting[_]] =
         "-XX:MaxMetaspaceSize=512m",
         "-Dscala.version=" + sys.props
           .get("scripted.scala.version")
-          .getOrElse((scalaVersion in `reloadable-server`).value),
+          .getOrElse((`reloadable-server` / scalaVersion).value),
         s"-Dsbt.boot.directory=${file(sys.props("user.home")) / ".sbt" / "boot"}",
       ) ++ sys.props.get("lagom.build.akka.version").map(v => s"-Dlagom.build.akka.version=$v").toSeq
     )
@@ -1350,8 +1356,8 @@ def archetypeProject(archetypeName: String) =
     .settings(
       name := s"maven-archetype-lagom-$archetypeName",
       autoScalaLibrary := false,
-      copyResources in Compile := {
-        val pomFile = (classDirectory in Compile).value / "archetype-resources" / "pom.xml"
+      (Compile / copyResources) := {
+        val pomFile = (Compile / classDirectory).value / "archetype-resources" / "pom.xml"
         if (pomFile.exists()) {
           val pomXml    = IO.read(pomFile)
           val variables = archetypeVariables(version.value)
@@ -1365,16 +1371,16 @@ def archetypeProject(archetypeName: String) =
           )
           IO.write(pomFile, newPomXml)
         }
-        (copyResources in Compile).value
+        (Compile / copyResources).value
       },
-      unmanagedResources in Compile := {
-        val gitIgnoreFiles = (unmanagedResourceDirectories in Compile).value.flatMap { dirs =>
+      (Compile / unmanagedResources) := {
+        val gitIgnoreFiles = (Compile / unmanagedResourceDirectories).value.flatMap { dirs =>
           (dirs ** (".gitignore")).get
         }
-        (unmanagedResources in Compile).value ++ gitIgnoreFiles
+        (Compile / unmanagedResources).value ++ gitIgnoreFiles
       },
       // Don't force copyright headers in Maven archetypes
-      excludeFilter in headerResources := "*"
+      (headerResources / excludeFilter) := "*"
     )
 
 lazy val `maven-java-archetype` = archetypeProject("java")
@@ -1398,7 +1404,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
         (javadslProjects ++ coreProjects).map {
           project =>
             Def.setting {
-              val artifactName = (artifact in project).value.name
+              val artifactName = (project / artifact).value.name
 
               Dependencies.Versions.Scala.map {
                 supportedVersion =>
@@ -1409,9 +1415,9 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
                   val artifactId = crossFunc(artifactName)
 
                   <dependency>
-                  <groupId>{(organization in project).value}</groupId>
+                  <groupId>{(project / organization).value}</groupId>
                   <artifactId>{artifactId}</artifactId>
-                  <version>{(version in project).value}</version>
+                  <version>{(project / version).value}</version>
                 </dependency>
               }
             }
@@ -1460,7 +1466,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
     },
     // This disables creating jar, source jar and javadocs, and will cause the packaging type to be "pom" when the
     // pom is created
-    Classpaths.defaultPackageKeys.map(key => publishArtifact in key := false),
+    Classpaths.defaultPackageKeys.map(key => (key / publishArtifact) := false),
   )
 
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
@@ -1473,7 +1479,7 @@ lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
     scriptedDependencies := (()),
     crossScalaVersions := Dependencies.Versions.SbtScala,
     scalaVersion := Dependencies.Versions.SbtScala.head,
-    sbtVersion in pluginCrossBuild := Dependencies.Versions.TargetSbt1,
+    (pluginCrossBuild / sbtVersion) := Dependencies.Versions.TargetSbt1,
   )
   .dependsOn(`sbt-plugin`)
 
@@ -1597,11 +1603,11 @@ def generateKafkaServerClasspathForTests(packageName: String): Seq[Setting[_]] =
   BuildInfoPlugin.buildInfoScopedSettings(Test),
   Test / buildInfoPackage := packageName,
   Test / buildInfoObject := "TestBuildInfo",
-  Test / buildInfoKeys := Seq[BuildInfoKey](fullClasspath in (`kafka-server`, Compile), target),
+  Test / buildInfoKeys := Seq[BuildInfoKey]((`kafka-server` / Compile / fullClasspath), target),
 )
 
 def excludeLog4jFromKafkaServer: Seq[Setting[_]] = Seq(
-  libraryDependencies += (projectID in (`kafka-server`, Test)).value.exclude("org.slf4j", "slf4j-log4j12")
+  libraryDependencies += (`kafka-server` / Test / projectID).value.exclude("org.slf4j", "slf4j-log4j12")
 )
 
 // Provides macros for testing macros. Is not published.

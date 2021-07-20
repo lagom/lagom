@@ -23,6 +23,10 @@ env:
     - TRAVIS_JDK=11
 
 before_install:
+  - |
+    curl -Ls https://git.io/sbt -o sbt || travis_terminate 1
+    chmod 0755 sbt || travis_terminate 1
+    sudo mv sbt /usr/local/bin/sbt || travis_terminate 1
   # See https://github.com/travis-ci/travis-ci/issues/4629#issuecomment-239493916
   - rm ~/.m2/settings.xml
   - if [ ! -f ~/.jabba/jabba.sh ]; then curl -L -v --retry 5 -o jabba-install.sh https://raw.githubusercontent.com/shyiko/jabba/0.11.2/install.sh && bash jabba-install.sh; fi
@@ -66,8 +70,12 @@ jobs:
       name: "Run multi-jvm tests for Scala 2.12 and Java 8"
     - script: SCALA_VERSION=2.13.5 bin/test-multi-jvm-2.1x
       name: "Run multi-jvm tests for Scala 2.13"
-    - script: bin/test-documentation
-      name: "Documentation validations and tests"
+
+    ##  "Documentation validations and tests" runs on JDK11 which fails `sbt unidoc` as
+    ##   soon as we bump sbt beyond 1.4.0. See https://github.com/lagom/lagom/issues/3240
+    ##- script: bin/test-documentation
+    ##  name: "Documentation validations and tests"
+
     ## Until the release is run in JDK11 we must have 100% support for docs
     ## generation in JDK8 (this means `unidoc` must be run in every PR)
     - script: bin/test-documentation
