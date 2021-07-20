@@ -17,4 +17,5 @@ runSbt markdownValidateDocs markdownEvaluateSbtFiles \
   headerCheckAll \
   scalafmtCheckAll scalafmtSbtCheck \
   javafmtCheckAll \
+  markdownStageSite \
   test "${EXTRA_TASKS[@]}"
