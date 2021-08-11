@@ -184,7 +184,7 @@ object Dependencies {
   private val junit                 = "junit" % "junit" % Versions.JUnit
   private val commonsLang           = "org.apache.commons" % "commons-lang3" % "3.11"
   private val javaxAnnotationApi    = "javax.annotation" % "javax.annotation-api" % "1.3.2"
-  private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "3.2.6").excludeAll(excludeSlf4j: _*)
+  private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "4.2.3").excludeAll(excludeSlf4j: _*)
 
   private val checkerQual = "org.checkerframework" % "checker-qual" % "3.9.1"
 
