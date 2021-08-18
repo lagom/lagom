@@ -7,10 +7,6 @@
 set -e
 set -o pipefail
 
-# Travis uses a detached HEAD during builds
-# CURRENT_BRANCH is used when updating Whitesource to determine the correct project name
-export CURRENT_BRANCH=${TRAVIS_BRANCH}
-
 EXTRA_OPTS=("-Dakka.test.timefactor=10")
 
 #
