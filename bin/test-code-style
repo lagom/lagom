@@ -15,9 +15,3 @@ runSbt  +headerCheckAll \
         javafmtCheckAll \
         +mimaReportBinaryIssues \
         checkAkkaModuleVersions "${EXTRA_TASKS[@]}"
-
-# Only update Whitesource if WHITESOURCE_PASSWORD is defined
-# Encrypted environment variables are not available to pull requests for security reasons
-if [[ -n "${WHITESOURCE_PASSWORD}" ]]; then
-  runSbtNoisy whitesourceUpdate
-fi
