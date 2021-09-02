@@ -38,9 +38,3 @@ git diff --exit-code || (
   echo "[error] To fix, format your sources using sbt javafmt test:javafmt before submitting a pull request."
   false
 )
-
-# Only update Whitesource if WHITESOURCE_PASSWORD is defined
-# Encrypted environment variables are not available to pull requests for security reasons
-if [[ -n "${WHITESOURCE_PASSWORD}" ]]; then
-  runSbtNoisy whitesourceUpdate
-fi
