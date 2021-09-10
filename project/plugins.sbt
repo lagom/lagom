@@ -17,7 +17,7 @@ addSbtPlugin("com.typesafe"     % "sbt-mima-plugin" % "0.8.1")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")
 
-addSbtPlugin("com.lightbend.sbt" % "sbt-java-formatter" % "0.5.1")
+addSbtPlugin("com.lightbend.sbt" % "sbt-java-formatter" % "0.6.1")
 addSbtPlugin("org.scalameta"     % "sbt-scalafmt"       % "2.4.3")
 addSbtPlugin("com.dwijnand"      % "sbt-dynver"         % "4.1.1")
 
