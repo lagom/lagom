@@ -7,7 +7,6 @@ package com.lightbend.lagom.internal.server
 import java.net.URI
 import java.util.Base64
 import java.util.concurrent.CompletionException
-
 import akka.NotUsed
 import akka.stream._
 import akka.stream.scaladsl.Flow
@@ -44,6 +43,7 @@ import play.api.routing.Router.Routes
 import play.api.routing.HandlerDef
 import play.api.routing.Router
 import play.api.routing.SimpleRouter
+import play.utils.ExecCtxUtils
 
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
@@ -252,7 +252,7 @@ private[lagom] abstract class ServiceRouter(httpConfiguration: HttpConfiguration
               )
               .withHeaders(toResponseHeaders(transformedResponseHeader): _*)
         }
-    }
+    }(ExecCtxUtils.prepare(ec))
   }
 
   private def logException(exc: Throwable, descriptor: Descriptor, call: Call[_, _]): Unit = {
