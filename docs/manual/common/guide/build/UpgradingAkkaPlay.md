@@ -12,7 +12,7 @@ When you are using sbt, you can force new versions of Akka and Play by adding th
 
 ```scala
 val akkaVersion = "2.6.<newer-version>"
-val akkaHttpVersion = "10.1.<newer-version>"
+val akkaHttpVersion = "10.2.<newer-version>"
 val playVersion = "2.8.<newer-version>"
 
 libraryDependencies in ThisBuild ++= Seq(
@@ -53,7 +53,7 @@ Below is an example of how you would overwrite the version for some Akka, Akka H
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.binary.version>2.12</scala.binary.version>
         <akka.version>2.6.newer-version</akka.version>
-        <akka.http.version>10.1.newer-version</akka.http.version>
+        <akka.http.version>10.2.newer-version</akka.http.version>
         <play.version>2.8.newer-version</play.version>
     </properties>
 
@@ -157,7 +157,7 @@ In latest versions of Akka you may also use the BOM provided instead of manually
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.binary.version>2.12</scala.binary.version>
         <akka.version>2.6.newer-version</akka.version>
-        <akka.http.version>10.1.newer-version</akka.http.version>
+        <akka.http.version>10.2.newer-version</akka.http.version>
         <play.version>2.8.newer-version</play.version>
     </properties>
     <dependencyManagement>
