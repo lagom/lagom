@@ -19,14 +19,14 @@ object Dependencies {
     val SbtScala = Seq(Scala212, Scala210)
 
     // If you update the version of Play, you probably need to update the other Play* variables.
-    val Play             = "2.8.8" // sync with docs/build.sbt
+    val Play             = "2.8.9" // sync with docs/build.sbt
     val PlayJson         = "2.9.1"
     val PlayStandaloneWs = "2.1.3"
     val Twirl            = "1.5.1" // sync with docs/project/plugins.sbt
     val PlayFileWatch    = "1.1.14"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.14") // sync with docs/build.sbt
-    val AkkaHttp     = "10.1.14"
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.17") // sync with docs/build.sbt
+    val AkkaHttp     = "10.1.15"
 
     val AkkaPersistenceCassandra = "0.106"
     // this is the version used in AkkaPersistenceCassandra, we stick with it
