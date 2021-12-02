@@ -42,7 +42,7 @@ object Dependencies {
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
     val JacksonDatabind      = Jackson
-    val Guava                = "28.2-jre"
+    val Guava                = "30.1.1-jre"
     val Maven                = "3.6.2"
     val MavenWagon           = "3.3.3"
     val MavenResolver        = "1.4.1"
@@ -56,7 +56,7 @@ object Dependencies {
     val HibernateCore = "5.4.8.Final"
     val PCollections  = "3.0.5"
 
-    val ScalaJava8Compat = "0.9.1"
+    val ScalaJava8Compat = "1.0.2"
     val ScalaXml         = "1.2.0"
     val Slick            = "3.3.2"
     // JUnit[Interface] should be sync with:
@@ -65,7 +65,7 @@ object Dependencies {
     val JUnit          = "4.13.2"
     val JUnitInterface = "0.11"
 
-    val Slf4j   = "1.7.30"
+    val Slf4j   = "1.7.32"
     val Logback = "1.2.3"
     val Log4j   = "2.12.1"
 
@@ -151,7 +151,7 @@ object Dependencies {
   private val akkaHttpSprayJson = "com.typesafe.akka" %% "akka-http-spray-json" % Versions.AkkaHttp
   private val akkaParsing       = "com.typesafe.akka" %% "akka-parsing"         % Versions.AkkaHttp
 
-  private val sprayJson = "io.spray" %% "spray-json" % "1.3.5"
+  private val sprayJson = "io.spray" %% "spray-json" % "1.3.6"
 
   private val play           = ("com.typesafe.play" %% "play"           % Versions.Play).excludeAll(excludeSlf4j: _*)
   private val playBuildLink  = ("com.typesafe.play" % "build-link"      % Versions.Play).excludeAll(excludeSlf4j: _*)
@@ -181,7 +181,7 @@ object Dependencies {
   private val javaxAnnotationApi    = "javax.annotation" % "javax.annotation-api" % "1.3.2"
   private val dropwizardMetricsCore = ("io.dropwizard.metrics" % "metrics-core" % "3.2.6").excludeAll(excludeSlf4j: _*)
 
-  private val checkerQual = "org.checkerframework" % "checker-qual" % "2.10.0"
+  private val checkerQual = "org.checkerframework" % "checker-qual" % "3.8.0"
 
   private val okhttp3 = "com.squareup.okhttp3" % "okhttp" % "3.11.0"
   private val okio    = "com.squareup.okio"    % "okio"   % "2.4.1"
@@ -251,7 +251,7 @@ object Dependencies {
       jnra64asm,
       jnrx86asm,
       "com.google.code.findbugs" % "jsr305"                  % "3.0.2",
-      "com.google.errorprone"    % "error_prone_annotations" % "2.3.4",
+      "com.google.errorprone"    % "error_prone_annotations" % "2.5.1",
       guava,
       "com.google.j2objc"            % "j2objc-annotations"   % "1.3",
       "com.google.inject"            % "guice"                % "4.2.3",
@@ -349,7 +349,7 @@ object Dependencies {
       "joda-time"           % "joda-time"               % "2.10.5",
       "junit"               % "junit"                   % Versions.JUnit,
       "net.jodah"           % "typetools"               % "0.5.0",
-      "org.lz4"             % "lz4-java"                % "1.7.1",
+      "org.lz4"             % "lz4-java"                % "1.8.0",
       "com.github.luben"    % "zstd-jni"                % "1.3.7-1",
       "org.agrona"          % "agrona"                  % "1.9.0",
       commonsLang,
@@ -523,6 +523,7 @@ object Dependencies {
     jnra64asm,
     jnrConstants,
     slf4jApi,
+    scalaJava8Compat
   ) ++ jacksonFamily ++ ow2asmDeps // to match whitelist versions
 
   val `api-javadsl` = libraryDependencies ++= Seq(
@@ -549,6 +550,7 @@ object Dependencies {
     sslConfig,
     pcollections,
     akkaJackson,
+    scalaJava8Compat,
     akkaTestkit    % Test,
     akkaActorTyped % Test,
     scalaTest      % Test,
@@ -771,7 +773,8 @@ object Dependencies {
     pcollections,
     slf4jApi,
     playJson,
-    playFunctional
+    playFunctional,
+    scalaJava8Compat
   ) ++ jacksonFamily ++ ow2asmDeps // to match allowed versions
 
   val `akka-management-javadsl`  = libraryDependencies ++= Seq.empty[ModuleID]
@@ -998,6 +1001,7 @@ object Dependencies {
     sslConfig,
     kafkaClients,
     scalaCollectionCompat,
+    scalaJava8Compat
   )
 
   val `kafka-client-javadsl` = libraryDependencies ++= Seq(
@@ -1005,7 +1009,8 @@ object Dependencies {
     // Upgrades needed to match whitelist versions
     sslConfig,
     kafkaClients,
-    jnrConstants
+    jnrConstants,
+    scalaJava8Compat
   )
 
   val `kafka-client-scaladsl` = libraryDependencies ++= Seq(
@@ -1013,7 +1018,8 @@ object Dependencies {
     // Upgrades needed to match whitelist versions
     sslConfig,
     kafkaClients,
-    jnrConstants
+    jnrConstants,
+    scalaJava8Compat
   )
 
   val `kafka-broker` = libraryDependencies ++= Seq(
@@ -1063,6 +1069,7 @@ object Dependencies {
     jnra64asm,
     jnrConstants,
     pcollections,
+    scalaJava8Compat
   ) ++ jacksonFamily ++ ow2asmDeps ++ Seq("logback-core", "logback-classic").map(
     "ch.qos.logback" % _ % Versions.Logback
   )
@@ -1093,6 +1100,7 @@ object Dependencies {
       jnra64asm,
       jnrConstants,
       pcollections,
+      scalaJava8Compat
     )
 
   val `reloadable-server` = libraryDependencies ++= Seq(
@@ -1114,6 +1122,7 @@ object Dependencies {
     jnra64asm,
     jnrConstants,
     guava,
+    scalaJava8Compat
 //    checkerQual
   ) ++ ow2asmDeps // to match allowed versions
 
@@ -1175,6 +1184,7 @@ object Dependencies {
     scalaXml,
     playJson,
     guava,
+    scalaJava8Compat
 //    checkerQual
   ) ++ jacksonFamily
 
