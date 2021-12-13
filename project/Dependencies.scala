@@ -1031,7 +1031,6 @@ object Dependencies {
 
   val `kafka-broker-javadsl` = libraryDependencies ++= Seq(
     slf4jApi,
-    "org.apache.logging.log4j"   % "log4j-core"                % "2.15.0",
     scalaTest % Test,
     junit     % Test,
     // Upgrades needed to match whitelist versions
@@ -1039,7 +1038,6 @@ object Dependencies {
   )
 
   val `kafka-broker-scaladsl` = libraryDependencies ++= Seq(
-    "org.apache.logging.log4j"   % "log4j-core"                % "2.15.0",
     scalaTest % Test,
     junit     % Test,
     // Upgrades needed to match whitelist versions
