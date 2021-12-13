@@ -482,7 +482,6 @@ object Dependencies {
     "com.101tec"                 % "zkclient"             % "0.11",
     "com.yammer.metrics"         % "metrics-core"         % "2.2.0",
     "jline"                      % "jline"                % "0.9.94",
-    "log4j"                      % "log4j"                % "1.2.17",
     "com.typesafe.scala-logging" %% "scala-logging"       % "3.9.0",
     "net.sf.jopt-simple"         % "jopt-simple"          % "5.0.4",
     "org.apache.commons"         % "commons-math"         % "2.2",
@@ -1032,7 +1031,6 @@ object Dependencies {
 
   val `kafka-broker-javadsl` = libraryDependencies ++= Seq(
     slf4jApi,
-    "log4j"   % "log4j" % "1.2.17",
     scalaTest % Test,
     junit     % Test,
     // Upgrades needed to match whitelist versions
@@ -1040,7 +1038,6 @@ object Dependencies {
   )
 
   val `kafka-broker-scaladsl` = libraryDependencies ++= Seq(
-    "log4j"   % "log4j" % "1.2.17",
     scalaTest % Test,
     junit     % Test,
     // Upgrades needed to match whitelist versions
