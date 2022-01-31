@@ -25,9 +25,9 @@ jobs:
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
       - name: Set up JDK 11
-        uses: olafurpg/setup-scala@v10
+        uses: coursier/setup-action@v1
         with:
-          java-version: adopt@1.11.0-11
+          jvm: adopt:11
 
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6.3
@@ -60,9 +60,9 @@ jobs:
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
       - name: Set up JDK 11
-        uses: olafurpg/setup-scala@v10
+        uses: coursier/setup-action@v1
         with:
-          java-version: adopt@1.11.0-11
+          jvm: adopt:11
 
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6.3
@@ -83,9 +83,9 @@ jobs:
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
       - name: Set up JDK 11
-        uses: olafurpg/setup-scala@v10
+        uses: coursier/setup-action@v1
         with:
-          java-version: adopt@1.11.0-11
+          jvm: adopt:11
 
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6.3

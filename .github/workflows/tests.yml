@@ -19,10 +19,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { java-version: adopt@1.8,       scala-version: 2.12 }
-          - { java-version: adopt@1.8,       scala-version: 2.13 }
-          - { java-version: adopt@1.11.0-11, scala-version: 2.12 }
-          - { java-version: adopt@1.11.0-11, scala-version: 2.13 }
+          - { java-version: 8,  scala-version: 2.12 }
+          - { java-version: 8,  scala-version: 2.13 }
+          - { java-version: 11, scala-version: 2.12 }
+          - { java-version: 11, scala-version: 2.13 }
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -32,10 +32,10 @@ jobs:
       - name: Fetch tags
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
-      - name: Setup JDK ${{ matrix.java-version }}
-        uses: olafurpg/setup-scala@v10
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: coursier/setup-action@v1
         with:
-          java-version: ${{ matrix.java-version }}
+          jvm: adopt:${{ matrix.java-version }}
 
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6.3
@@ -56,10 +56,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { java-version: adopt@1.8,       scala-version: 2.12 }
-          - { java-version: adopt@1.8,       scala-version: 2.13 }
-          - { java-version: adopt@1.11.0-11, scala-version: 2.12 }
-          - { java-version: adopt@1.11.0-11, scala-version: 2.13 }
+          - { java-version: 8,  scala-version: 2.12 }
+          - { java-version: 8,  scala-version: 2.13 }
+          - { java-version: 11, scala-version: 2.12 }
+          - { java-version: 11, scala-version: 2.13 }
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -69,10 +69,10 @@ jobs:
       - name: Fetch tags
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
-      - name: Setup JDK ${{ matrix.java-version }}
-        uses: olafurpg/setup-scala@v10
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: coursier/setup-action@v1
         with:
-          java-version: ${{ matrix.java-version }}
+          jvm: adopt:${{ matrix.java-version }}
 
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6.3
@@ -93,8 +93,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { java-version: adopt@1.8 }
-          - { java-version: adopt@1.11.0-11 }
+          - { java-version: 8 }
+          - { java-version: 11 }
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -104,10 +104,10 @@ jobs:
       - name: Fetch tags
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
-      - name: Setup JDK ${{ matrix.java-version }}
-        uses: olafurpg/setup-scala@v10
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: coursier/setup-action@v1
         with:
-          java-version: ${{ matrix.java-version }}
+          jvm: adopt:${{ matrix.java-version }}
 
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6.3
