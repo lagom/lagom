@@ -6,6 +6,8 @@ on:
       - main
       - 1.6.x # remove when we create 'main'
     tags: ["*"]
+  release:
+    types: [published]
 
 jobs:
   release:
