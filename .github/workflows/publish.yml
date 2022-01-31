@@ -14,6 +14,7 @@ jobs:
     # runs on main repo only
     if: github.repository == 'lagom/lagom'
     name: Release
+    environment: release
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
