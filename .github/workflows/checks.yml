@@ -45,31 +45,6 @@ jobs:
              multi-jvm:headerCheck \
              checkAkkaModuleVersions
 
-
-
-  check-code-compilation:
-    name: Check Code Compilation
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with: # https://github.com/olafurpg/setup-scala#faster-checkout-of-big-repos
-          fetch-depth: 100
-
-      - name: Fetch tags
-        run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
-
-      - name: Set up JDK 11
-        uses: coursier/setup-action@v1
-        with:
-          jvm: adopt:11
-
-      - name: Cache Coursier cache
-        uses: coursier/cache-action@v6.3
-
-      - name: Compile all code with fatal warnings for Java 11
-        run: sbt "+Test/compile;mimaReportBinaryIssues"
-
   check-docs:
     name: Check Docs
     runs-on: ubuntu-20.04
@@ -101,3 +76,30 @@ jobs:
               scalafmtSbtCheck \
               javafmtCheckAll \
               test
+
+
+  check-code-compilation:
+    name: Check Code Compilation
+    runs-on: ubuntu-20.04
+    needs: # Waiting more lightweight checks
+      - "check-code-style"
+      - "check-docs"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with: # https://github.com/olafurpg/setup-scala#faster-checkout-of-big-repos
+          fetch-depth: 100
+
+      - name: Fetch tags
+        run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
+
+      - name: Set up JDK 11
+        uses: coursier/setup-action@v1
+        with:
+          jvm: adopt:11
+
+      - name: Cache Coursier cache
+        uses: coursier/cache-action@v6.3
+
+      - name: Compile all code with fatal warnings for Java 11
+        run: sbt "+Test/compile;mimaReportBinaryIssues"
