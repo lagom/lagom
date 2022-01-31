@@ -31,7 +31,7 @@ def overridesScalaParserCombinators = Seq(
   dependencyOverrides ++= Dependencies.scalaParserCombinatorOverrides
 )
 
-def common: Seq[Setting[_]] = releaseSettings ++ evictionSettings ++ Seq(
+def common: Seq[Setting[_]] = evictionSettings ++ Seq(
   organization := "com.lightbend.lagom",
   // Must be "Apache-2.0", because bintray requires that it is a license that it knows about
   licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))),
@@ -76,8 +76,7 @@ def common: Seq[Setting[_]] = releaseSettings ++ evictionSettings ++ Seq(
     "-parameters",
     "-Xlint:unchecked",
     "-Xlint:deprecation"
-  ),
-  LagomPublish.validatePublishSettingsSetting
+  )
 )
 
 // Customise sbt-dynver's behaviour to make it work with Lagom's tags (which aren't v-prefixed)
@@ -93,21 +92,6 @@ Global / onLoad := (Global / onLoad).value.andThen { s =>
     )
   s
 }
-
-def releaseSettings: Seq[Setting[_]] = Seq(
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  releaseTagName := (version in ThisBuild).value,
-  releaseProcess := {
-    import ReleaseTransformations._
-
-    Seq[ReleaseStep](
-      checkSnapshotDependencies,
-      releaseStepCommandAndRemaining("+publishSigned"),
-      releaseStepCommand("sonatypeBundleRelease"),
-      pushChanges
-    )
-  }
-)
 
 /**
  * sbt release's releaseStepCommand does not execute remaining commands, which sbt-doge relies on
@@ -137,14 +121,9 @@ def releaseStepCommandAndRemaining(command: String): State => State = { original
 }
 
 def publishMavenStyleSettings: Seq[Setting[_]] = Seq(
-  publishMavenStyle := true,
   crossScalaVersions := Seq(Dependencies.Versions.Scala.head),
   scalaVersion := Dependencies.Versions.Scala.head,
   crossPaths := false,
-)
-
-def sonatypeSettings: Seq[Setting[_]] = Seq(
-  publishTo := sonatypePublishToBundle.value,
 )
 
 def runtimeScalaSettings: Seq[Setting[_]] = Seq(
@@ -167,7 +146,7 @@ def sbtScalaSettings: Seq[Setting[_]] = Seq(
   scalaVersion := Dependencies.Versions.Scala.head,
 )
 
-def runtimeLibCommon: Seq[Setting[_]] = common ++ sonatypeSettings ++ runtimeScalaSettings ++ Seq(
+def runtimeLibCommon: Seq[Setting[_]] = common ++ runtimeScalaSettings ++ Seq(
   Dependencies.validateDependenciesSetting,
   Dependencies.pruneWhitelistSetting,
   Dependencies.dependencyWhitelistSetting,
@@ -1037,8 +1016,6 @@ lazy val `server-containers` = (project in file("dev") / "server-containers")
     name := "lagom-server-containers",
     resolvers += Resolver.sbtPluginRepo("releases"), // weird sbt-pgp/lagom docs/vegemite issue
     Dependencies.`server-containers`,
-    publishMavenStyle := true,
-    sonatypeSettings,
     // must support both 2.10 for sbt 0.13 and 2.13 for 2.13 tests
     crossScalaVersions := (Dependencies.Versions.Scala ++ Dependencies.Versions.SbtScala).distinct,
   )
@@ -1059,7 +1036,7 @@ def withLagomVersion(p: Project): Project =
 def sharedBuildToolSupportSetup(p: Project): Project =
   withLagomVersion(p)
     .enablePlugins(HeaderPlugin, Sonatype)
-    .settings(sonatypeSettings, common, mimaSettings)
+    .settings(common, mimaSettings)
     .settings(
       name := s"lagom-${thisProject.value.id}",
       Dependencies.`build-tool-support`,
@@ -1069,7 +1046,6 @@ def sharedBuildToolSupportSetup(p: Project): Project =
 lazy val `build-tool-support` = (project in file("dev") / "build-tool-support")
   .configure(sharedBuildToolSupportSetup)
   .settings(
-    publishMavenStyle := true,
     crossScalaVersions := Seq(Dependencies.Versions.Scala.head),
     scalaVersion := Dependencies.Versions.Scala.head,
     crossPaths := false,
@@ -1092,7 +1068,7 @@ lazy val `sbt-build-tool-support` = (project in file("dev") / "build-tool-suppor
   )
 
 lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
-  .settings(sonatypeSettings, common, mimaSettings, scriptedSettings)
+  .settings(common, mimaSettings, scriptedSettings)
   .enablePlugins(HeaderPlugin, Sonatype, SbtPlugin)
   .settings(
     name := "lagom-sbt-plugin",
@@ -1180,14 +1156,13 @@ lazy val `sbt-plugin` = (project in file("dev") / "sbt-plugin")
       // sbt scripted projects
       val () = (publishLocal in `sbt-scripted-library`).value
       val () = (publishLocal in LocalProject("sbt-scripted-tools")).value
-    },
-    publishMavenStyle := true
+    }
   )
   .dependsOn(`sbt-build-tool-support`)
 
 lazy val `maven-plugin` = (project in file("dev") / "maven-plugin")
   .enablePlugins(lagom.SbtMavenPlugin, HeaderPlugin, Sonatype, Unidoc)
-  .settings(sonatypeSettings, common, mimaSettings, publishMavenStyleSettings)
+  .settings(common, mimaSettings, publishMavenStyleSettings)
   .settings(
     name := "Lagom Maven Plugin",
     description := "Provides Lagom development environment support to maven.",
@@ -1245,7 +1220,7 @@ val ArchetypeVariablePattern = "%([A-Z-]+)%".r
 def archetypeProject(archetypeName: String) =
   Project(s"maven-$archetypeName-archetype", file("dev") / "archetypes" / s"maven-$archetypeName")
     .enablePlugins(HeaderPlugin, Sonatype)
-    .settings(sonatypeSettings, common, mimaSettings, sbtScalaSettings, publishMavenStyleSettings)
+    .settings(common, mimaSettings, sbtScalaSettings, publishMavenStyleSettings)
     .settings(
       name := s"maven-archetype-lagom-$archetypeName",
       autoScalaLibrary := false,
@@ -1279,7 +1254,7 @@ def archetypeProject(archetypeName: String) =
 lazy val `maven-java-archetype` = archetypeProject("java")
 lazy val `bill-of-materials` = (project in file("dev") / "bill-of-materials")
   .enablePlugins(Sonatype, BillOfMaterialsPlugin)
-  .settings(sonatypeSettings, common, noMima, sbtScalaSettings, publishMavenStyleSettings)
+  .settings(common, noMima, sbtScalaSettings, publishMavenStyleSettings)
   .settings(
     name := "lagom-bom",
     bomIncludeProjects := coreProjects ++ javadslProjects ++ scaladslProjects,
@@ -1287,7 +1262,7 @@ lazy val `bill-of-materials` = (project in file("dev") / "bill-of-materials")
   )
 lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
   .enablePlugins(HeaderPlugin, Sonatype)
-  .settings(sonatypeSettings, common, noMima, sbtScalaSettings, publishMavenStyleSettings)
+  .settings(common, noMima, sbtScalaSettings, publishMavenStyleSettings)
   .settings(
     name := "lagom-maven-dependencies",
     autoScalaLibrary := false,
@@ -1365,7 +1340,7 @@ lazy val `maven-dependencies` = (project in file("dev") / "maven-dependencies")
 // This project doesn't get aggregated, it is only executed by the sbt-plugin scripted dependencies
 lazy val `sbt-scripted-tools` = (project in file("dev") / "sbt-scripted-tools")
   .enablePlugins(HeaderPlugin, Sonatype)
-  .settings(sonatypeSettings, common, mimaSettings)
+  .settings(common, mimaSettings)
   .settings(
     name := "lagom-sbt-scripted-tools",
     sbtPlugin := true,
@@ -1472,7 +1447,7 @@ lazy val `play-integration-javadsl` = (project in file("dev") / "service-registr
   .dependsOn(`service-registry-client-javadsl`)
 
 lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
-  .settings(common, mimaSettings, runtimeScalaSettings, sonatypeSettings)
+  .settings(common, mimaSettings, runtimeScalaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-cassandra-server",
@@ -1480,7 +1455,7 @@ lazy val `cassandra-server` = (project in file("dev") / "cassandra-server")
   )
 
 lazy val `kafka-server` = (project in file("dev") / "kafka-server")
-  .settings(common, mimaSettings, runtimeScalaSettings, sonatypeSettings)
+  .settings(common, mimaSettings, runtimeScalaSettings)
   .enablePlugins(RuntimeLibPlugins)
   .settings(
     name := "lagom-kafka-server",
