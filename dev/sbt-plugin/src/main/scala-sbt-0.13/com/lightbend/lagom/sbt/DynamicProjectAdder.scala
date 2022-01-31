@@ -39,8 +39,9 @@ object DynamicProjectAdder {
         val resolvedProject = projectWithRoot.resolve(Scope.resolveProjectRef(structure.root, structure.rootProject, _))
 
         // Some really basic config that's apparently needed for any project to do anything.
-        val defineConfig: Seq[Setting[_]] = for (c <- resolvedProject.configurations)
-          yield (configuration in (projectRef, ConfigKey(c.name))) := c
+        val defineConfig: Seq[Setting[_]] =
+          for (c <- resolvedProject.configurations)
+            yield (configuration in (projectRef, ConfigKey(c.name))) := c
         val builtin
             : Seq[Setting[_]] = (thisProject := resolvedProject) +: (thisProjectRef := projectRef) +: defineConfig
         // And put all the settings together

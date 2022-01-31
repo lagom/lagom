@@ -1,0 +1,79 @@
+name: Basic checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  # Only run once for latest commit per ref and cancel other (previous) runs.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-code-style:
+    name: Check Code Style
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with: # https://github.com/olafurpg/setup-scala#faster-checkout-of-big-repos
+          fetch-depth: 100
+
+      - name: Fetch tags
+        run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
+
+      - name: Set up JDK 11
+        uses: olafurpg/setup-scala@v10
+        with:
+          java-version: adopt@1.11.0-11
+
+      - name: Cache Coursier cache
+        uses: coursier/cache-action@v6.3
+
+      - name: Code style check and binary-compatibility check
+        # Run locally with: sbt 'verifyCodeStyle ; mimaReportBinaryIssues'
+        # TODO: add versionSyncCheck when running CRON jobs
+        run: |
+         sbt +headerCheckAll \
+             +scalafmtCheckAll \
+             scalafmtSbtCheck \
+             javafmtCheckAll \
+             +headerCheck \
+             +test:headerCheck \
+             multi-jvm:headerCheck \
+             checkAkkaModuleVersions \
+             mimaReportBinaryIssues
+
+  check-docs:
+    name: Check Docs
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with: # https://github.com/olafurpg/setup-scala#faster-checkout-of-big-repos
+          fetch-depth: 100
+
+      - name: Fetch tags
+        run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
+
+      - name: Set up JDK 11
+        uses: olafurpg/setup-scala@v10
+        with:
+          java-version: adopt@1.11.0-11
+
+      - name: Cache Coursier cache
+        uses: coursier/cache-action@v6.3
+
+      - name: Create all API docs for artifacts/website and all reference docs
+        run: |
+          sbt unidoc
+          cd docs
+          sbt markdownValidateDocs \
+              markdownEvaluateSbtFiles \
+              headerCheckAll \
+              scalafmtCheckAll \
+              scalafmtSbtCheck \
+              javafmtCheckAll \
+              test

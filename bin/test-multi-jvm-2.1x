@@ -5,4 +5,4 @@
 # shellcheck source=bin/scriptLib
 . "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
 
-runSbtNoisy "++${SCALA_VERSION} multi-jvm:test"
+runSbtNoisy "+~${SCALA_VERSION} multi-jvm:test"
