@@ -1,0 +1,226 @@
+name: Build and tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  # Only run once for latest commit per ref and cancel other (previous) runs.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-code-style:
+    name: Check Code Style
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with: # https://github.com/olafurpg/setup-scala#faster-checkout-of-big-repos
+          fetch-depth: 100
+
+      - name: Fetch tags
+        run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
+
+      - name: Set up JDK 11
+        uses: coursier/setup-action@v1
+        with:
+          jvm: adopt:11
+
+      - name: Cache Coursier cache
+        uses: coursier/cache-action@v6.3
+
+      - name: Code style check and binary-compatibility check
+        # Run locally with: sbt 'verifyCodeStyle ; mimaReportBinaryIssues'
+        # TODO: add versionSyncCheck when running CRON jobs
+        run: |
+         sbt +headerCheckAll \
+             +scalafmtCheckAll \
+             scalafmtSbtCheck \
+             javafmtCheckAll \
+             +headerCheck \
+             +test:headerCheck \
+             multi-jvm:headerCheck \
+             checkAkkaModuleVersions
+
+  check-docs:
+    name: Check Docs
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with: # https://github.com/olafurpg/setup-scala#faster-checkout-of-big-repos
+          fetch-depth: 100
+
+      - name: Fetch tags
+        run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
+
+      - name: Set up JDK 11
+        uses: coursier/setup-action@v1
+        with:
+          jvm: adopt:11
+
+      - name: Cache Coursier cache
+        uses: coursier/cache-action@v6.3
+
+      - name: Create all API docs for artifacts/website and all reference docs
+        run: |
+          sbt unidoc
+          cd docs
+          sbt markdownValidateDocs \
+              markdownEvaluateSbtFiles \
+              headerCheckAll \
+              scalafmtCheckAll \
+              scalafmtSbtCheck \
+              javafmtCheckAll \
+              test
+
+  check-code-compilation:
+    name: Check Code Compilation
+    runs-on: ubuntu-20.04
+    needs: # Waiting more lightweight checks
+      - "check-code-style"
+      - "check-docs"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with: # https://github.com/olafurpg/setup-scala#faster-checkout-of-big-repos
+          fetch-depth: 100
+
+      - name: Fetch tags
+        run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
+
+      - name: Set up JDK 11
+        uses: coursier/setup-action@v1
+        with:
+          jvm: adopt:11
+
+      - name: Cache Coursier cache
+        uses: coursier/cache-action@v6.3
+
+      - name: Compile all code with fatal warnings for Java 11
+        run: sbt "+Test/compile;mimaReportBinaryIssues"
+
+  tests:
+    name: Build and Test
+    runs-on: ubuntu-20.04
+    needs: # only run after code compilation
+      - "check-code-compilation"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { java-version: 8,  scala-version: 2.12 }
+          - { java-version: 8,  scala-version: 2.13 }
+          - { java-version: 11, scala-version: 2.12 }
+          - { java-version: 11, scala-version: 2.13 }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with: # https://github.com/olafurpg/setup-scala#faster-checkout-of-big-repos
+          fetch-depth: 100
+
+      - name: Fetch tags
+        run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
+
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: coursier/setup-action@v1
+        with:
+          jvm: adopt:${{ matrix.java-version }}
+
+      - name: Cache Coursier cache
+        uses: coursier/cache-action@v6.3
+
+      - name: Run tests with Scala ${{ matrix.scala-version }} and Java ${{ matrix.java-version }}
+        env:
+            SCALA_VERSION: ${{ matrix.scala-version }}
+        run: ./bin/test-2.1x
+
+      - name: Print logs on failure
+        if: ${{ failure() }}
+        run: find . -name "*.log" -exec ./scripts/cat-log.sh {} \;
+
+  multi-jvm-tests:
+    name: MultiJvm Test
+    runs-on: ubuntu-20.04
+    needs: # only run after code compilation
+      - "check-code-compilation"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { java-version: 8,  scala-version: 2.12 }
+          - { java-version: 8,  scala-version: 2.13 }
+          - { java-version: 11, scala-version: 2.12 }
+          - { java-version: 11, scala-version: 2.13 }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with: # https://github.com/olafurpg/setup-scala#faster-checkout-of-big-repos
+          fetch-depth: 100
+
+      - name: Fetch tags
+        run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
+
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: coursier/setup-action@v1
+        with:
+          jvm: adopt:${{ matrix.java-version }}
+
+      - name: Cache Coursier cache
+        uses: coursier/cache-action@v6.3
+
+      - name: Run tests with Scala ${{ matrix.scala-version }} and Java ${{ matrix.java-version }}
+        env:
+          SCALA_VERSION: ${{ matrix.scala-version }}
+        run: ./bin/test-multi-jvm-2.1x
+
+      - name: Print logs on failure
+        if: ${{ failure() }}
+        run: find . -name "*.log" -exec ./scripts/cat-log.sh {} \;
+
+  maven-tests:
+    name: Maven Tests
+    runs-on: ubuntu-20.04
+    needs: # only run after code compilation
+      - "check-code-compilation"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { java-version: 8 }
+          - { java-version: 11 }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with: # https://github.com/olafurpg/setup-scala#faster-checkout-of-big-repos
+          fetch-depth: 100
+
+      - name: Fetch tags
+        run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
+
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: coursier/setup-action@v1
+        with:
+          jvm: adopt:${{ matrix.java-version }}
+
+      - name: Cache Coursier cache
+        uses: coursier/cache-action@v6.3
+
+      - name: Run Maven tests with Java ${{ matrix.java-version }}
+        run: sbt "publishM2; mavenTest"
+
+      - name: Install xmllint
+        run: sudo apt-get install -y libxml2-utils
+
+      - name: Install xmlstarlet
+        run: sudo apt-get install -y xmlstarlet
+
+      - name: validate pom files
+        run: ./bin/test-maven
+
+      - name: Print logs on failure
+        if: ${{ failure() }}
+        run: find . -name "*.log" -exec ./scripts/cat-log.sh {} \;
