@@ -45,10 +45,6 @@ def common: Seq[Setting[_]] = evictionSettings ++ Seq(
     )
   ),
   pomExtra := {
-    <scm>
-      <url>https://github.com/lagom/lagom</url>
-      <connection>scm:git:git@github.com:lagom/lagom.git</connection>
-    </scm>
     <developers>
       <developer>
         <id>lagom</id>
