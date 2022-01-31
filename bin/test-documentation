@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# Copyright (C) Lightbend Inc. <https://www.lightbend.com>
+
+# shellcheck source=bin/scriptLib
+. "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/scriptLib"
+
+runSbt unidoc
+
+cd docs
+
+# Previously, we checked external links in docs here for cron jobs. Now it's disabled for 1.6.x
+# because it seems to introduce more noise than value to check links for old documentation pages.
+# EXTRA_TASK="markdownValidateExternalLinks"
+EXTRA_TASK=""
+
+runSbt markdownValidateDocs markdownEvaluateSbtFiles $EXTRA_TASK
+runSbt headerCheckAll scalafmtCheckAll scalafmtSbtCheck javafmtCheckAll

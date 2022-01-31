@@ -45,7 +45,7 @@ jobs:
              multi-jvm:headerCheck \
              checkAkkaModuleVersions
 
-  check-docs:
+  documentation-docs:
     name: Check Docs
     runs-on: ubuntu-20.04
     steps:
@@ -66,16 +66,30 @@ jobs:
         uses: coursier/cache-action@v6.3
 
       - name: Create all API docs for artifacts/website and all reference docs
-        run: |
-          sbt unidoc
-          cd docs
-          sbt markdownValidateDocs \
-              markdownEvaluateSbtFiles \
-              headerCheckAll \
-              scalafmtCheckAll \
-              scalafmtSbtCheck \
-              javafmtCheckAll \
-              test
+        run: ./bin/test-documentation
+
+  documentation-tests:
+    name: Run documentation tests
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with: # https://github.com/olafurpg/setup-scala#faster-checkout-of-big-repos
+          fetch-depth: 100
+
+      - name: Fetch tags
+        run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
+
+      - name: Set up JDK 11
+        uses: coursier/setup-action@v1
+        with:
+          jvm: adopt:11
+
+      - name: Cache Coursier cache
+        uses: coursier/cache-action@v6.3
+
+      - name: Create all API docs for artifacts/website and all reference docs
+        run: ./bin/test-docs-code-only
 
   check-code-compilation:
     name: Check Code Compilation
