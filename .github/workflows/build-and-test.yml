@@ -148,7 +148,7 @@ jobs:
 
       - name: Run tests with Scala ${{ matrix.scala-version }} and Java ${{ matrix.java-version }}
         env:
-            SCALA_VERSION: ${{ matrix.scala-version }}
+          SCALA_VERSION: ${{ matrix.scala-version }}
         run: ./bin/test-2.1x
 
       - name: Print logs on failure
