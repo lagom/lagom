@@ -57,7 +57,7 @@ object Dependencies {
     val PCollections  = "3.0.5"
 
     val ScalaJava8Compat = "1.0.2"
-    val ScalaXml         = "1.2.0"
+    val ScalaXml         = "2.0.1"
     val Slick            = "3.3.2"
     // JUnit[Interface] should be sync with:
     //   lagomJUnitDeps in dev/sbt-plugin/src/main/scala/com/lightbend/lagom/sbt/LagomImport.scala
