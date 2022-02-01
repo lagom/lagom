@@ -38,58 +38,12 @@ stages:
     #     - RUN_DROP_TRAVIS_CACHES_STAGE=true
     if: env(RUN_DROP_TRAVIS_CACHES_STAGE) = true
   - name: validations-and-test
-  - name: test-build-tools
 
 jobs:
   include:
-    - stage: drop-travis-caches
-      # Introduced 2020-10-19 as we noticed serious problems with Travis' caching
-      script:
-        - rm -rf $HOME/.cache/coursier
-        - rm -rf $HOME/.ivy2/cache
-        - rm -rf $HOME/.jabba
-        - rm -rf $HOME/.sbt
-        - rm -rf $HOME/.m2/repositories
-      name: "drop-travis-caches"
     - stage: validations-and-test
       script: bin/test-code-style
       name: "Code validations (format, binary compatibilty, etc.)"
-    - script: SCALA_VERSION=2.12.13 bin/test-2.1x
-      name: "Run tests for Scala 2.12"
-    - script: SCALA_VERSION=2.12.13 bin/test-2.1x
-      env: TRAVIS_JDK=11
-      name: "Run tests for Scala 2.12 and Java 11"
-    - script: SCALA_VERSION=2.13.5 bin/test-2.1x
-      name: "Run tests for Scala 2.13"
-    - script: SCALA_VERSION=2.12.13 bin/test-multi-jvm-2.1x
-      name: "Run multi-jvm tests for Scala 2.12"
-    - script: SCALA_VERSION=2.12.13 bin/test-multi-jvm-2.1x
-      env: TRAVIS_JDK=11
-      name: "Run multi-jvm tests for Scala 2.12 and Java 11"
-    - script: SCALA_VERSION=2.13.5 bin/test-multi-jvm-2.1x
-      name: "Run multi-jvm tests for Scala 2.13"
-    - script: bin/test-documentation
-      name: "Documentation validations and tests"
-    - script: bin/test-docs-code-only
-      env: TRAVIS_JDK=11
-      name: "Documentation tests (Java 11)"
-
-    - stage: test-build-tools
-      script: SCALA_VERSION=2.10.7 bin/test-sbt
-      name: "Scripted tests for sbt 0.13"
-    - script: SCALA_VERSION=2.12.13 bin/test-sbt
-      name: "Scripted tests for sbt 1"
-    - script: SCALA_VERSION=2.12.13 bin/test-sbt
-      env: TRAVIS_JDK=11
-      name: "Scripted tests for sbt 1 and Java 11"
-    - script: bin/test-maven
-      name: "PublishM2 and test Maven"
-    - script: bin/test-maven
-      name: "PublishM2 and test Maven using Java 11"
-      env: TRAVIS_JDK=11
-    - script: SCALA_VERSION=2.12.13 bin/test-sbt-13x
-      name: "Scripted tests for sbt 1.3"
-      if: type = cron
 
 cache:
   directories:
