@@ -80,10 +80,10 @@ jobs:
       - name: Fetch tags
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
-      - name: Set up JDK 11
+      - name: Set up JDK 8
         uses: coursier/setup-action@v1
         with:
-          jvm: adopt:11
+          jvm: adopt:8 # need jdk8 to build docs
 
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6.3
@@ -113,7 +113,7 @@ jobs:
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6.3
 
-      - name: Compile all code for Java 11 and check binary compatibility
+      - name: Compile all code with Java 11 and check binary compatibility
         run: sbt "+Test/compile;mimaReportBinaryIssues"
 
   tests:
