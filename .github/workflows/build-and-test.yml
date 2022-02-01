@@ -117,7 +117,6 @@ jobs:
         run: sbt "+Test/compile;mimaReportBinaryIssues"
 
   tests:
-    name: Build and Test (Scala ${{ matrix.scala }} & JDK ${{ matrix.jdk }})
     runs-on: ubuntu-20.04
     needs: # only run after code compilation
       - "check-code-compilation"
@@ -129,6 +128,7 @@ jobs:
           - { jdk: 8,  scala: 2.13 }
           - { jdk: 11, scala: 2.12 }
           - { jdk: 11, scala: 2.13 }
+    name: Build and Test (Scala ${{ matrix.scala }} & JDK ${{ matrix.jdk }})
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -196,7 +196,6 @@ jobs:
 
 
   sbt-scripted-test:
-    name: sbt Scripted Tests (Scala ${{ matrix.scala }} & JDK ${{ matrix.jdk }})
     runs-on: ubuntu-20.04
     needs: # only run after code compilation
       - "check-code-compilation"
@@ -207,6 +206,7 @@ jobs:
           - { jdk: 8,  scala: "2.10" } # quotes otherwise it shows '2.1' and it's quite confusing
           - { jdk: 8,  scala: "2.12" }
           - { jdk: 11, scala: "2.12" }
+    name: sbt Scripted Tests (Scala ${{ matrix.scala }} & JDK ${{ matrix.jdk }})
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -234,7 +234,6 @@ jobs:
         run: find . -name "*.log" -exec ./scripts/cat-log.sh {} \;
 
   maven-tests:
-    name: Maven Tests (JDK ${{ matrix.jdk }})
     runs-on: ubuntu-20.04
     needs: # only run after code compilation
       - "check-code-compilation"
@@ -244,6 +243,7 @@ jobs:
         include:
           - { jdk: 8 }
           - { jdk: 11 }
+    name: Maven Tests (JDK ${{ matrix.jdk }})
     steps:
       - name: Checkout
         uses: actions/checkout@v2
