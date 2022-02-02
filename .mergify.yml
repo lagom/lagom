@@ -6,12 +6,12 @@ pull_request_rules:
       - check-success=Check Code Compilation
       - check-success=Run documentation tests
       - check-success=Build and Test (Scala 2.12 & JDK 8)
-      - check-success=Build and Test (Scala 2.12 & JDK 8)
-      - check-success=Build and Test (Scala 2.13 & JDK 11)
+      - check-success=Build and Test (Scala 2.13 & JDK 8)
+      - check-success=Build and Test (Scala 2.12 & JDK 11)
       - check-success=Build and Test (Scala 2.13 & JDK 11)
       - check-success=MultiJvm Test (Scala 2.12 & JDK 8)
-      - check-success=MultiJvm Test (Scala 2.12 & JDK 8)
-      - check-success=MultiJvm Test (Scala 2.13 & JDK 11)
+      - check-success=MultiJvm Test (Scala 2.13 & JDK 8)
+      - check-success=MultiJvm Test (Scala 2.12 & JDK 11)
       - check-success=MultiJvm Test (Scala 2.13 & JDK 11)
       - check-success=sbt Scripted Test (Scala 2.10 & JDK 8)
       - check-success=sbt Scripted Test (Scala 2.12 & JDK 8)
