@@ -25,7 +25,7 @@ jobs:
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
       - name: Set up JDK 11
-        uses: coursier/setup-action@v1
+        uses: coursier/setup-action@v1.1.2
         with:
           jvm: adopt:11
 
@@ -58,7 +58,7 @@ jobs:
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
       - name: Set up JDK 8
-        uses: coursier/setup-action@v1
+        uses: coursier/setup-action@v1.1.2
         with:
           jvm: adopt:8 # need jdk8 to build docs
 
@@ -81,7 +81,7 @@ jobs:
   #       run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
   #     - name: Set up JDK 8
-  #       uses: coursier/setup-action@v1
+  #       uses: coursier/setup-action@v1.1.2
   #       with:
   #         jvm: adopt:8 # need jdk8 to build docs
 
@@ -106,7 +106,7 @@ jobs:
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
       - name: Set up JDK 11
-        uses: coursier/setup-action@v1
+        uses: coursier/setup-action@v1.1.2
         with:
           jvm: adopt:11
 
@@ -117,7 +117,6 @@ jobs:
         run: sbt "+Test/compile;mimaReportBinaryIssues"
 
   tests:
-    name: Build and Test
     runs-on: ubuntu-20.04
     needs: # only run after code compilation
       - "check-code-compilation"
@@ -125,10 +124,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { java-version: 8,  scala-version: 2.12 }
-          - { java-version: 8,  scala-version: 2.13 }
-          - { java-version: 11, scala-version: 2.12 }
-          - { java-version: 11, scala-version: 2.13 }
+          - { jdk: 8,  scala: 2.12 }
+          - { jdk: 8,  scala: 2.13 }
+          - { jdk: 11, scala: 2.12 }
+          - { jdk: 11, scala: 2.13 }
+    name: Build and Test (Scala ${{ matrix.scala }} & JDK ${{ matrix.jdk }})
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -138,17 +138,17 @@ jobs:
       - name: Fetch tags
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
-      - name: Set up JDK ${{ matrix.java-version }}
-        uses: coursier/setup-action@v1
+      - name: Set up JDK ${{ matrix.jdk }}
+        uses: coursier/setup-action@v1.1.2
         with:
-          jvm: adopt:${{ matrix.java-version }}
+          jvm: adopt:${{ matrix.jdk }}
 
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6.3
 
-      - name: Run tests with Scala ${{ matrix.scala-version }} and Java ${{ matrix.java-version }}
+      - name: Run tests with Scala ${{ matrix.scala }} and Java ${{ matrix.jdk }}
         env:
-          SCALA_VERSION: ${{ matrix.scala-version }}
+          SCALA_VERSION: ${{ matrix.scala }}
         run: ./bin/test-2.1x
 
       - name: Print logs on failure
@@ -156,7 +156,6 @@ jobs:
         run: find . -name "*.log" -exec ./scripts/cat-log.sh {} \;
 
   multi-jvm-tests:
-    name: MultiJvm Test
     runs-on: ubuntu-20.04
     needs: # only run after code compilation
       - "check-code-compilation"
@@ -164,10 +163,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { java-version: 8,  scala-version: 2.12 }
-          - { java-version: 8,  scala-version: 2.13 }
-          - { java-version: 11, scala-version: 2.12 }
-          - { java-version: 11, scala-version: 2.13 }
+          - { jdk: 8,  scala: 2.12 }
+          - { jdk: 8,  scala: 2.13 }
+          - { jdk: 11, scala: 2.12 }
+          - { jdk: 11, scala: 2.13 }
+    name: MultiJvm Test (Scala ${{ matrix.scala }} & JDK ${{ matrix.jdk }})
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -177,17 +177,17 @@ jobs:
       - name: Fetch tags
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
-      - name: Set up JDK ${{ matrix.java-version }}
-        uses: coursier/setup-action@v1
+      - name: Set up JDK ${{ matrix.jdk }}
+        uses: coursier/setup-action@v1.1.2
         with:
-          jvm: adopt:${{ matrix.java-version }}
+          jvm: adopt:${{ matrix.jdk }}
 
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6.3
 
-      - name: Run multi-jvm tests with Scala ${{ matrix.scala-version }} and Java ${{ matrix.java-version }}
+      - name: Run multi-jvm tests with Scala ${{ matrix.scala }} and Java ${{ matrix.jdk }}
         env:
-          SCALA_VERSION: ${{ matrix.scala-version }}
+          SCALA_VERSION: ${{ matrix.scala }}
         run: ./bin/test-multi-jvm-2.1x
 
       - name: Print logs on failure
@@ -196,7 +196,6 @@ jobs:
 
 
   sbt-scripted-test:
-    name: sbt Scripted Tests
     runs-on: ubuntu-20.04
     needs: # only run after code compilation
       - "check-code-compilation"
@@ -204,9 +203,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { java-version: 8,  scala-version: 2.10 }
-          - { java-version: 8,  scala-version: 2.12 }
-          - { java-version: 11, scala-version: 2.12 }
+          - { jdk: 8,  scala: 2.10 }
+          - { jdk: 8,  scala: 2.12 }
+          - { jdk: 11, scala: 2.12 }
+    name: sbt Scripted Tests (Scala ${{ matrix.scala }} & JDK ${{ matrix.jdk }})
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -216,17 +216,17 @@ jobs:
       - name: Fetch tags
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
-      - name: Set up JDK ${{ matrix.java-version }}
-        uses: coursier/setup-action@v1
+      - name: Set up JDK ${{ matrix.jdk }}
+        uses: coursier/setup-action@v1.1.2
         with:
-          jvm: adopt:${{ matrix.java-version }}
+          jvm: adopt:${{ matrix.jdk }}
 
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6.3
 
-      - name: Run sbt-scripted tests with Scala ${{ matrix.scala-version }} and Java ${{ matrix.java-version }}
+      - name: Run sbt-scripted tests with Scala ${{ matrix.scala }} and JDK ${{ matrix.jdk }}
         env:
-          SCALA_VERSION: ${{ matrix.scala-version }}
+          SCALA_VERSION: ${{ matrix.scala }}
         run: ./bin/test-sbt
 
       - name: Print logs on failure
@@ -234,7 +234,6 @@ jobs:
         run: find . -name "*.log" -exec ./scripts/cat-log.sh {} \;
 
   maven-tests:
-    name: Maven Tests
     runs-on: ubuntu-20.04
     needs: # only run after code compilation
       - "check-code-compilation"
@@ -242,8 +241,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { java-version: 8 }
-          - { java-version: 11 }
+          - { jdk: 8 }
+          - { jdk: 11 }
+    name: Maven Tests (JDK ${{ matrix.jdk }})
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -253,15 +253,15 @@ jobs:
       - name: Fetch tags
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
-      - name: Set up JDK ${{ matrix.java-version }}
-        uses: coursier/setup-action@v1
+      - name: Set up JDK ${{ matrix.jdk }}
+        uses: coursier/setup-action@v1.1.2
         with:
-          jvm: adopt:${{ matrix.java-version }}
+          jvm: adopt:${{ matrix.jdk }}
 
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6.3
 
-      - name: Run Maven tests with Java ${{ matrix.java-version }}
+      - name: Run Maven tests with Java ${{ matrix.jdk }}
         run: sbt "publishM2; mavenTest"
 
       - name: Install xmllint

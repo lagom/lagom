@@ -1,67 +1,29 @@
 pull_request_rules:
   - name: Merge PRs that are ready
     conditions:
-      - status-success=Travis CI - Pull Request
+      - check-success=Check Code Style
+      - check-success=Check Docs
+      - check-success=Check Code Compilation
+      - check-success=Run documentation tests
+      - check-success=Build and Test (Scala 2.12 & JDK 8)
+      - check-success=Build and Test (Scala 2.13 & JDK 8)
+      - check-success=Build and Test (Scala 2.12 & JDK 11)
+      - check-success=Build and Test (Scala 2.13 & JDK 11)
+      - check-success=MultiJvm Test (Scala 2.12 & JDK 8)
+      - check-success=MultiJvm Test (Scala 2.13 & JDK 8)
+      - check-success=MultiJvm Test (Scala 2.12 & JDK 11)
+      - check-success=MultiJvm Test (Scala 2.13 & JDK 11)
+      - check-success=sbt Scripted Test (Scala 2.10 & JDK 8)
+      - check-success=sbt Scripted Test (Scala 2.12 & JDK 8)
+      - check-success=sbt Scripted Test (Scala 2.13 & JDK 11)
+      - check-success=Maven Tests (JDK 8)
+      - check-success=Maven Tests (JDK 11)
       - status-success=typesafe-cla-validator
       - "#approved-reviews-by>=1"
       - "#review-requested=0"
       - "#changes-requested-reviews-by=0"
       - label!=status:block-merge
-    actions:
-      merge:
-        method: merge
-
-  - name: backport patches to 1.5.x branch
-    conditions:
-      - merged
-      - label=status:needs-backport
-    actions:
-      backport:
-        branches:
-          - 1.5.x
-      label:
-        remove: [status:needs-backport]
-
-  - name: backport patches to 1.4.x branch
-    conditions:
-      - merged
-      - label=status:needs-backport-1.4
-    actions:
-      backport:
-        branches:
-          - 1.4.x
-      label:
-        remove: [status:needs-backport-1.4]
-
-  - name: forward patches to master branch
-    conditions:
-      - merged
-      - label=status:needs-forwardport
-    actions:
-      backport:
-        branches:
-          - master
-      label:
-        remove: [status:needs-forwardport]
-
-  - name: Merge ScalaSteward's PRs that are ready
-    conditions:
-      - author=scala-steward
-      - status-success=Travis CI - Pull Request
-      - "#review-requested=0"
-      - "#changes-requested-reviews-by=0"
-      - label!=status:block-merge
-    actions:
-      merge:
-        method: merge
-
-  - name: Merge ScalaSteward's PRs even without core approval
-    conditions:
-      - author=scala-steward
-      - status-success=Travis CI - Pull Request
-      - "review-requested=@lagom/core"
-      - "#changes-requested-reviews-by=0"
-      - label!=status:block-merge
+      - label=status:merge-when-green
     actions:
       merge:
         method: merge
