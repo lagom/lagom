@@ -25,7 +25,7 @@ jobs:
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
       - name: Set up JDK 11
-        uses: coursier/setup-action@v1
+        uses: coursier/setup-action@v1.2.0-M2
         with:
           jvm: adopt:11
 
@@ -58,7 +58,7 @@ jobs:
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
       - name: Set up JDK 8
-        uses: coursier/setup-action@v1
+        uses: coursier/setup-action@v1.2.0-M2
         with:
           jvm: adopt:8 # need jdk8 to build docs
 
@@ -81,7 +81,7 @@ jobs:
   #       run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
   #     - name: Set up JDK 8
-  #       uses: coursier/setup-action@v1
+  #       uses: coursier/setup-action@v1.2.0-M2
   #       with:
   #         jvm: adopt:8 # need jdk8 to build docs
 
@@ -106,7 +106,7 @@ jobs:
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
       - name: Set up JDK 11
-        uses: coursier/setup-action@v1
+        uses: coursier/setup-action@v1.2.0-M2
         with:
           jvm: adopt:11
 
@@ -139,7 +139,7 @@ jobs:
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
       - name: Set up JDK ${{ matrix.jdk }}
-        uses: coursier/setup-action@v1
+        uses: coursier/setup-action@v1.2.0-M2
         with:
           jvm: adopt:${{ matrix.jdk }}
 
@@ -178,7 +178,7 @@ jobs:
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
       - name: Set up JDK ${{ matrix.jdk }}
-        uses: coursier/setup-action@v1
+        uses: coursier/setup-action@v1.2.0-M2
         with:
           jvm: adopt:${{ matrix.jdk }}
 
@@ -217,7 +217,7 @@ jobs:
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
       - name: Set up JDK ${{ matrix.jdk }}
-        uses: coursier/setup-action@v1
+        uses: coursier/setup-action@v1.2.0-M2
         with:
           jvm: adopt:${{ matrix.jdk }}
 
@@ -254,7 +254,7 @@ jobs:
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
       - name: Set up JDK ${{ matrix.jdk }}
-        uses: coursier/setup-action@v1
+        uses: coursier/setup-action@v1.2.0-M2
         with:
           jvm: adopt:${{ matrix.jdk }}
 
