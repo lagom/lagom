@@ -203,9 +203,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { jdk: 8,  scala: "2.10" } # quotes otherwise it shows '2.1' and it's quite confusing
-          - { jdk: 8,  scala: "2.12" }
-          - { jdk: 11, scala: "2.12" }
+          - { jdk: 8,  scala: 2.10 }
+          - { jdk: 8,  scala: 2.12 }
+          - { jdk: 11, scala: 2.12 }
     name: sbt Scripted Tests (Scala ${{ matrix.scala }} & JDK ${{ matrix.jdk }})
     steps:
       - name: Checkout
