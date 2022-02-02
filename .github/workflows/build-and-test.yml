@@ -156,7 +156,6 @@ jobs:
         run: find . -name "*.log" -exec ./scripts/cat-log.sh {} \;
 
   multi-jvm-tests:
-    name: MultiJvm Test (Scala ${{ matrix.scala }} & JDK ${{ matrix.jdk }})
     runs-on: ubuntu-20.04
     needs: # only run after code compilation
       - "check-code-compilation"
@@ -168,6 +167,7 @@ jobs:
           - { jdk: 8,  scala: 2.13 }
           - { jdk: 11, scala: 2.12 }
           - { jdk: 11, scala: 2.13 }
+    name: MultiJvm Test (Scala ${{ matrix.scala }} & JDK ${{ matrix.jdk }})
     steps:
       - name: Checkout
         uses: actions/checkout@v2
