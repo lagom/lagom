@@ -1,6 +1,6 @@
 [![Gitter](https://img.shields.io/badge/chat-on%20gitter-purple.svg)](https://gitter.im/lagom/lagom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Join the contributors chat at https://gitter.im/lagom/contributors](https://img.shields.io/badge/chat-contributors%20channel-purple.svg)](https://gitter.im/lagom/contributors?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.com/lagom/lagom.svg?branch=master)](https://travis-ci.com/lagom/lagom)
+[![CI / Build and tests](https://github.com/lagom/lagom/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/lagom/lagom/actions/workflows/build-and-test.yml)
 [![Open Source Helpers](https://www.codetriage.com/lagom/lagom/badges/users.svg)](https://www.codetriage.com/lagom/lagom)
 
 # Lagom - The Reactive Microservices Framework
