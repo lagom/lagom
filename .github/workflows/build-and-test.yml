@@ -68,28 +68,28 @@ jobs:
       - name: Create all API docs for artifacts/website and all reference docs
         run: ./bin/test-documentation
 
-  # documentation-tests:
-  #   name: Run documentation tests
-  #   runs-on: ubuntu-20.04
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
-  #       with: # https://github.com/olafurpg/setup-scala#faster-checkout-of-big-repos
-  #         fetch-depth: 100
+  documentation-tests:
+    name: Run documentation tests
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with: # https://github.com/olafurpg/setup-scala#faster-checkout-of-big-repos
+          fetch-depth: 100
 
-  #     - name: Fetch tags
-  #       run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
+      - name: Fetch tags
+        run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
-  #     - name: Set up JDK 8
-  #       uses: coursier/setup-action@v1.1.2
-  #       with:
-  #         jvm: adopt:8 # need jdk8 to build docs
+      - name: Set up JDK 8
+        uses: coursier/setup-action@v1.1.2
+        with:
+          jvm: adopt:8 # need jdk8 to build docs
 
-  #     - name: Cache Coursier cache
-  #       uses: coursier/cache-action@v6.3
+      - name: Cache Coursier cache
+        uses: coursier/cache-action@v6.3
 
-  #     - name: Create all API docs for artifacts/website and all reference docs
-  #       run: ./bin/test-docs-code-only
+      - name: Create all API docs for artifacts/website and all reference docs
+        run: ./bin/test-docs-code-only
 
   check-code-compilation:
     name: Check Code Compilation
