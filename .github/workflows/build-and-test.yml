@@ -80,10 +80,10 @@ jobs:
       - name: Fetch tags
         run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
 
-      - name: Set up JDK 8
+      - name: Set up JDK 11
         uses: coursier/setup-action@v1.1.2
         with:
-          jvm: adopt:8 # need jdk8 to build docs
+          jvm: adopt:11 # need jdk11
 
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6.3
