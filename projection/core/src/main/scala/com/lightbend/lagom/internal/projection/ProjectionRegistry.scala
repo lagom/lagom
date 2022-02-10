@@ -55,8 +55,6 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
   ): Unit = {
     projectionRegistryRef ! ProjectionRegistryActor.RegisterProjection(projectionName, shardNames)
 
-    clusterShardingSettings.withRole(runInRole)
-
     clusterDistribution.start(
       projectionName,
       WorkerCoordinator.props(
@@ -66,7 +64,9 @@ private[lagom] class ProjectionRegistry(system: ActorSystem) {
         projectionRegistryRef
       ),
       shardNames,
-      ClusterDistributionSettings(system).copy(clusterShardingSettings = clusterShardingSettings)
+      ClusterDistributionSettings(system).copy(
+        clusterShardingSettings = clusterShardingSettings.withRole(runInRole)
+      )
     )
   }
 
