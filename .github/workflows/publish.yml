@@ -2,11 +2,7 @@ name: Publish
 
 on:
   push:
-    branches:
-      - main
     tags: ["*"]
-  release:
-    types: [published]
 
 jobs:
   release:
@@ -23,7 +19,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up JDK 8
-        uses: coursier/setup-action@v1
+        uses: coursier/setup-action@v1.1.2
         with:
           jvm: adopt:8
 
