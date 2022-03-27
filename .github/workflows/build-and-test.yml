@@ -265,7 +265,9 @@ jobs:
         run: sbt "publishM2; mavenTest"
 
       - name: Install xmllint
-        run: sudo apt-get install -y libxml2-utils
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-utils
 
       - name: Install xmlstarlet
         run: sudo apt-get install -y xmlstarlet
