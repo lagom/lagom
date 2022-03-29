@@ -48,7 +48,8 @@ object Dependencies {
     val MavenResolver        = "1.4.1"
     val Netty                = "4.1.63.Final"
     val NettyReactiveStreams = "2.0.5"
-    val Kafka                = "2.5.1"
+    val Kafka                = "2.1.1"
+    val KafkaClient          = "2.5.1"
     // adapt links in (java/scala)/KafkaClient.md for minor version changes
     val AlpakkaKafka  = "1.1.0"
     val Curator       = "2.12.0"
@@ -144,7 +145,7 @@ object Dependencies {
   private val akkaPersistenceCassandra         = "com.typesafe.akka" %% "akka-persistence-cassandra"          % Versions.AkkaPersistenceCassandra
   private val akkaPersistenceCassandraLauncher = "com.typesafe.akka" %% "akka-persistence-cassandra-launcher" % Versions.AkkaPersistenceCassandra
   private val akkaStreamKafka                  = "com.typesafe.akka" %% "akka-stream-kafka"                   % Versions.AlpakkaKafka
-  private val kafkaClients                     = "org.apache.kafka"  % "kafka-clients"                        % Versions.Kafka
+  private val kafkaClients                     = "org.apache.kafka"  % "kafka-clients"                        % Versions.KafkaClient
 
   private val akkaHttpCore      = "com.typesafe.akka" %% "akka-http-core"       % Versions.AkkaHttp
   private val akkaHttpRouteDsl  = "com.typesafe.akka" %% "akka-http"            % Versions.AkkaHttp
