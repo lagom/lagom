@@ -12,7 +12,7 @@ addSbtPlugin("de.heikoseeberger" % "sbt-header" % "5.6.0")
 addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "1.5.9")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm"   % "0.4.0")
-addSbtPlugin("com.typesafe"     % "sbt-mima-plugin" % "0.7.0")
+addSbtPlugin("com.typesafe"     % "sbt-mima-plugin" % "1.1.0")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")
 
