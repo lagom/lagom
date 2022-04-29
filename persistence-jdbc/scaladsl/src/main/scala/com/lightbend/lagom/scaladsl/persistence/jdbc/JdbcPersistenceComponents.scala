@@ -45,7 +45,6 @@ trait SlickProviderComponents extends DBComponents {
     new SlickProvider(actorSystem, coordinatedShutdown)(executionContext)
   }
 
-
   // Eagerly initialize the SlickProvider. Allows for explicily initialization of underlying datasource for Slick.
   // (see https://github.com/lagom/lagom/issues/3349)
   slickProvider.getClass
