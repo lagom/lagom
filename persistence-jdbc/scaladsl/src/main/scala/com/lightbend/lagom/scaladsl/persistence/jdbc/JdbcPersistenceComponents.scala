@@ -30,7 +30,7 @@ trait JdbcPersistenceComponents
     with ReadSideJdbcPersistenceComponents
     with WriteSideJdbcPersistenceComponents
 
-private[lagom] trait SlickProviderComponents extends DBComponents {
+trait SlickProviderComponents extends DBComponents {
   def actorSystem: ActorSystem
   def coordinatedShutdown: CoordinatedShutdown
   def executionContext: ExecutionContext
@@ -44,6 +44,10 @@ private[lagom] trait SlickProviderComponents extends DBComponents {
     )(executionContext)
     new SlickProvider(actorSystem, coordinatedShutdown)(executionContext)
   }
+
+  // Eagerly initialize the SlickProvider. Allows for explicily initialization of underlying datasource for Slick.
+  // (see https://github.com/lagom/lagom/issues/3349)
+  slickProvider.getClass
 
 }
 
@@ -62,6 +66,7 @@ trait WriteSideJdbcPersistenceComponents extends WriteSidePersistenceComponents 
  * Read-side persistence JDBC components (for compile-time injection).
  */
 trait ReadSideJdbcPersistenceComponents extends ReadSidePersistenceComponents with SlickProviderComponents {
+
   lazy val offsetTableConfiguration: OffsetTableConfiguration = new OffsetTableConfiguration(
     configuration.underlying,
     readSideConfig
