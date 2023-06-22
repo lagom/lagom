@@ -16,6 +16,9 @@ jobs:
         # https://github.com/actions/checkout/releases
         # v3.5.3
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+        with:
+          # we don't know what commit the last tag was it's safer to get entire repo so previousStableVersion resolves
+          fetch-depth: 0
 
       - name: Cache Coursier cache
         # https://github.com/coursier/cache-action/releases
