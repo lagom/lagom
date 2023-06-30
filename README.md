@@ -6,7 +6,8 @@
 # Deprecated - Lagom - July 1 2023
 This project will only recieve security patches until July 1, 2024,  at that point the project will no longer receive any additional patches.
 
-If you are an existing customer of Lightbend and we have not yet contacted you, please reach out to Support.<br>
+If you are an existing customer of Lightbend and we have not yet contacted you, please reach out to Support.
+
 We recommend migrating any existing work to:
 * [Akka](https://akka.io/) for deeply customized projects with complex infrastructure needs. Akka now contains the vast majority of Lagom features.
 * [Kalix](https://www.kalix.io/) for a managed scalable environment with an abstraction above the Akka framework layer to allow you to focus only on business logic.
