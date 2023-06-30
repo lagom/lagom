@@ -25,20 +25,20 @@ object Dependencies {
     val Twirl            = "1.5.2" // sync with docs/project/plugins.sbt
     val PlayFileWatch    = "1.1.16"
 
-    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.8.2") // sync with docs/build.sbt
-    val AkkaHttp     = "10.5.2"
+    val Akka: String = sys.props.getOrElse("lagom.build.akka.version", "2.6.21") // sync with docs/build.sbt
+    val AkkaHttp     = "10.2.10"
 
     val AkkaPersistenceCassandra = "0.106"
     // this is the version used in AkkaPersistenceCassandra, we stick with it
     val CassandraDriver     = "3.7.2"
     val AkkaPersistenceJdbc = "3.5.3"
-    val AkkaManagement      = "1.4.1"
+    val AkkaManagement      = "1.1.4"
 
     val Disruptor = "3.4.2"
 
     // Also be sure to update ScalaTestVersion in docs/build.sbt.
     val ScalaTest            = "3.0.8"
-    val Jackson              = "2.13.5"
+    val Jackson              = "2.11.4"
     val JacksonCore          = Jackson
     val JacksonDatatype      = Jackson
     val JacksonDatabind      = Jackson
