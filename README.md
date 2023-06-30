@@ -3,6 +3,16 @@
 [![CI / Build and tests](https://github.com/lagom/lagom/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/lagom/lagom/actions/workflows/build-and-test.yml)
 [![Open Source Helpers](https://www.codetriage.com/lagom/lagom/badges/users.svg)](https://www.codetriage.com/lagom/lagom)
 
+# Deprecated - Lagom - July 1 2023
+This project will only recieve security patches until July 1, 2024,  at that point the project will no longer receive any additional patches.
+
+If you are an existing customer of Lightbend and we have not yet contacted you, please reach out to Support.
+
+We recommend migrating any existing work to:
+* [Akka](https://akka.io/) for deeply customized projects with complex infrastructure needs. Akka now contains the vast majority of Lagom features.
+* [Kalix](https://www.kalix.io/) for a managed scalable environment with an abstraction above the Akka framework layer to allow you to focus only on business logic.
+
+
 # Lagom - The Reactive Microservices Framework
 
 Lagom is a Swedish word meaning *just right, sufficient*. Microservices are about creating services that are just the right size, that is, they have just the right level of functionality and isolation to be able to adequately implement a scalable and resilient system.
