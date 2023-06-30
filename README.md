@@ -3,7 +3,8 @@
 [![CI / Build and tests](https://github.com/lagom/lagom/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/lagom/lagom/actions/workflows/build-and-test.yml)
 [![Open Source Helpers](https://www.codetriage.com/lagom/lagom/badges/users.svg)](https://www.codetriage.com/lagom/lagom)
 
-# Deprecated - Lagom 
+# Deprecated - Lagom - July 1 2023
+This project will only recieve security patches until July 1, 2024,  at that point the project will no longer receive any additional patches.
 
 If you are an existing customer of Lightbend and we have not yet contacted you, please reach out to Support.<br>
 We recommend migrating any existing work to:
